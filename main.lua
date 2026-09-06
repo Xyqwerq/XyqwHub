@@ -6,7 +6,7 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "XyqwHubGui"
 screenGui.Parent = game:GetService("CoreGui")
 
--- ========== ДОК-КНОПКА (сверху, с обводкой) ==========
+-- ========== ДОК-КНОПКА ==========
 local dockButton = Instance.new("TextButton")
 dockButton.Name = "DockButton"
 dockButton.Size = UDim2.new(0, 90, 0, 30)
@@ -53,7 +53,7 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Крестик (закрывает окно, оставляет док-кнопку)
+-- Крестик
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 30, 1, 0)
 closeButton.Position = UDim2.new(1, -30, 0, 0)
@@ -75,7 +75,16 @@ scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
 scrollFrame.Parent = mainFrame
 
--- ========== АНТИ-СПАМ СИСТЕМА ==========
+-- ========== БЛОКИРОВКА КНОПОК ПРИ ОТКРЫТИИ ==========
+local buttonsBlocked = false
+
+local function blockButtonsTemporarily()
+    buttonsBlocked = true
+    task.wait(0.5)
+    buttonsBlocked = false
+end
+
+-- ========== АНТИ-СПАМ ==========
 local cooldowns = {}
 
 local function CanRun(name)
@@ -87,7 +96,7 @@ local function CanRun(name)
     return true
 end
 
--- ========== ФУНКЦИЯ КНОПКИ (с эффектами) ==========
+-- ========== ФУНКЦИЯ КНОПКИ ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 40)
@@ -101,44 +110,50 @@ local function CreateButton(text, callback)
     btn.BorderColor3 = Color3.fromRGB(255, 0, 0)
     btn.Parent = scrollFrame
     btn.AutoButtonColor = false
-    
+
     local defaultColor = Color3.fromRGB(0, 0, 0)
     local hoverColor = Color3.fromRGB(40, 0, 0)
     local clickColor = Color3.fromRGB(80, 0, 0)
-    
-    -- Эффект наведения (мышь)
-    btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = hoverColor
-    end)
-    
-    btn.MouseLeave:Connect(function()
+
+    -- Сброс цвета (гарантированный)
+    local function resetColor()
         btn.BackgroundColor3 = defaultColor
-    end)
-    
-    -- Эффект нажатия
-    local function onPress()
-        btn.BackgroundColor3 = clickColor
-        task.wait(0.15)
-        btn.BackgroundColor3 = hoverColor
     end
-    
+
+    -- Наведение
+    btn.MouseEnter:Connect(function()
+        if not buttonsBlocked then
+            btn.BackgroundColor3 = hoverColor
+        end
+    end)
+
+    btn.MouseLeave:Connect(function()
+        resetColor()
+    end)
+
+    -- Нажатие
     local isRunning = false
-    
+
     local function onClick()
-        if isRunning then return end
+        if buttonsBlocked or isRunning then return end
         isRunning = true
-        
+
+        -- Визуальный фидбек
+        btn.BackgroundColor3 = clickColor
+
         if CanRun(text) then
-            onPress()
             pcall(callback)
         end
-        
+
+        -- Гарантированный сброс цвета через 0.3 сек
         task.wait(0.3)
+        resetColor()
         isRunning = false
     end
-    
+
     btn.MouseButton1Click:Connect(onClick)
     btn.TouchTap:Connect(onClick)
+
     return btn
 end
 
@@ -189,7 +204,7 @@ addButton("UwU hub", "https://raw.githubusercontent.com/platinww/UwU/refs/heads/
 addButton("FakeVR", "https://pastefy.app/MvKHpycG/raw")
 addButton("WallHop", "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script")
 
--- ========== КНОПКА ПОЛНОГО ЗАКРЫТИЯ ==========
+-- ========== КНОПКА ВЫХОДА ==========
 local exitBtn = CreateButton("Exit XyqwHub", function()
     screenGui:Destroy()
     print("[XyqwHub] XyqwHub FULLY CLOSED")
@@ -272,6 +287,7 @@ closeButton.TouchTap:Connect(closeGUI)
 local function openGUI()
     mainFrame.Visible = true
     dockButton.Visible = false
+    blockButtonsTemporarily() -- Блокируем кнопки на 0.5 сек
 end
 
 dockButton.MouseButton1Click:Connect(openGUI)
