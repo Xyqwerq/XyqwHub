@@ -20,6 +20,7 @@ dockButton.BorderSizePixel = 2
 dockButton.BorderColor3 = Color3.fromRGB(255, 0, 0)
 dockButton.Parent = screenGui
 dockButton.Visible = false
+dockButton.AutoButtonColor = false
 
 local dockCorner = Instance.new("UICorner")
 dockCorner.CornerRadius = UDim.new(0, 6)
@@ -62,6 +63,7 @@ closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 closeButton.TextScaled = true
 closeButton.Font = Enum.Font.GothamBold
 closeButton.Parent = titleBar
+closeButton.AutoButtonColor = false
 
 -- ========== СКРОЛЛ ==========
 local scrollFrame = Instance.new("ScrollingFrame")
@@ -73,7 +75,19 @@ scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
 scrollFrame.Parent = mainFrame
 
--- ========== ФУНКЦИЯ КНОПКИ ==========
+-- ========== АНТИ-СПАМ СИСТЕМА ==========
+local cooldowns = {}
+
+local function CanRun(name)
+    local lastRun = cooldowns[name] or 0
+    if tick() - lastRun < 1.5 then
+        return false
+    end
+    cooldowns[name] = tick()
+    return true
+end
+
+-- ========== ФУНКЦИЯ КНОПКИ (с защитой от двойного нажатия) ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 40)
@@ -86,13 +100,30 @@ local function CreateButton(text, callback)
     btn.BorderSizePixel = 2
     btn.BorderColor3 = Color3.fromRGB(255, 0, 0)
     btn.Parent = scrollFrame
-    btn.MouseButton1Click:Connect(callback)
-    btn.TouchTap:Connect(callback)
+    btn.AutoButtonColor = false
+    
+    local isRunning = false
+    
+    local function onClick()
+        if isRunning then return end
+        isRunning = true
+        
+        if CanRun(text) then
+            pcall(callback)
+        end
+        
+        task.wait(0.3)
+        isRunning = false
+    end
+    
+    btn.MouseButton1Click:Connect(onClick)
+    btn.TouchTap:Connect(onClick)
     return btn
 end
 
 -- ========== ФУНКЦИЯ ЗАПУСКА ==========
 local function RunScript(name, url)
+    print("[XyqwHub] " .. name .. " - STARTING...")
     local success, err = pcall(function()
         loadstring(game:HttpGet(url))()
     end)
@@ -139,7 +170,7 @@ addButton("WallHop", "https://raw.githubusercontent.com/ScpGuest666/Random-Roblo
 
 -- ========== КНОПКА ПОЛНОГО ЗАКРЫТИЯ ==========
 local exitBtn = CreateButton("Exit XyqwHub", function()
-    screenGui:Destroy() -- Удаляет ВСЁ: и окно, и док-кнопку
+    screenGui:Destroy()
     print("[XyqwHub] XyqwHub FULLY CLOSED")
 end)
 exitBtn.Position = UDim2.new(0, 5, 0, y)
