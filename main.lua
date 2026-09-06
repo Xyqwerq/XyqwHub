@@ -1,9 +1,9 @@
 -- ========== STATUS MESSAGES ==========
 print("[XyqwHub] Loading...")
 
--- ========== LOAD RAYFIELD ==========
+-- ========== LOAD RAYFIELD MODAL (исправленная ссылка) ==========
 local success, err = pcall(function()
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/vyvegroup/RayfieldModal/main/source.lua"))()
 end)
 
 if not success then
@@ -21,7 +21,7 @@ screenGui.Parent = game:GetService("CoreGui")
 
 local dockButton = Instance.new("TextButton")
 dockButton.Size = UDim2.new(0, 120, 0, 40)
-dockButton.Position = UDim2.new(0.5, -60, 0.05, 10)  -- сверху, но не прямо вверху
+dockButton.Position = UDim2.new(0.5, -60, 0.05, 10)
 dockButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 dockButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 dockButton.Text = "XyqwHub"
@@ -29,13 +29,12 @@ dockButton.TextScaled = true
 dockButton.Font = Enum.Font.GothamBold
 dockButton.Parent = screenGui
 
--- Скругление углов
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 10)
 corner.Parent = dockButton
 
 -- ========== CREATE MAIN WINDOW ==========
-local Window = Rayfield:CreateWindow({
+local Window = RayfieldModal:CreateWindow({
     Name = "XyqwHub",
     ConfigurationSaving = {
         Enabled = true,
@@ -44,12 +43,10 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
--- Скрываем док-кнопку при открытии окна
 Window:SetCloseFunction(function()
     dockButton.Visible = true
 end)
 
--- Показываем док-кнопку, если окно закрыто
 dockButton.Visible = false
 
 -- ========== CREATE TAB ==========
@@ -63,14 +60,14 @@ local function RunScript(name, url)
     
     if success then
         print("[XyqwHub] " .. name .. " - LOADED!")
-        Rayfield:Notify({
+        RayfieldModal:Notify({
             Title = "Success!",
             Content = name .. " loaded",
             Duration = 3
         })
     else
         print("[XyqwHub] " .. name .. " - ERROR: " .. tostring(err))
-        Rayfield:Notify({
+        RayfieldModal:Notify({
             Title = "Error!",
             Content = name .. " failed to load",
             Duration = 3
