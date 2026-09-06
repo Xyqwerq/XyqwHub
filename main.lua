@@ -1,185 +1,158 @@
--- ========== STATUS MESSAGES ==========
+-- ========== СТАТУСЫ ==========
 print("[XyqwHub] Loading...")
 
--- ========== CREATE GUI ==========
+-- ========== СОЗДАЁМ GUI ==========
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "XyqwHub"
+screenGui.Name = "XyqwHubGui"
 screenGui.Parent = game:GetService("CoreGui")
 
--- ========== DOCK BUTTON ==========
+-- ========== ДОК-КНОПКА (открытие) ==========
 local dockButton = Instance.new("TextButton")
-dockButton.Size = UDim2.new(0, 120, 0, 40)
-dockButton.Position = UDim2.new(0.5, -60, 0.05, 10)
+dockButton.Name = "DockButton"
+dockButton.Size = UDim2.new(0, 100, 0, 40)
+dockButton.Position = UDim2.new(0.5, -50, 0.9, 0) -- начальная позиция внизу по центру
 dockButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 dockButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 dockButton.Text = "XyqwHub"
 dockButton.TextScaled = true
 dockButton.Font = Enum.Font.GothamBold
+dockButton.BorderSizePixel = 2
+dockButton.BorderColor3 = Color3.fromRGB(255, 0, 0)
 dockButton.Parent = screenGui
-dockButton.Visible = false
+dockButton.Visible = false -- скрыта пока окно открыто
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = dockButton
+-- Скругление углов (опционально)
+local dockCorner = Instance.new("UICorner")
+dockCorner.CornerRadius = UDim.new(0, 8)
+dockCorner.Parent = dockButton
 
--- ========== MAIN FRAME ==========
+-- ========== ГЛАВНОЕ ОКНО ==========
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 350, 0, 450)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -225)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
-mainFrame.BorderSizePixel = 0
+mainFrame.Size = UDim2.new(0, 340, 0, 460)
+mainFrame.Position = UDim2.new(0.5, -170, 0.5, -230)
+mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainFrame.BorderSizePixel = 3
+mainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 10)
-mainCorner.Parent = mainFrame
-
--- ========== TITLE BAR ==========
+-- Заголовок (для перетаскивания)
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 45)
-titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 10)
-titleCorner.Parent = titleBar
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 1, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "XyqwGui PRIVATE v3"
+titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = titleBar
 
-local titleText = Instance.new("TextLabel")
-titleText.Size = UDim2.new(1, 0, 1, 0)
-titleText.BackgroundTransparency = 1
-titleText.Text = "XyqwHub"
-titleText.TextColor3 = Color3.fromRGB(255, 50, 50)
-titleText.TextScaled = true
-titleText.Font = Enum.Font.GothamBold
-titleText.Parent = titleBar
+-- Кнопка закрытия (крестик)
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 40, 1, 0)
+closeButton.Position = UDim2.new(1, -40, 0, 0)
+closeButton.BackgroundTransparency = 1
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.GothamBold
+closeButton.Parent = titleBar
 
--- ========== CLOSE BUTTON ==========
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 40, 0, 40)
-closeBtn.Position = UDim2.new(1, -45, 0, 3)
-closeBtn.BackgroundColor3 = Color3.fromRGB(200, 30, 30)
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextScaled = true
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.Parent = titleBar
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
-closeCorner.Parent = closeBtn
-
--- ========== SCROLLING FRAME ==========
+-- ========== ОБЛАСТЬ ПРОКРУТКИ ==========
 local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(1, -10, 1, -55)
-scrollFrame.Position = UDim2.new(0, 5, 0, 50)
+scrollFrame.Size = UDim2.new(1, -10, 1, -50)
+scrollFrame.Position = UDim2.new(0, 5, 0, 45)
 scrollFrame.BackgroundTransparency = 1
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrollFrame.ScrollBarThickness = 5
+scrollFrame.ScrollBarThickness = 4
+scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
 scrollFrame.Parent = mainFrame
 
--- ========== FUNCTION: CREATE BUTTON ==========
-local function CreateButton(name, yPos, callback)
+-- ========== ФУНКЦИЯ СОЗДАНИЯ КНОПКИ ==========
+local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 40)
-    btn.Position = UDim2.new(0, 5, 0, yPos)
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 80)
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Size = UDim2.new(1, -10, 0, 50)
+    btn.Position = UDim2.new(0, 5, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    btn.TextColor3 = Color3.fromRGB(255, 0, 0)
+    btn.Text = text
     btn.TextScaled = true
-    btn.Font = Enum.Font.GothamSemibold
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 2
+    btn.BorderColor3 = Color3.fromRGB(255, 0, 0)
     btn.Parent = scrollFrame
     
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = btn
-    
+    -- Эффект нажатия (для телефона)
     btn.MouseButton1Click:Connect(callback)
+    btn.TouchTap:Connect(callback)
     
-    -- Hover effect
-    btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(80, 80, 120)
-    end)
-    btn.MouseLeave:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(50, 50, 80)
-    end)
+    return btn
 end
 
--- ========== FUNCTION: RUN SCRIPT ==========
+-- ========== ФУНКЦИЯ ЗАПУСКА СКРИПТОВ ==========
 local function RunScript(name, url)
     local success, err = pcall(function()
         loadstring(game:HttpGet(url))()
     end)
-    
     if success then
         print("[XyqwHub] " .. name .. " - LOADED!")
+        -- Уведомление (просто текст в консоли, можно добавить GUI нотификацию)
     else
         print("[XyqwHub] " .. name .. " - ERROR: " .. tostring(err))
     end
 end
 
--- ========== ADD BUTTONS ==========
-local yPos = 10
+-- ========== ДОБАВЛЯЕМ КНОПКИ ==========
+-- Blade Ball
+local label1 = Instance.new("TextLabel")
+label1.Size = UDim2.new(1, -10, 0, 30)
+label1.Position = UDim2.new(0, 5, 0, 0)
+label1.BackgroundTransparency = 1
+label1.Text = "Blade Ball"
+label1.TextColor3 = Color3.fromRGB(255, 0, 0)
+label1.TextScaled = true
+label1.Font = Enum.Font.GothamBold
+label1.Parent = scrollFrame
 
-CreateButton("AntiKillParts", yPos, function()
-    RunScript("AntiKillParts", "https://raw.githubusercontent.com/sovetskii-shashlik/Anti-kill-parts-updated-/refs/heads/main/Anti%20kill%20parts%20by%20Zephyr")
-end)
-yPos = yPos + 50
-
-CreateButton("PulseHub", yPos, function()
-    RunScript("PulseHub", "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua")
-end)
-yPos = yPos + 50
-
-CreateButton("RUNAWAYS", yPos, function()
-    RunScript("RUNAWAYS", "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua")
-end)
-yPos = yPos + 50
-
-CreateButton("Universal FE", yPos, function()
-    RunScript("Universal FE script", "https://rawscripts.net/raw/Universal-Script-Universal-FE-Free-keyless-FE-script-242513")
-end)
-yPos = yPos + 50
-
-CreateButton("UwU Hub", yPos, function()
-    RunScript("UwU hub", "https://raw.githubusercontent.com/platinww/UwU/refs/heads/main/INK-GAME")
-end)
-yPos = yPos + 50
-
-CreateButton("FakeVR", yPos, function()
-    RunScript("FakeVR", "https://pastefy.app/MvKHpycG/raw")
-end)
-yPos = yPos + 50
-
-CreateButton("WallHop", yPos, function()
-    RunScript("WallHop", "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script")
-end)
-yPos = yPos + 50
-
--- Update canvas size
-scrollFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 20)
-
--- ========== FUNCTIONS ==========
-local function OpenGUI()
-    mainFrame.Visible = true
-    dockButton.Visible = false
+local y = 35
+local function addButton(text, url)
+    local btn = CreateButton(text, function()
+        RunScript(text, url)
+    end)
+    btn.Position = UDim2.new(0, 5, 0, y)
+    y = y + 55
 end
 
-local function CloseGUI()
+addButton("AntiKillParts", "https://raw.githubusercontent.com/sovetskii-shashlik/Anti-kill-parts-updated-/refs/heads/main/Anti%20kill%20parts%20by%20Zephyr")
+addButton("PulseHub", "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua")
+addButton("RUNAWAYS", "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua")
+addButton("Universal FE", "https://rawscripts.net/raw/Universal-Script-Universal-FE-Free-keyless-FE-script-242513")
+addButton("UwU hub", "https://raw.githubusercontent.com/platinww/UwU/refs/heads/main/INK-GAME")
+addButton("FakeVR", "https://pastefy.app/MvKHpycG/raw")
+addButton("WallHop", "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script")
+
+-- Кнопка закрытия GUI
+local closeGuiBtn = CreateButton("Close XyqwHub", function()
     mainFrame.Visible = false
     dockButton.Visible = true
-end
+end)
+closeGuiBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 55
 
--- ========== BUTTON EVENTS ==========
-closeBtn.MouseButton1Click:Connect(CloseGUI)
+-- Обновляем размер холста
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
 
-dockButton.MouseButton1Click:Connect(OpenGUI)
-
--- ========== DRAG FUNCTION ==========
+-- ========== ПЕРЕТАСКИВАНИЕ ГЛАВНОГО ОКНА ==========
 local dragging = false
 local dragStart, startPos
 
 titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
@@ -187,16 +160,16 @@ titleBar.InputBegan:Connect(function(input)
 end)
 
 titleBar.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = false
     end
 end)
 
 game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragStart
         mainFrame.Position = UDim2.new(
-            startPos.X.Scale, 
+            startPos.X.Scale,
             startPos.X.Offset + delta.X,
             startPos.Y.Scale,
             startPos.Y.Offset + delta.Y
@@ -204,6 +177,55 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- ========== START ==========
+-- ========== ПЕРЕТАСКИВАНИЕ ДОК-КНОПКИ ==========
+local dockDragging = false
+local dockDragStart, dockStartPos
+
+dockButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dockDragging = true
+        dockDragStart = input.Position
+        dockStartPos = dockButton.Position
+    end
+end)
+
+dockButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dockDragging = false
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dockDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dockDragStart
+        dockButton.Position = UDim2.new(
+            dockStartPos.X.Scale,
+            dockStartPos.X.Offset + delta.X,
+            dockStartPos.Y.Scale,
+            dockStartPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- ========== ЗАКРЫТИЕ ЧЕРЕЗ КРЕСТИК ==========
+closeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    dockButton.Visible = true
+end)
+closeButton.TouchTap:Connect(function()
+    mainFrame.Visible = false
+    dockButton.Visible = true
+end)
+
+-- ========== ОТКРЫТИЕ ПО ДОК-КНОПКЕ ==========
+dockButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = true
+    dockButton.Visible = false
+end)
+dockButton.TouchTap:Connect(function()
+    mainFrame.Visible = true
+    dockButton.Visible = false
+end)
+
+-- ========== ФИНАЛЬНЫЙ СТАТУС ==========
 print("[XyqwHub] XyqwHub loaded!")
-mainFrame.Visible = true
