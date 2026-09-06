@@ -87,7 +87,7 @@ local function CanRun(name)
     return true
 end
 
--- ========== ФУНКЦИЯ КНОПКИ (с защитой от двойного нажатия) ==========
+-- ========== ФУНКЦИЯ КНОПКИ (с эффектами) ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 40)
@@ -102,6 +102,26 @@ local function CreateButton(text, callback)
     btn.Parent = scrollFrame
     btn.AutoButtonColor = false
     
+    local defaultColor = Color3.fromRGB(0, 0, 0)
+    local hoverColor = Color3.fromRGB(40, 0, 0)
+    local clickColor = Color3.fromRGB(80, 0, 0)
+    
+    -- Эффект наведения (мышь)
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = hoverColor
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = defaultColor
+    end)
+    
+    -- Эффект нажатия
+    local function onPress()
+        btn.BackgroundColor3 = clickColor
+        task.wait(0.15)
+        btn.BackgroundColor3 = hoverColor
+    end
+    
     local isRunning = false
     
     local function onClick()
@@ -109,6 +129,7 @@ local function CreateButton(text, callback)
         isRunning = true
         
         if CanRun(text) then
+            onPress()
             pcall(callback)
         end
         
