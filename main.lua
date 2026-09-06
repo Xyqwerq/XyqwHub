@@ -6,7 +6,7 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "XyqwHubGui"
 screenGui.Parent = game:GetService("CoreGui")
 
--- ========== ДОК-КНОПКА (сверху) ==========
+-- ========== ДОК-КНОПКА (сверху, с обводкой) ==========
 local dockButton = Instance.new("TextButton")
 dockButton.Name = "DockButton"
 dockButton.Size = UDim2.new(0, 90, 0, 30)
@@ -25,7 +25,7 @@ local dockCorner = Instance.new("UICorner")
 dockCorner.CornerRadius = UDim.new(0, 6)
 dockCorner.Parent = dockButton
 
--- ========== ГЛАВНОЕ ОКНО (уменьшенное) ==========
+-- ========== ГЛАВНОЕ ОКНО ==========
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 280, 0, 380)
 mainFrame.Position = UDim2.new(0.5, -140, 0.5, -190)
@@ -35,7 +35,7 @@ mainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
--- Заголовок (для перетаскивания)
+-- Заголовок
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
@@ -52,7 +52,7 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Кнопка закрытия (крестик)
+-- Крестик (закрывает окно, оставляет док-кнопку)
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 30, 1, 0)
 closeButton.Position = UDim2.new(1, -30, 0, 0)
@@ -63,7 +63,7 @@ closeButton.TextScaled = true
 closeButton.Font = Enum.Font.GothamBold
 closeButton.Parent = titleBar
 
--- ========== ОБЛАСТЬ ПРОКРУТКИ ==========
+-- ========== СКРОЛЛ ==========
 local scrollFrame = Instance.new("ScrollingFrame")
 scrollFrame.Size = UDim2.new(1, -10, 1, -40)
 scrollFrame.Position = UDim2.new(0, 5, 0, 35)
@@ -73,7 +73,7 @@ scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
 scrollFrame.Parent = mainFrame
 
--- ========== ФУНКЦИЯ СОЗДАНИЯ КНОПКИ ==========
+-- ========== ФУНКЦИЯ КНОПКИ ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 40)
@@ -103,21 +103,24 @@ local function RunScript(name, url)
     end
 end
 
--- ========== ДОБАВЛЯЕМ КНОПКИ ==========
+-- ========== КНОПКИ ==========
 local y = 5
 
--- Метка Blade Ball
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1, -10, 0, 25)
-label.Position = UDim2.new(0, 5, 0, y)
-label.BackgroundTransparency = 1
-label.Text = "Blade Ball"
-label.TextColor3 = Color3.fromRGB(255, 0, 0)
-label.TextScaled = true
-label.Font = Enum.Font.GothamBold
-label.Parent = scrollFrame
-y = y + 30
+-- Blade Ball
+local bladeBtn = CreateButton("Blade Ball", function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"))()
+    end)
+    if success then
+        print("[XyqwHub] Blade Ball - LOADED!")
+    else
+        print("[XyqwHub] Blade Ball - ERROR: " .. tostring(err))
+    end
+end)
+bladeBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
 
+-- Остальные скрипты
 local function addButton(text, url)
     local btn = CreateButton(text, function()
         RunScript(text, url)
@@ -133,6 +136,14 @@ addButton("Universal FE", "https://rawscripts.net/raw/Universal-Script-Universal
 addButton("UwU hub", "https://raw.githubusercontent.com/platinww/UwU/refs/heads/main/INK-GAME")
 addButton("FakeVR", "https://pastefy.app/MvKHpycG/raw")
 addButton("WallHop", "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script")
+
+-- ========== КНОПКА ПОЛНОГО ЗАКРЫТИЯ ==========
+local exitBtn = CreateButton("Exit XyqwHub", function()
+    screenGui:Destroy() -- Удаляет ВСЁ: и окно, и док-кнопку
+    print("[XyqwHub] XyqwHub FULLY CLOSED")
+end)
+exitBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
 
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
 
@@ -196,7 +207,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- ========== ЗАКРЫТИЕ ==========
+-- ========== ЗАКРЫТИЕ (крестик) ==========
 local function closeGUI()
     mainFrame.Visible = false
     dockButton.Visible = true
@@ -205,7 +216,7 @@ end
 closeButton.MouseButton1Click:Connect(closeGUI)
 closeButton.TouchTap:Connect(closeGUI)
 
--- ========== ОТКРЫТИЕ ==========
+-- ========== ОТКРЫТИЕ (док-кнопка) ==========
 local function openGUI()
     mainFrame.Visible = true
     dockButton.Visible = false
