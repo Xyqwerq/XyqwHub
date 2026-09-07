@@ -316,6 +316,75 @@ end)
 walkBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
+-- ===== AETHERX (С СООБЩЕНИЕМ) =====
+local aetherBtn = CreateButton("AetherX (Death Penalty)", function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"))()
+    end)
+    if success then
+        print("[XyqwHub] AetherX - LOADED!")
+        ShowNotification(
+            "This script is outdated. Some features may not work",
+            "Script should be loaded"
+        )
+    else
+        print("[XyqwHub] AetherX - ERROR: " .. tostring(err))
+        ShowNotification(
+            "This script is outdated. Some features may not work",
+            "Failed to load: " .. tostring(err)
+        )
+    end
+end)
+aetherBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
+
+-- ===== VOIDWARE (БЕЗ СООБЩЕНИЯ) =====
+addButton("Voidware (INK/99N/Forsaken)", "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua")
+
+-- ===== LALOL HUB (С СООБЩЕНИЕМ) =====
+local lalolBtn = CreateButton("LaLol Hub (B4ckd0or)", function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Miygteet/Hacker101/refs/heads/main/LALOL-Backdoor-Secure.lua"))()
+    end)
+    if success then
+        print("[XyqwHub] LaLol Hub - LOADED!")
+        ShowNotification(
+            "Script in beta",
+            "Script should be loaded"
+        )
+    else
+        print("[XyqwHub] LaLol Hub - ERROR: " .. tostring(err))
+        ShowNotification(
+            "Script in beta",
+            "Failed to load: " .. tostring(err)
+        )
+    end
+end)
+lalolBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
+
+-- ===== FTAP (С СООБЩЕНИЕМ) =====
+local ftapBtn = CreateButton("FTAP", function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/4078649e4397f0e2cdaddde241d69bfd67b2b7107917891384735129c85cae18/download"))()
+    end)
+    if success then
+        print("[XyqwHub] FTAP - LOADED!")
+        ShowNotification(
+            "Script in beta",
+            "Script should be loaded"
+        )
+    else
+        print("[XyqwHub] FTAP - ERROR: " .. tostring(err))
+        ShowNotification(
+            "Script in beta",
+            "Failed to load: " .. tostring(err)
+        )
+    end
+end)
+ftapBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
+
 -- ========== КНОПКА DESTROY XyqwHub (В САМОМ НИЗУ) ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
