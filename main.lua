@@ -2,7 +2,7 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "1.5"
+local VERSION = "1.7"
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -225,10 +225,10 @@ local function ShowNotification(topText, bottomText, duration)
     notificationFrame:Destroy()
 end
 
--- ========== ПРИВЕТСТВИЕ (С ПОДСКАЗКОЙ ВВЕРХУ И ВНИЗУ) ==========
+-- ========== ПРИВЕТСТВИЕ ==========
 local function ShowWelcomeMessage()
     local welcomeFrame = Instance.new("Frame")
-    welcomeFrame.Size = UDim2.new(0, 320, 0, 175) -- чуть выше, чтобы влезло
+    welcomeFrame.Size = UDim2.new(0, 320, 0, 175)
     welcomeFrame.Position = UDim2.new(0.5, -160, 0.5, -87)
     welcomeFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     welcomeFrame.BorderSizePixel = 2
@@ -239,7 +239,6 @@ local function ShowWelcomeMessage()
     corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = welcomeFrame
     
-    -- ===== ВЕРХНЯЯ ПОДСКАЗКА (АНГЛИЙСКИЙ) =====
     local topHint = Instance.new("TextLabel")
     topHint.Size = UDim2.new(1, -10, 0, 20)
     topHint.Position = UDim2.new(0, 5, 0, 5)
@@ -250,7 +249,6 @@ local function ShowWelcomeMessage()
     topHint.Font = Enum.Font.Gotham
     topHint.Parent = welcomeFrame
     
-    -- ===== ЗАГОЛОВОК =====
     local titleLabelW = Instance.new("TextLabel")
     titleLabelW.Size = UDim2.new(1, -10, 0, 25)
     titleLabelW.Position = UDim2.new(0, 5, 0, 28)
@@ -261,7 +259,6 @@ local function ShowWelcomeMessage()
     titleLabelW.Font = Enum.Font.GothamBold
     titleLabelW.Parent = welcomeFrame
     
-    -- ===== СОЦСЕТИ =====
     local tiktokLabel = Instance.new("TextLabel")
     tiktokLabel.Size = UDim2.new(1, -10, 0, 22)
     tiktokLabel.Position = UDim2.new(0, 5, 0, 56)
@@ -292,7 +289,6 @@ local function ShowWelcomeMessage()
     discordLabel.Font = Enum.Font.Gotham
     discordLabel.Parent = welcomeFrame
     
-    -- ===== НИЖНЯЯ ПОДСКАЗКА (РУССКИЙ) =====
     local bottomHint = Instance.new("TextLabel")
     bottomHint.Size = UDim2.new(1, -10, 0, 20)
     bottomHint.Position = UDim2.new(0, 5, 0, 130)
@@ -303,7 +299,6 @@ local function ShowWelcomeMessage()
     bottomHint.Font = Enum.Font.Gotham
     bottomHint.Parent = welcomeFrame
     
-    -- ===== ВЕРСИЯ =====
     local versionLabel = Instance.new("TextLabel")
     versionLabel.Size = UDim2.new(1, -10, 0, 18)
     versionLabel.Position = UDim2.new(0, 5, 0, 153)
@@ -417,6 +412,7 @@ langButton.MouseButton1Click:Connect(SwitchLanguage)
 -- ========== ВСЕ КНОПКИ ==========
 local y = 5
 
+-- ===== BLADE BALL =====
 local bladeBtn = CreateButton("Blade Ball", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"))()
@@ -430,6 +426,7 @@ end)
 bladeBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
+-- ===== ОСНОВНЫЕ СКРИПТЫ =====
 local function addButton(text, url)
     local btn = CreateButton(text, function()
         RunScript(text, url)
@@ -457,7 +454,7 @@ addButton("Blade Ball 2", "https://wings.ac/loader")
 addButton("Blade Ball 3", "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub")
 addButton("AX Scripts (INK)", "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua")
 
--- ===== DOORS V2 =====
+-- ===== DOORS V2 (КОПИРОВАНИЕ) =====
 local doorsV2Btn = CreateButton("Doors V2 (Copy)", function()
     local scriptText = [[getgenv().SCRIPT_KEY = "KEYLESS"
 loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()]]
@@ -562,6 +559,14 @@ y = y + 45
 
 addButton("FTAP (WITH KEY!!)", "https://raw.githubusercontent.com/BlizTBr/scripts/main/FTAP.lua")
 addButton("RadiumHub (Pressure)", "https://rawscripts.net/raw/UPDATE-Pressure-God-Mode-Auto-Loot-ESP-Full-Bright-No-Eyefestation-224409")
+
+-- ===== НОВЫЕ СКРИПТЫ =====
+addButton("Steal an egg", "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua")
+addButton("Universal script", "https://raw.githubusercontent.com/fleecelolll/Fleece-s-Utility-Panel/refs/heads/main/Script.lua")
+addButton("Corridor", "https://saga2015.b-cdn.net/corridor.luau")
+addButton("BloxStrike", "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/BloxStrike.lua")
+addButton("RIVALS", "https://raw.githubusercontent.com/imshrak/rivals/refs/heads/main/main")
+addButton("Troll script", "https://mois7.xyz/loader")
 
 -- ========== DESTROY ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
