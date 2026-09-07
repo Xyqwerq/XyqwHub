@@ -47,7 +47,7 @@ local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, -40, 1, 0)
 titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "XyqwGui PRIVATE v3"
+titleLabel.Text = "XyqwHub"
 titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
@@ -294,7 +294,7 @@ addButton("Doors V3 (Cheesy)", "https://raw.githubusercontent.com/doram44/cheesy
 -- ===== INFINITE YIELD =====
 addButton("Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
 
--- ===== WALK ON WALLS (С СООБЩЕНИЕМ) =====
+-- ===== WALK ON WALLS =====
 local walkBtn = CreateButton("Walk on walls", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://rawscripts.net/raw/The-patience-obby-Universal-Walk-on-walls-18129"))()
@@ -316,7 +316,7 @@ end)
 walkBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== AETHERX (С СООБЩЕНИЕМ) =====
+-- ===== AETHERX (ЗАПУСКАЕТСЯ) =====
 local aetherBtn = CreateButton("AetherX (Death Penalty)", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"))()
@@ -338,10 +338,10 @@ end)
 aetherBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== VOIDWARE (БЕЗ СООБЩЕНИЯ) =====
+-- ===== VOIDWARE =====
 addButton("Voidware (INK/99N/Forsaken)", "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua")
 
--- ===== LALOL HUB (С СООБЩЕНИЕМ) =====
+-- ===== LALOL HUB =====
 local lalolBtn = CreateButton("LaLol Hub (B4ckd0or)", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Miygteet/Hacker101/refs/heads/main/LALOL-Backdoor-Secure.lua"))()
@@ -363,7 +363,7 @@ end)
 lalolBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== FTAP (С СООБЩЕНИЕМ) =====
+-- ===== FTAP =====
 local ftapBtn = CreateButton("FTAP", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/4078649e4397f0e2cdaddde241d69bfd67b2b7107917891384735129c85cae18/download"))()
@@ -385,7 +385,7 @@ end)
 ftapBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ========== КНОПКА DESTROY XyqwHub (В САМОМ НИЗУ) ==========
+-- ========== КНОПКА DESTROY XyqwHub ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
     print("[XyqwHub] XyqwHub DESTROYED")
