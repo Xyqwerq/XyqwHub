@@ -11,10 +11,6 @@ local Lang = {
         Loaded = "loaded",
         Error = "error",
         Failed = "failed to load",
-        Notification = {
-            Success = "Success!",
-            Error = "Error!"
-        },
         Messages = {
             WalkOnWalls = "To reset Walk on walls, rejoin the server",
             WalkOnWallsBottom = "Script should be loaded",
@@ -43,10 +39,6 @@ local Lang = {
         Loaded = "загружен",
         Error = "ошибка",
         Failed = "не удалось загрузить",
-        Notification = {
-            Success = "Успешно!",
-            Error = "Ошибка!"
-        },
         Messages = {
             WalkOnWalls = "Чтобы сбросить Walk on walls, перезайдите на сервер",
             WalkOnWallsBottom = "Скрипт должен запуститься",
@@ -382,12 +374,9 @@ local function SwitchLanguage()
     -- Обновляем док-кнопку
     dockButton.Text = T("DockText")
     
-    -- Показываем уведомление о смене языка
-    ShowNotification(
-        T("Messages", "LangChanged"),
-        "",
-        2
-    )
+    -- Показываем уведомление о смене языка (БЕРЁМ ТЕКСТ ИЗ ТЕКУЩЕГО ЯЗЫКА)
+    local langChangedText = T("Messages", "LangChanged")
+    ShowNotification(langChangedText, "", 2)
     
     print("[XyqwHub] Language changed to: " .. Lang[Lang.Current].Name)
 end
