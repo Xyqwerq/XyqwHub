@@ -115,12 +115,10 @@ local function CreateButton(text, callback)
     local hoverColor = Color3.fromRGB(40, 0, 0)
     local clickColor = Color3.fromRGB(80, 0, 0)
 
-    -- Сброс цвета (гарантированный)
     local function resetColor()
         btn.BackgroundColor3 = defaultColor
     end
 
-    -- Наведение
     btn.MouseEnter:Connect(function()
         if not buttonsBlocked then
             btn.BackgroundColor3 = hoverColor
@@ -131,21 +129,18 @@ local function CreateButton(text, callback)
         resetColor()
     end)
 
-    -- Нажатие
     local isRunning = false
 
     local function onClick()
         if buttonsBlocked or isRunning then return end
         isRunning = true
 
-        -- Визуальный фидбек
         btn.BackgroundColor3 = clickColor
 
         if CanRun(text) then
             pcall(callback)
         end
 
-        -- Гарантированный сброс цвета через 0.3 сек
         task.wait(0.3)
         resetColor()
         isRunning = false
@@ -170,10 +165,10 @@ local function RunScript(name, url)
     end
 end
 
--- ========== КНОПКИ ==========
+-- ========== ВСЕ КНОПКИ ==========
 local y = 5
 
--- Blade Ball
+-- ===== BLADE BALL =====
 local bladeBtn = CreateButton("Blade Ball", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"))()
@@ -187,7 +182,7 @@ end)
 bladeBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- Остальные скрипты
+-- ===== ОСНОВНЫЕ СКРИПТЫ =====
 local function addButton(text, url)
     local btn = CreateButton(text, function()
         RunScript(text, url)
@@ -204,12 +199,28 @@ addButton("UwU hub", "https://raw.githubusercontent.com/platinww/UwU/refs/heads/
 addButton("FakeVR", "https://pastefy.app/MvKHpycG/raw")
 addButton("WallHop", "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script")
 
--- ========== КНОПКА ВЫХОДА ==========
-local exitBtn = CreateButton("Exit XyqwHub", function()
+-- ===== НОВЫЕ СКРИПТЫ =====
+addButton("RuzHub (MM2)", "https://raw.githubusercontent.com/pruzgar242-rgb/Update/refs/heads/main/out.lua%20(17).txt")
+addButton("Ringta (INK)", "https://rawscripts.net/raw/Universal-Script-RINGTA-best-script-for-ink-game-206674")
+addButton("RemainsHub V2", "https://rawscripts.net/raw/Universal-Script-RemainsHub-V2-50805")
+addButton("R6 Emotes", "https://rawscripts.net/raw/Universal-Script-r6-emotes-OPEN-SOURCE-69464")
+addButton("Jujutsu Sheninagouns", "https://raw.githubusercontent.com/peeky-co/scripts/refs/heads/main/tbo")
+addButton("Free Cam", "https://rawscripts.net/raw/Universal-Script-Free-cam-script-pc-and-mobile-223089")
+addButton("Doors (Abysall)", "https://rawscripts.net/raw/Universal-Script-fling-gui-99753")
+addButton("Doors V2", "https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download")
+addButton("Doors V3 (Cheesy)", "https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua")
+addButton("Blade Ball 2", "https://wings.ac/loader")
+addButton("Blade Ball 3", "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub")
+addButton("AX Scripts (INK)", "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua")
+
+-- ========== КНОПКА DESTROY XyqwHub (В САМОМ НИЗУ) ==========
+local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
-    print("[XyqwHub] XyqwHub FULLY CLOSED")
+    print("[XyqwHub] XyqwHub DESTROYED")
 end)
-exitBtn.Position = UDim2.new(0, 5, 0, y)
+destroyBtn.Position = UDim2.new(0, 5, 0, y)
+destroyBtn.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+destroyBtn.BorderColor3 = Color3.fromRGB(255, 50, 50)
 y = y + 45
 
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
@@ -287,7 +298,7 @@ closeButton.TouchTap:Connect(closeGUI)
 local function openGUI()
     mainFrame.Visible = true
     dockButton.Visible = false
-    blockButtonsTemporarily() -- Блокируем кнопки на 0.5 сек
+    blockButtonsTemporarily()
 end
 
 dockButton.MouseButton1Click:Connect(openGUI)
