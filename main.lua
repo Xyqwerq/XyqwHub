@@ -2,7 +2,7 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "1.2"
+local VERSION = "1.3"
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -28,7 +28,8 @@ local LANG = {
         LangChanged = "Language changed to English",
         TikTok = "TikTok: xyqwerq.tvink",
         Telegram = "Telegram: t.me/xyqwsquad",
-        Discord = "Discord: xyqwerqyt"
+        Discord = "Discord: xyqwerqyt",
+        LangHint = "Press EN/RU in the top right corner to change language"
     },
     RU = {
         Welcome = "Добро пожаловать в XyqwHub!",
@@ -52,7 +53,8 @@ local LANG = {
         LangChanged = "Язык изменён на Русский",
         TikTok = "TikTok: xyqwerq.tvink",
         Telegram = "Telegram: t.me/xyqwsquad",
-        Discord = "Discord: xyqwerqyt"
+        Discord = "Discord: xyqwerqyt",
+        LangHint = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык"
     }
 }
 
@@ -221,7 +223,7 @@ local function ShowNotification(topText, bottomText, duration)
     notificationFrame:Destroy()
 end
 
--- ========== ПРИВЕТСТВИЕ ==========
+-- ========== ПРИВЕТСТВИЕ + ПОДСКАЗКА ==========
 local function ShowWelcomeMessage()
     local welcomeFrame = Instance.new("Frame")
     welcomeFrame.Size = UDim2.new(0, 320, 0, 155)
@@ -285,8 +287,12 @@ local function ShowWelcomeMessage()
     versionLabel.Font = Enum.Font.Gotham
     versionLabel.Parent = welcomeFrame
     
+    -- Ждём 5 секунд, потом удаляем приветствие и показываем подсказку
     task.wait(5)
     welcomeFrame:Destroy()
+    
+    -- Показываем подсказку как сменить язык
+    ShowNotification(_("LangHint"), "", 3)
 end
 
 -- ========== КНОПКИ ==========
@@ -358,36 +364,31 @@ local function RunScript(name, url)
     end
 end
 
--- ========== СМЕНА ЯЗЫКА (С ЗАЩИТОЙ ОТ ДВОЙНОГО НАЖАТИЯ) ==========
+-- ========== СМЕНА ЯЗЫКА ==========
 local langCooldown = false
 
 local function SwitchLanguage()
     if langCooldown then return end
     langCooldown = true
     
-    -- Переключаем язык
     if currentLang == "EN" then
         currentLang = "RU"
     else
         currentLang = "EN"
     end
     
-    -- Принудительно обновляем все элементы
     titleLabel.Text = _("WindowTitle")
     dockButton.Text = _("DockText")
     langButton.Text = _("LangButton")
     
-    -- Показываем уведомление
     ShowNotification(_("LangChanged"), "", 2)
     
     print("[XyqwHub] Language changed to: " .. currentLang)
     
-    -- Разблокируем через 0.5 секунды
     task.wait(0.5)
     langCooldown = false
 end
 
--- Привязываем ТОЛЬКО ОДНО событие (через MouseButton1Click)
 langButton.MouseButton1Click:Connect(SwitchLanguage)
 
 -- ========== ВСЕ КНОПКИ ==========
