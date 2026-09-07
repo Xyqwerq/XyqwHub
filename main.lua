@@ -110,6 +110,46 @@ local function CopyToClipboard(text)
     end
 end
 
+-- ========== ФУНКЦИЯ ДЛЯ СООБЩЕНИЙ ==========
+local function ShowNotification(topText, bottomText, duration)
+    duration = duration or 3.5
+    
+    local notificationFrame = Instance.new("Frame")
+    notificationFrame.Size = UDim2.new(0, 320, 0, 80)
+    notificationFrame.Position = UDim2.new(0.5, -160, 0.5, -40)
+    notificationFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    notificationFrame.BorderSizePixel = 2
+    notificationFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    notificationFrame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = notificationFrame
+    
+    local topLabel = Instance.new("TextLabel")
+    topLabel.Size = UDim2.new(1, -10, 0, 30)
+    topLabel.Position = UDim2.new(0, 5, 0, 5)
+    topLabel.BackgroundTransparency = 1
+    topLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    topLabel.Text = topText
+    topLabel.TextScaled = true
+    topLabel.Font = Enum.Font.GothamBold
+    topLabel.Parent = notificationFrame
+    
+    local bottomLabel = Instance.new("TextLabel")
+    bottomLabel.Size = UDim2.new(1, -10, 0, 30)
+    bottomLabel.Position = UDim2.new(0, 5, 0, 40)
+    bottomLabel.BackgroundTransparency = 1
+    bottomLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    bottomLabel.Text = bottomText
+    bottomLabel.TextScaled = true
+    bottomLabel.Font = Enum.Font.Gotham
+    bottomLabel.Parent = notificationFrame
+    
+    task.wait(duration)
+    notificationFrame:Destroy()
+end
+
 -- ========== ФУНКЦИЯ КНОПКИ ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
@@ -233,50 +273,48 @@ loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54
     
     local copied = CopyToClipboard(scriptText)
     
-    local notificationFrame = Instance.new("Frame")
-    notificationFrame.Size = UDim2.new(0, 320, 0, 80)
-    notificationFrame.Position = UDim2.new(0.5, -160, 0.5, -40)
-    notificationFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    notificationFrame.BorderSizePixel = 2
-    notificationFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
-    notificationFrame.Parent = screenGui
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = notificationFrame
-    
-    local topLabel = Instance.new("TextLabel")
-    topLabel.Size = UDim2.new(1, -10, 0, 30)
-    topLabel.Position = UDim2.new(0, 5, 0, 5)
-    topLabel.BackgroundTransparency = 1
-    topLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-    topLabel.Text = "Sorry, Doors V2 cannot be run using XyqwHub"
-    topLabel.TextScaled = true
-    topLabel.Font = Enum.Font.GothamBold
-    topLabel.Parent = notificationFrame
-    
-    local bottomLabel = Instance.new("TextLabel")
-    bottomLabel.Size = UDim2.new(1, -10, 0, 30)
-    bottomLabel.Position = UDim2.new(0, 5, 0, 40)
-    bottomLabel.BackgroundTransparency = 1
-    bottomLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    bottomLabel.Text = "Script copied to clipboard. Paste it into your executor"
-    bottomLabel.TextScaled = true
-    bottomLabel.Font = Enum.Font.Gotham
-    bottomLabel.Parent = notificationFrame
-    
-    if not copied then
-        bottomLabel.Text = "Failed to copy! Please copy manually"
+    if copied then
+        ShowNotification(
+            "Sorry, Doors V2 cannot be run using XyqwHub",
+            "Script copied to clipboard. Paste it into your executor"
+        )
+    else
+        ShowNotification(
+            "Sorry, Doors V2 cannot be run using XyqwHub",
+            "Failed to copy! Please copy manually"
+        )
     end
-    
-    task.wait(3.5)
-    notificationFrame:Destroy()
 end)
 doorsV2Btn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
 -- ===== DOORS V3 (Cheesy) =====
 addButton("Doors V3 (Cheesy)", "https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua")
+
+-- ===== INFINITE YIELD =====
+addButton("Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
+
+-- ===== WALK ON WALLS (С СООБЩЕНИЕМ) =====
+local walkBtn = CreateButton("Walk on walls", function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/The-patience-obby-Universal-Walk-on-walls-18129"))()
+    end)
+    if success then
+        print("[XyqwHub] Walk on walls - LOADED!")
+        ShowNotification(
+            "To reset Walk on walls, rejoin the server",
+            "Script should be loaded"
+        )
+    else
+        print("[XyqwHub] Walk on walls - ERROR: " .. tostring(err))
+        ShowNotification(
+            "To reset Walk on walls, rejoin the server",
+            "Failed to load: " .. tostring(err)
+        )
+    end
+end)
+walkBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
 
 -- ========== КНОПКА DESTROY XyqwHub (В САМОМ НИЗУ) ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
