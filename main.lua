@@ -2,7 +2,7 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "1.3"
+local VERSION = "1.5"
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -29,7 +29,8 @@ local LANG = {
         TikTok = "TikTok: xyqwerq.tvink",
         Telegram = "Telegram: t.me/xyqwsquad",
         Discord = "Discord: xyqwerqyt",
-        LangHint = "Press EN/RU in the top right corner to change language"
+        LangHintTop = "Press EN/RU in the top right corner to change language",
+        LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык"
     },
     RU = {
         Welcome = "Добро пожаловать в XyqwHub!",
@@ -54,7 +55,8 @@ local LANG = {
         TikTok = "TikTok: xyqwerq.tvink",
         Telegram = "Telegram: t.me/xyqwsquad",
         Discord = "Discord: xyqwerqyt",
-        LangHint = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык"
+        LangHintTop = "Press EN/RU in the top right corner to change language",
+        LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык"
     }
 }
 
@@ -223,11 +225,11 @@ local function ShowNotification(topText, bottomText, duration)
     notificationFrame:Destroy()
 end
 
--- ========== ПРИВЕТСТВИЕ + ПОДСКАЗКА ==========
+-- ========== ПРИВЕТСТВИЕ (С ПОДСКАЗКОЙ ВВЕРХУ И ВНИЗУ) ==========
 local function ShowWelcomeMessage()
     local welcomeFrame = Instance.new("Frame")
-    welcomeFrame.Size = UDim2.new(0, 320, 0, 155)
-    welcomeFrame.Position = UDim2.new(0.5, -160, 0.5, -77)
+    welcomeFrame.Size = UDim2.new(0, 320, 0, 175) -- чуть выше, чтобы влезло
+    welcomeFrame.Position = UDim2.new(0.5, -160, 0.5, -87)
     welcomeFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     welcomeFrame.BorderSizePixel = 2
     welcomeFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
@@ -237,9 +239,21 @@ local function ShowWelcomeMessage()
     corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = welcomeFrame
     
+    -- ===== ВЕРХНЯЯ ПОДСКАЗКА (АНГЛИЙСКИЙ) =====
+    local topHint = Instance.new("TextLabel")
+    topHint.Size = UDim2.new(1, -10, 0, 20)
+    topHint.Position = UDim2.new(0, 5, 0, 5)
+    topHint.BackgroundTransparency = 1
+    topHint.TextColor3 = Color3.fromRGB(255, 200, 100)
+    topHint.Text = _("LangHintTop")
+    topHint.TextScaled = true
+    topHint.Font = Enum.Font.Gotham
+    topHint.Parent = welcomeFrame
+    
+    -- ===== ЗАГОЛОВОК =====
     local titleLabelW = Instance.new("TextLabel")
-    titleLabelW.Size = UDim2.new(1, -10, 0, 30)
-    titleLabelW.Position = UDim2.new(0, 5, 0, 5)
+    titleLabelW.Size = UDim2.new(1, -10, 0, 25)
+    titleLabelW.Position = UDim2.new(0, 5, 0, 28)
     titleLabelW.BackgroundTransparency = 1
     titleLabelW.TextColor3 = Color3.fromRGB(255, 100, 100)
     titleLabelW.Text = _("Welcome")
@@ -247,9 +261,10 @@ local function ShowWelcomeMessage()
     titleLabelW.Font = Enum.Font.GothamBold
     titleLabelW.Parent = welcomeFrame
     
+    -- ===== СОЦСЕТИ =====
     local tiktokLabel = Instance.new("TextLabel")
-    tiktokLabel.Size = UDim2.new(1, -10, 0, 25)
-    tiktokLabel.Position = UDim2.new(0, 5, 0, 40)
+    tiktokLabel.Size = UDim2.new(1, -10, 0, 22)
+    tiktokLabel.Position = UDim2.new(0, 5, 0, 56)
     tiktokLabel.BackgroundTransparency = 1
     tiktokLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     tiktokLabel.Text = _("TikTok")
@@ -258,8 +273,8 @@ local function ShowWelcomeMessage()
     tiktokLabel.Parent = welcomeFrame
     
     local telegramLabel = Instance.new("TextLabel")
-    telegramLabel.Size = UDim2.new(1, -10, 0, 25)
-    telegramLabel.Position = UDim2.new(0, 5, 0, 70)
+    telegramLabel.Size = UDim2.new(1, -10, 0, 22)
+    telegramLabel.Position = UDim2.new(0, 5, 0, 80)
     telegramLabel.BackgroundTransparency = 1
     telegramLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     telegramLabel.Text = _("Telegram")
@@ -268,8 +283,8 @@ local function ShowWelcomeMessage()
     telegramLabel.Parent = welcomeFrame
     
     local discordLabel = Instance.new("TextLabel")
-    discordLabel.Size = UDim2.new(1, -10, 0, 25)
-    discordLabel.Position = UDim2.new(0, 5, 0, 100)
+    discordLabel.Size = UDim2.new(1, -10, 0, 22)
+    discordLabel.Position = UDim2.new(0, 5, 0, 104)
     discordLabel.BackgroundTransparency = 1
     discordLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     discordLabel.Text = _("Discord")
@@ -277,9 +292,21 @@ local function ShowWelcomeMessage()
     discordLabel.Font = Enum.Font.Gotham
     discordLabel.Parent = welcomeFrame
     
+    -- ===== НИЖНЯЯ ПОДСКАЗКА (РУССКИЙ) =====
+    local bottomHint = Instance.new("TextLabel")
+    bottomHint.Size = UDim2.new(1, -10, 0, 20)
+    bottomHint.Position = UDim2.new(0, 5, 0, 130)
+    bottomHint.BackgroundTransparency = 1
+    bottomHint.TextColor3 = Color3.fromRGB(255, 200, 100)
+    bottomHint.Text = _("LangHintBottom")
+    bottomHint.TextScaled = true
+    bottomHint.Font = Enum.Font.Gotham
+    bottomHint.Parent = welcomeFrame
+    
+    -- ===== ВЕРСИЯ =====
     local versionLabel = Instance.new("TextLabel")
-    versionLabel.Size = UDim2.new(1, -10, 0, 20)
-    versionLabel.Position = UDim2.new(0, 5, 0, 130)
+    versionLabel.Size = UDim2.new(1, -10, 0, 18)
+    versionLabel.Position = UDim2.new(0, 5, 0, 153)
     versionLabel.BackgroundTransparency = 1
     versionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
     versionLabel.Text = "Version: " .. VERSION
@@ -287,12 +314,8 @@ local function ShowWelcomeMessage()
     versionLabel.Font = Enum.Font.Gotham
     versionLabel.Parent = welcomeFrame
     
-    -- Ждём 5 секунд, потом удаляем приветствие и показываем подсказку
     task.wait(5)
     welcomeFrame:Destroy()
-    
-    -- Показываем подсказку как сменить язык
-    ShowNotification(_("LangHint"), "", 3)
 end
 
 -- ========== КНОПКИ ==========
@@ -434,7 +457,7 @@ addButton("Blade Ball 2", "https://wings.ac/loader")
 addButton("Blade Ball 3", "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub")
 addButton("AX Scripts (INK)", "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua")
 
--- ===== DOORS V2 (КОПИРОВАНИЕ) =====
+-- ===== DOORS V2 =====
 local doorsV2Btn = CreateButton("Doors V2 (Copy)", function()
     local scriptText = [[getgenv().SCRIPT_KEY = "KEYLESS"
 loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()]]
