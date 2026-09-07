@@ -28,7 +28,13 @@ local Lang = {
             Beta = "Script in beta",
             BetaBottom = "Script should be loaded",
             Destroy = "XyqwHub DESTROYED",
-            LangChanged = "Language changed to English"
+            LangChanged = "Language changed to English",
+            Welcome = "Welcome to XyqwHub!"
+        },
+        Socials = {
+            TikTok = "TikTok: xyqwerq.tvink",
+            Telegram = "Telegram: t.me/xyqwsquad",
+            Discord = "Discord: xyqwerqyt"
         }
     },
     Russian = {
@@ -55,7 +61,13 @@ local Lang = {
             Beta = "Скрипт в бете",
             BetaBottom = "Скрипт должен запуститься",
             Destroy = "XyqwHub УНИЧТОЖЕН",
-            LangChanged = "Язык изменён на Русский"
+            LangChanged = "Язык изменён на Русский",
+            Welcome = "Добро пожаловать в XyqwHub!"
+        },
+        Socials = {
+            TikTok = "TikTok: xyqwerq.tvink",
+            Telegram = "Telegram: t.me/xyqwsquad",
+            Discord = "Discord: xyqwerqyt"
         }
     }
 }
@@ -227,6 +239,68 @@ local function ShowNotification(topText, bottomText, duration)
     
     task.wait(duration)
     notificationFrame:Destroy()
+end
+
+-- ========== ФУНКЦИЯ ДЛЯ ПРИВЕТСТВЕННОГО СООБЩЕНИЯ ==========
+local function ShowWelcomeMessage()
+    local welcomeFrame = Instance.new("Frame")
+    welcomeFrame.Size = UDim2.new(0, 320, 0, 130)
+    welcomeFrame.Position = UDim2.new(0.5, -160, 0.5, -65)
+    welcomeFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    welcomeFrame.BorderSizePixel = 2
+    welcomeFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    welcomeFrame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = welcomeFrame
+    
+    -- Заголовок (красный)
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -10, 0, 30)
+    titleLabel.Position = UDim2.new(0, 5, 0, 5)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    titleLabel.Text = T("Messages", "Welcome")
+    titleLabel.TextScaled = true
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.Parent = welcomeFrame
+    
+    -- TikTok (белый)
+    local tiktokLabel = Instance.new("TextLabel")
+    tiktokLabel.Size = UDim2.new(1, -10, 0, 25)
+    tiktokLabel.Position = UDim2.new(0, 5, 0, 40)
+    tiktokLabel.BackgroundTransparency = 1
+    tiktokLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tiktokLabel.Text = T("Socials", "TikTok")
+    tiktokLabel.TextScaled = true
+    tiktokLabel.Font = Enum.Font.Gotham
+    tiktokLabel.Parent = welcomeFrame
+    
+    -- Telegram (белый)
+    local telegramLabel = Instance.new("TextLabel")
+    telegramLabel.Size = UDim2.new(1, -10, 0, 25)
+    telegramLabel.Position = UDim2.new(0, 5, 0, 70)
+    telegramLabel.BackgroundTransparency = 1
+    telegramLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    telegramLabel.Text = T("Socials", "Telegram")
+    telegramLabel.TextScaled = true
+    telegramLabel.Font = Enum.Font.Gotham
+    telegramLabel.Parent = welcomeFrame
+    
+    -- Discord (белый)
+    local discordLabel = Instance.new("TextLabel")
+    discordLabel.Size = UDim2.new(1, -10, 0, 25)
+    discordLabel.Position = UDim2.new(0, 5, 0, 100)
+    discordLabel.BackgroundTransparency = 1
+    discordLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    discordLabel.Text = T("Socials", "Discord")
+    discordLabel.TextScaled = true
+    discordLabel.Font = Enum.Font.Gotham
+    discordLabel.Parent = welcomeFrame
+    
+    task.wait(5)
+    welcomeFrame:Destroy()
 end
 
 -- ========== ФУНКЦИЯ КНОПКИ ==========
@@ -611,6 +685,10 @@ end
 
 dockButton.MouseButton1Click:Connect(openGUI)
 dockButton.TouchTap:Connect(openGUI)
+
+-- ========== ПОКАЗЫВАЕМ ПРИВЕТСТВЕННОЕ СООБЩЕНИЕ ==========
+task.wait(0.5)
+ShowWelcomeMessage()
 
 -- ========== ФИНАЛ ==========
 print("[XyqwHub] XyqwHub loaded!")
