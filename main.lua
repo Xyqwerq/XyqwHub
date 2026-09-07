@@ -2,78 +2,69 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "1"
+local VERSION = "1.1"
 
--- ========== НАСТРОЙКИ ЯЗЫКА ==========
-local Lang = {
-    Current = "English",
-    English = {
-        Name = "English",
+-- ========== ТЕКСТЫ ДЛЯ ЯЗЫКОВ ==========
+local LANG = {
+    EN = {
+        Welcome = "Welcome to XyqwHub!",
         WindowTitle = "XyqwHub",
         DockText = "XyqwHub",
+        LangButton = "EN",
         Loaded = "loaded",
         Error = "error",
         Failed = "failed to load",
-        Messages = {
-            WalkOnWalls = "To reset Walk on walls, rejoin the server",
-            WalkOnWallsBottom = "Script should be loaded",
-            AetherX = "This script is outdated. Some features may not work",
-            AetherXBottom = "Script should be loaded",
-            BC9 = "This script is weak, but it can bring you fun :)",
-            BC9Bottom = "Script loaded",
-            DoorsV2 = "Sorry, Doors V2 cannot be run using XyqwHub",
-            DoorsV2Bottom = "Script copied to clipboard. Paste it into your executor",
-            Beta = "Script in beta",
-            BetaBottom = "Script should be loaded",
-            Destroy = "XyqwHub DESTROYED",
-            LangChanged = "Language changed to English",
-            Welcome = "Welcome to XyqwHub!"
-        },
-        Socials = {
-            TikTok = "TikTok: xyqwerq.tvink",
-            Telegram = "Telegram: t.me/xyqwsquad",
-            Discord = "Discord: xyqwerqyt"
-        }
+        WalkOnWalls = "To reset Walk on walls, rejoin the server",
+        WalkOnWallsBottom = "Script should be loaded",
+        AetherX = "This script is outdated. Some features may not work",
+        AetherXBottom = "Script should be loaded",
+        BC9 = "This script is weak, but it can bring you fun :)",
+        BC9Bottom = "Script loaded",
+        DoorsV2 = "Sorry, Doors V2 cannot be run using XyqwHub",
+        DoorsV2Bottom = "Script copied to clipboard. Paste it into your executor",
+        Beta = "Script in beta",
+        BetaBottom = "Script should be loaded",
+        Destroy = "XyqwHub DESTROYED",
+        LangChanged = "Language changed to English",
+        TikTok = "TikTok: xyqwerq.tvink",
+        Telegram = "Telegram: t.me/xyqwsquad",
+        Discord = "Discord: xyqwerqyt"
     },
-    Russian = {
-        Name = "Русский",
+    RU = {
+        Welcome = "Добро пожаловать в XyqwHub!",
         WindowTitle = "XyqwHub",
         DockText = "XyqwHub",
+        LangButton = "RU",
         Loaded = "загружен",
         Error = "ошибка",
         Failed = "не удалось загрузить",
-        Messages = {
-            WalkOnWalls = "Чтобы сбросить Walk on walls, перезайдите на сервер",
-            WalkOnWallsBottom = "Скрипт должен запуститься",
-            AetherX = "Этот скрипт устарел. Некоторые функции могут не работать",
-            AetherXBottom = "Скрипт должен запуститься",
-            BC9 = "Этот скрипт слабый, но он может принести вам веселье :)",
-            BC9Bottom = "Скрипт загружен",
-            DoorsV2 = "Извините, Doors V2 не может запуститься с помощью XyqwHub",
-            DoorsV2Bottom = "Скрипт скопирован в буфер обмена. Вставьте его в свой executor",
-            Beta = "Скрипт в бете",
-            BetaBottom = "Скрипт должен запуститься",
-            Destroy = "XyqwHub УНИЧТОЖЕН",
-            LangChanged = "Язык изменён на Русский",
-            Welcome = "Добро пожаловать в XyqwHub!"
-        },
-        Socials = {
-            TikTok = "TikTok: xyqwerq.tvink",
-            Telegram = "Telegram: t.me/xyqwsquad",
-            Discord = "Discord: xyqwerqyt"
-        }
+        WalkOnWalls = "Чтобы сбросить Walk on walls, перезайдите на сервер",
+        WalkOnWallsBottom = "Скрипт должен запуститься",
+        AetherX = "Этот скрипт устарел. Некоторые функции могут не работать",
+        AetherXBottom = "Скрипт должен запуститься",
+        BC9 = "Этот скрипт слабый, но он может принести вам веселье :)",
+        BC9Bottom = "Скрипт загружен",
+        DoorsV2 = "Извините, Doors V2 не может запуститься с помощью XyqwHub",
+        DoorsV2Bottom = "Скрипт скопирован в буфер обмена. Вставьте его в свой executor",
+        Beta = "Скрипт в бете",
+        BetaBottom = "Скрипт должен запуститься",
+        Destroy = "XyqwHub УНИЧТОЖЕН",
+        LangChanged = "Язык изменён на Русский",
+        TikTok = "TikTok: xyqwerq.tvink",
+        Telegram = "Telegram: t.me/xyqwsquad",
+        Discord = "Discord: xyqwerqyt"
     }
 }
 
--- ========== ФУНКЦИЯ ПОЛУЧЕНИЯ ТЕКСТА ==========
-local function GetText(key, subkey)
-    if subkey then
-        return Lang[Lang.Current][key][subkey]
-    end
-    return Lang[Lang.Current][key]
+-- ========== ТЕКУЩИЙ ЯЗЫК ==========
+local currentLang = "EN"
+
+-- ========== ФУНКЦИЯ ДЛЯ ТЕКСТА ==========
+local function _(key)
+    return LANG[currentLang][key]
 end
 
--- ========== СОЗДАЁМ GUI ==========
+-- ========== GUI ==========
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "XyqwHubGui"
 screenGui.Parent = game:GetService("CoreGui")
@@ -85,7 +76,7 @@ dockButton.Size = UDim2.new(0, 90, 0, 30)
 dockButton.Position = UDim2.new(0.5, -45, 0.05, 10)
 dockButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 dockButton.TextColor3 = Color3.fromRGB(255, 0, 0)
-dockButton.Text = GetText("DockText")
+dockButton.Text = _("DockText")
 dockButton.TextScaled = true
 dockButton.Font = Enum.Font.GothamBold
 dockButton.BorderSizePixel = 2
@@ -108,7 +99,6 @@ mainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
--- Заголовок
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
@@ -119,13 +109,12 @@ local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, -70, 1, 0)
 titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = GetText("WindowTitle")
+titleLabel.Text = _("WindowTitle")
 titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Кнопка смены языка
 local langButton = Instance.new("TextButton")
 langButton.Size = UDim2.new(0, 35, 1, 0)
 langButton.Position = UDim2.new(1, -65, 0, 0)
@@ -137,7 +126,6 @@ langButton.Font = Enum.Font.GothamBold
 langButton.Parent = titleBar
 langButton.AutoButtonColor = false
 
--- Крестик
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 30, 1, 0)
 closeButton.Position = UDim2.new(1, -30, 0, 0)
@@ -159,7 +147,7 @@ scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
 scrollFrame.Parent = mainFrame
 
--- ========== БЛОКИРОВКА КНОПОК ПРИ ОТКРЫТИИ ==========
+-- ========== БЛОКИРОВКА ==========
 local buttonsBlocked = false
 
 local function blockButtonsTemporarily()
@@ -180,7 +168,7 @@ local function CanRun(name)
     return true
 end
 
--- ========== ФУНКЦИЯ ДЛЯ КОПИРОВАНИЯ В БУФЕР ==========
+-- ========== КОПИРОВАНИЕ ==========
 local function CopyToClipboard(text)
     local success, err = pcall(function()
         setclipboard(text)
@@ -194,7 +182,7 @@ local function CopyToClipboard(text)
     end
 end
 
--- ========== ФУНКЦИЯ ДЛЯ СООБЩЕНИЙ ==========
+-- ========== УВЕДОМЛЕНИЯ ==========
 local function ShowNotification(topText, bottomText, duration)
     duration = duration or 3.5
     
@@ -234,7 +222,7 @@ local function ShowNotification(topText, bottomText, duration)
     notificationFrame:Destroy()
 end
 
--- ========== ФУНКЦИЯ ДЛЯ ПРИВЕТСТВЕННОГО СООБЩЕНИЯ ==========
+-- ========== ПРИВЕТСТВИЕ ==========
 local function ShowWelcomeMessage()
     local welcomeFrame = Instance.new("Frame")
     welcomeFrame.Size = UDim2.new(0, 320, 0, 155)
@@ -253,7 +241,7 @@ local function ShowWelcomeMessage()
     titleLabelW.Position = UDim2.new(0, 5, 0, 5)
     titleLabelW.BackgroundTransparency = 1
     titleLabelW.TextColor3 = Color3.fromRGB(255, 100, 100)
-    titleLabelW.Text = GetText("Messages", "Welcome")
+    titleLabelW.Text = _("Welcome")
     titleLabelW.TextScaled = true
     titleLabelW.Font = Enum.Font.GothamBold
     titleLabelW.Parent = welcomeFrame
@@ -263,7 +251,7 @@ local function ShowWelcomeMessage()
     tiktokLabel.Position = UDim2.new(0, 5, 0, 40)
     tiktokLabel.BackgroundTransparency = 1
     tiktokLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tiktokLabel.Text = GetText("Socials", "TikTok")
+    tiktokLabel.Text = _("TikTok")
     tiktokLabel.TextScaled = true
     tiktokLabel.Font = Enum.Font.Gotham
     tiktokLabel.Parent = welcomeFrame
@@ -273,7 +261,7 @@ local function ShowWelcomeMessage()
     telegramLabel.Position = UDim2.new(0, 5, 0, 70)
     telegramLabel.BackgroundTransparency = 1
     telegramLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    telegramLabel.Text = GetText("Socials", "Telegram")
+    telegramLabel.Text = _("Telegram")
     telegramLabel.TextScaled = true
     telegramLabel.Font = Enum.Font.Gotham
     telegramLabel.Parent = welcomeFrame
@@ -283,12 +271,11 @@ local function ShowWelcomeMessage()
     discordLabel.Position = UDim2.new(0, 5, 0, 100)
     discordLabel.BackgroundTransparency = 1
     discordLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    discordLabel.Text = GetText("Socials", "Discord")
+    discordLabel.Text = _("Discord")
     discordLabel.TextScaled = true
     discordLabel.Font = Enum.Font.Gotham
     discordLabel.Parent = welcomeFrame
     
-    -- Версия
     local versionLabel = Instance.new("TextLabel")
     versionLabel.Size = UDim2.new(1, -10, 0, 20)
     versionLabel.Position = UDim2.new(0, 5, 0, 130)
@@ -303,7 +290,7 @@ local function ShowWelcomeMessage()
     welcomeFrame:Destroy()
 end
 
--- ========== ФУНКЦИЯ КНОПКИ ==========
+-- ========== КНОПКИ ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 40)
@@ -359,65 +346,59 @@ local function CreateButton(text, callback)
     return btn
 end
 
--- ========== ФУНКЦИЯ ЗАПУСКА ==========
+-- ========== ЗАПУСК СКРИПТА ==========
 local function RunScript(name, url)
     print("[XyqwHub] " .. name .. " - STARTING...")
     local success, err = pcall(function()
         loadstring(game:HttpGet(url))()
     end)
     if success then
-        print("[XyqwHub] " .. name .. " - " .. GetText("Loaded") .. "!")
+        print("[XyqwHub] " .. name .. " - " .. _("Loaded") .. "!")
     else
-        print("[XyqwHub] " .. name .. " - " .. GetText("Error") .. ": " .. tostring(err))
+        print("[XyqwHub] " .. name .. " - " .. _("Error") .. ": " .. tostring(err))
     end
 end
 
--- ========== ФУНКЦИЯ СМЕНЫ ЯЗЫКА (ЖЁСТКО) ==========
+-- ========== СМЕНА ЯЗЫКА (НОВАЯ СИСТЕМА) ==========
 local function SwitchLanguage()
-    -- Меняем язык
-    if Lang.Current == "English" then
-        Lang.Current = "Russian"
-        langButton.Text = "RU"
+    -- Переключаем язык
+    if currentLang == "EN" then
+        currentLang = "RU"
     else
-        Lang.Current = "English"
-        langButton.Text = "EN"
+        currentLang = "EN"
     end
     
-    -- Обновляем заголовок окна
-    titleLabel.Text = GetText("WindowTitle")
+    -- ПРИНУДИТЕЛЬНО обновляем все элементы
+    titleLabel.Text = _("WindowTitle")
+    dockButton.Text = _("DockText")
+    langButton.Text = _("LangButton")
     
-    -- Обновляем док-кнопку
-    dockButton.Text = GetText("DockText")
+    -- Показываем уведомление о смене языка
+    ShowNotification(_("LangChanged"), "", 2)
     
-    -- Показываем уведомление (берём текст напрямую)
-    local langChangedText = GetText("Messages", "LangChanged")
-    ShowNotification(langChangedText, "", 2)
-    
-    print("[XyqwHub] Language changed to: " .. Lang[Lang.Current].Name)
+    print("[XyqwHub] Language changed to: " .. currentLang)
 end
 
--- Привязываем смену языка
+-- Привязываем кнопку
 langButton.MouseButton1Click:Connect(SwitchLanguage)
 langButton.TouchTap:Connect(SwitchLanguage)
 
--- ========== ВСЕ КНОПКИ ==========
+-- ========== ВСЕ КНОПКИ СО СКРИПТАМИ ==========
 local y = 5
 
--- ===== BLADE BALL =====
 local bladeBtn = CreateButton("Blade Ball", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"))()
     end)
     if success then
-        print("[XyqwHub] Blade Ball - " .. GetText("Loaded") .. "!")
+        print("[XyqwHub] Blade Ball - " .. _("Loaded") .. "!")
     else
-        print("[XyqwHub] Blade Ball - " .. GetText("Error") .. ": " .. tostring(err))
+        print("[XyqwHub] Blade Ball - " .. _("Error") .. ": " .. tostring(err))
     end
 end)
 bladeBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== ОСНОВНЫЕ СКРИПТЫ =====
 local function addButton(text, url)
     local btn = CreateButton(text, function()
         RunScript(text, url)
@@ -433,8 +414,6 @@ addButton("Universal FE", "https://rawscripts.net/raw/Universal-Script-Universal
 addButton("UwU hub", "https://raw.githubusercontent.com/platinww/UwU/refs/heads/main/INK-GAME")
 addButton("FakeVR", "https://pastefy.app/MvKHpycG/raw")
 addButton("WallHop", "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script")
-
--- ===== НОВЫЕ СКРИПТЫ =====
 addButton("RuzHub (MM2)", "https://raw.githubusercontent.com/pruzgar242-rgb/Update/refs/heads/main/out.lua%20(17).txt")
 addButton("Ringta (INK)", "https://rawscripts.net/raw/Universal-Script-RINGTA-best-script-for-ink-game-206674")
 addButton("RemainsHub V2", "https://rawscripts.net/raw/Universal-Script-RemainsHub-V2-50805")
@@ -447,7 +426,7 @@ addButton("Blade Ball 2", "https://wings.ac/loader")
 addButton("Blade Ball 3", "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub")
 addButton("AX Scripts (INK)", "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua")
 
--- ===== DOORS V2 (КОПИРОВАНИЕ В БУФЕР) =====
+-- ===== DOORS V2 (КОПИРОВАНИЕ) =====
 local doorsV2Btn = CreateButton("Doors V2 (Copy)", function()
     local scriptText = [[getgenv().SCRIPT_KEY = "KEYLESS"
 loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()]]
@@ -455,24 +434,15 @@ loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54
     local copied = CopyToClipboard(scriptText)
     
     if copied then
-        ShowNotification(
-            GetText("Messages", "DoorsV2"),
-            GetText("Messages", "DoorsV2Bottom")
-        )
+        ShowNotification(_("DoorsV2"), _("DoorsV2Bottom"))
     else
-        ShowNotification(
-            GetText("Messages", "DoorsV2"),
-            "Failed to copy! Please copy manually"
-        )
+        ShowNotification(_("DoorsV2"), "Failed to copy! Please copy manually")
     end
 end)
 doorsV2Btn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== DOORS V3 (Cheesy) =====
 addButton("Doors V3 (Cheesy)", "https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua")
-
--- ===== INFINITE YIELD =====
 addButton("Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
 
 -- ===== WALK ON WALLS =====
@@ -481,17 +451,11 @@ local walkBtn = CreateButton("Walk on walls", function()
         loadstring(game:HttpGet("https://rawscripts.net/raw/The-patience-obby-Universal-Walk-on-walls-18129"))()
     end)
     if success then
-        print("[XyqwHub] Walk on walls - " .. GetText("Loaded") .. "!")
-        ShowNotification(
-            GetText("Messages", "WalkOnWalls"),
-            GetText("Messages", "WalkOnWallsBottom")
-        )
+        print("[XyqwHub] Walk on walls - " .. _("Loaded") .. "!")
+        ShowNotification(_("WalkOnWalls"), _("WalkOnWallsBottom"))
     else
-        print("[XyqwHub] Walk on walls - " .. GetText("Error") .. ": " .. tostring(err))
-        ShowNotification(
-            GetText("Messages", "WalkOnWalls"),
-            GetText("Failed") .. ": " .. tostring(err)
-        )
+        print("[XyqwHub] Walk on walls - " .. _("Error") .. ": " .. tostring(err))
+        ShowNotification(_("WalkOnWalls"), _("Failed") .. ": " .. tostring(err))
     end
 end)
 walkBtn.Position = UDim2.new(0, 5, 0, y)
@@ -503,23 +467,16 @@ local aetherBtn = CreateButton("AetherX (Death Penalty)", function()
         loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"))()
     end)
     if success then
-        print("[XyqwHub] AetherX - " .. GetText("Loaded") .. "!")
-        ShowNotification(
-            GetText("Messages", "AetherX"),
-            GetText("Messages", "AetherXBottom")
-        )
+        print("[XyqwHub] AetherX - " .. _("Loaded") .. "!")
+        ShowNotification(_("AetherX"), _("AetherXBottom"))
     else
-        print("[XyqwHub] AetherX - " .. GetText("Error") .. ": " .. tostring(err))
-        ShowNotification(
-            GetText("Messages", "AetherX"),
-            GetText("Failed") .. ": " .. tostring(err)
-        )
+        print("[XyqwHub] AetherX - " .. _("Error") .. ": " .. tostring(err))
+        ShowNotification(_("AetherX"), _("Failed") .. ": " .. tostring(err))
     end
 end)
 aetherBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== VOIDWARE =====
 addButton("Voidware (INK/99N/Forsaken)", "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua")
 
 -- ===== LALOL HUB =====
@@ -528,17 +485,11 @@ local lalolBtn = CreateButton("LaLol Hub (B4ckd0or)", function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Miygteet/Hacker101/refs/heads/main/LALOL-Backdoor-Secure.lua"))()
     end)
     if success then
-        print("[XyqwHub] LaLol Hub - " .. GetText("Loaded") .. "!")
-        ShowNotification(
-            GetText("Messages", "Beta"),
-            GetText("Messages", "BetaBottom")
-        )
+        print("[XyqwHub] LaLol Hub - " .. _("Loaded") .. "!")
+        ShowNotification(_("Beta"), _("BetaBottom"))
     else
-        print("[XyqwHub] LaLol Hub - " .. GetText("Error") .. ": " .. tostring(err))
-        ShowNotification(
-            GetText("Messages", "Beta"),
-            GetText("Failed") .. ": " .. tostring(err)
-        )
+        print("[XyqwHub] LaLol Hub - " .. _("Error") .. ": " .. tostring(err))
+        ShowNotification(_("Beta"), _("Failed") .. ": " .. tostring(err))
     end
 end)
 lalolBtn.Position = UDim2.new(0, 5, 0, y)
@@ -550,42 +501,29 @@ local ftapBtn = CreateButton("FTAP", function()
         loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/4078649e4397f0e2cdaddde241d69bfd67b2b7107917891384735129c85cae18/download"))()
     end)
     if success then
-        print("[XyqwHub] FTAP - " .. GetText("Loaded") .. "!")
-        ShowNotification(
-            GetText("Messages", "Beta"),
-            GetText("Messages", "BetaBottom")
-        )
+        print("[XyqwHub] FTAP - " .. _("Loaded") .. "!")
+        ShowNotification(_("Beta"), _("BetaBottom"))
     else
-        print("[XyqwHub] FTAP - " .. GetText("Error") .. ": " .. tostring(err))
-        ShowNotification(
-            GetText("Messages", "Beta"),
-            GetText("Failed") .. ": " .. tostring(err)
-        )
+        print("[XyqwHub] FTAP - " .. _("Error") .. ": " .. tostring(err))
+        ShowNotification(_("Beta"), _("Failed") .. ": " .. tostring(err))
     end
 end)
 ftapBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== NEW SCRIPTS =====
 addButton("MinhNat Hub (TSB)", "https://rawscripts.net/raw/Universal-Script-MinhNhat-Tsb-62161")
 
--- BC9 (UTG)
+-- ===== BC9 (UTG) =====
 local bc9Btn = CreateButton("BC9 (UTG)", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://rawscripts.net/raw/untitled-tag-game-BC9-UTG-MENU-116806"))()
     end)
     if success then
-        print("[XyqwHub] BC9 (UTG) - " .. GetText("Loaded") .. "!")
-        ShowNotification(
-            GetText("Messages", "BC9"),
-            GetText("Messages", "BC9Bottom")
-        )
+        print("[XyqwHub] BC9 (UTG) - " .. _("Loaded") .. "!")
+        ShowNotification(_("BC9"), _("BC9Bottom"))
     else
-        print("[XyqwHub] BC9 (UTG) - " .. GetText("Error") .. ": " .. tostring(err))
-        ShowNotification(
-            GetText("Messages", "BC9"),
-            GetText("Failed") .. ": " .. tostring(err)
-        )
+        print("[XyqwHub] BC9 (UTG) - " .. _("Error") .. ": " .. tostring(err))
+        ShowNotification(_("BC9"), _("Failed") .. ": " .. tostring(err))
     end
 end)
 bc9Btn.Position = UDim2.new(0, 5, 0, y)
@@ -594,10 +532,10 @@ y = y + 45
 addButton("FTAP (WITH KEY!!)", "https://raw.githubusercontent.com/BlizTBr/scripts/main/FTAP.lua")
 addButton("RadiumHub (Pressure)", "https://rawscripts.net/raw/UPDATE-Pressure-God-Mode-Auto-Loot-ESP-Full-Bright-No-Eyefestation-224409")
 
--- ========== КНОПКА DESTROY XyqwHub ==========
+-- ========== DESTROY ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
-    print("[XyqwHub] " .. GetText("Messages", "Destroy"))
+    print("[XyqwHub] " .. _("Destroy"))
 end)
 destroyBtn.Position = UDim2.new(0, 5, 0, y)
 destroyBtn.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
@@ -606,7 +544,7 @@ y = y + 45
 
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
 
--- ========== ПЕРЕТАСКИВАНИЕ ОКНА ==========
+-- ========== ПЕРЕТАСКИВАНИЕ ==========
 local dragging = false
 local dragStart, startPos
 
@@ -666,7 +604,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- ========== ЗАКРЫТИЕ (крестик) ==========
+-- ========== ЗАКРЫТИЕ ==========
 local function closeGUI()
     mainFrame.Visible = false
     dockButton.Visible = true
@@ -675,7 +613,7 @@ end
 closeButton.MouseButton1Click:Connect(closeGUI)
 closeButton.TouchTap:Connect(closeGUI)
 
--- ========== ОТКРЫТИЕ (док-кнопка) ==========
+-- ========== ОТКРЫТИЕ ==========
 local function openGUI()
     mainFrame.Visible = true
     dockButton.Visible = false
@@ -685,9 +623,8 @@ end
 dockButton.MouseButton1Click:Connect(openGUI)
 dockButton.TouchTap:Connect(openGUI)
 
--- ========== ПОКАЗЫВАЕМ ПРИВЕТСТВЕННОЕ СООБЩЕНИЕ ==========
+-- ========== ЗАПУСК ==========
 task.wait(0.5)
 ShowWelcomeMessage()
 
--- ========== ФИНАЛ ==========
-print("[XyqwHub] XyqwHub loaded!")
+print("[XyqwHub] XyqwHub loaded! Version: " .. VERSION)
