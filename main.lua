@@ -2,9 +2,9 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "1.1"
+local VERSION = "1.2"
 
--- ========== ТЕКСТЫ ДЛЯ ЯЗЫКОВ ==========
+-- ========== ТЕКСТЫ ==========
 local LANG = {
     EN = {
         Welcome = "Welcome to XyqwHub!",
@@ -59,7 +59,6 @@ local LANG = {
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 local currentLang = "EN"
 
--- ========== ФУНКЦИЯ ДЛЯ ТЕКСТА ==========
 local function _(key)
     return LANG[currentLang][key]
 end
@@ -359,8 +358,13 @@ local function RunScript(name, url)
     end
 end
 
--- ========== СМЕНА ЯЗЫКА (НОВАЯ СИСТЕМА) ==========
+-- ========== СМЕНА ЯЗЫКА (С ЗАЩИТОЙ ОТ ДВОЙНОГО НАЖАТИЯ) ==========
+local langCooldown = false
+
 local function SwitchLanguage()
+    if langCooldown then return end
+    langCooldown = true
+    
     -- Переключаем язык
     if currentLang == "EN" then
         currentLang = "RU"
@@ -368,22 +372,25 @@ local function SwitchLanguage()
         currentLang = "EN"
     end
     
-    -- ПРИНУДИТЕЛЬНО обновляем все элементы
+    -- Принудительно обновляем все элементы
     titleLabel.Text = _("WindowTitle")
     dockButton.Text = _("DockText")
     langButton.Text = _("LangButton")
     
-    -- Показываем уведомление о смене языка
+    -- Показываем уведомление
     ShowNotification(_("LangChanged"), "", 2)
     
     print("[XyqwHub] Language changed to: " .. currentLang)
+    
+    -- Разблокируем через 0.5 секунды
+    task.wait(0.5)
+    langCooldown = false
 end
 
--- Привязываем кнопку
+-- Привязываем ТОЛЬКО ОДНО событие (через MouseButton1Click)
 langButton.MouseButton1Click:Connect(SwitchLanguage)
-langButton.TouchTap:Connect(SwitchLanguage)
 
--- ========== ВСЕ КНОПКИ СО СКРИПТАМИ ==========
+-- ========== ВСЕ КНОПКИ ==========
 local y = 5
 
 local bladeBtn = CreateButton("Blade Ball", function()
