@@ -47,7 +47,7 @@ local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, -40, 1, 0)
 titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "XyqwGui V1 (Beta)
+titleLabel.Text = "XyqwGui PRIVATE v3"
 titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
@@ -316,29 +316,28 @@ end)
 walkBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== AETHERX (С СООБЩЕНИЕМ) =====
+-- ===== AETHERX (КОПИРОВАНИЕ В БУФЕР) =====
 local aetherBtn = CreateButton("AetherX (Death Penalty)", function()
-    local success, err = pcall(function()
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"))()
-    end)
-    if success then
-        print("[XyqwHub] AetherX - LOADED!")
+    local scriptText = 'loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"))()'
+    
+    local copied = CopyToClipboard(scriptText)
+    
+    if copied then
         ShowNotification(
-            "This script is outdated. Some features may not work",
-            "Script should be loaded"
+            "Script is outdated, and XyqwHub cannot run it",
+            "Script copied to clipboard. Run it using your executor"
         )
     else
-        print("[XyqwHub] AetherX - ERROR: " .. tostring(err))
         ShowNotification(
-            "This script is outdated. Some features may not work",
-            "Failed to load: " .. tostring(err)
+            "Script is outdated, and XyqwHub cannot run it",
+            "Failed to copy! Please copy manually"
         )
     end
 end)
 aetherBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== VOIDWARE (БЕЗ СООБЩЕНИЯ) =====
+-- ===== VOIDWARE =====
 addButton("Voidware (INK/99N/Forsaken)", "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua")
 
 -- ===== LALOL HUB (С СООБЩЕНИЕМ) =====
@@ -385,7 +384,7 @@ end)
 ftapBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ========== КНОПКА DESTROY XyqwHub (В САМОМ НИЗУ) ==========
+-- ========== КНОПКА DESTROY XyqwHub ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
     print("[XyqwHub] XyqwHub DESTROYED")
