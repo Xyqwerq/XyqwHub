@@ -3,11 +3,10 @@ print("[XyqwHub] Loading...")
 
 -- ========== НАСТРОЙКИ ЯЗЫКА ==========
 local Lang = {
-    Current = "English", -- Default language
+    Current = "English",
     English = {
         Name = "English",
         WindowTitle = "XyqwHub",
-        TabName = "Scripts",
         DockText = "XyqwHub",
         Loaded = "loaded",
         Error = "error",
@@ -40,7 +39,6 @@ local Lang = {
     Russian = {
         Name = "Русский",
         WindowTitle = "XyqwHub",
-        TabName = "Скрипты",
         DockText = "XyqwHub",
         Loaded = "загружен",
         Error = "ошибка",
@@ -255,18 +253,16 @@ local function ShowWelcomeMessage()
     corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = welcomeFrame
     
-    -- Заголовок (красный)
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, -10, 0, 30)
-    titleLabel.Position = UDim2.new(0, 5, 0, 5)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-    titleLabel.Text = T("Messages", "Welcome")
-    titleLabel.TextScaled = true
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.Parent = welcomeFrame
+    local titleLabelW = Instance.new("TextLabel")
+    titleLabelW.Size = UDim2.new(1, -10, 0, 30)
+    titleLabelW.Position = UDim2.new(0, 5, 0, 5)
+    titleLabelW.BackgroundTransparency = 1
+    titleLabelW.TextColor3 = Color3.fromRGB(255, 100, 100)
+    titleLabelW.Text = T("Messages", "Welcome")
+    titleLabelW.TextScaled = true
+    titleLabelW.Font = Enum.Font.GothamBold
+    titleLabelW.Parent = welcomeFrame
     
-    -- TikTok (белый)
     local tiktokLabel = Instance.new("TextLabel")
     tiktokLabel.Size = UDim2.new(1, -10, 0, 25)
     tiktokLabel.Position = UDim2.new(0, 5, 0, 40)
@@ -277,7 +273,6 @@ local function ShowWelcomeMessage()
     tiktokLabel.Font = Enum.Font.Gotham
     tiktokLabel.Parent = welcomeFrame
     
-    -- Telegram (белый)
     local telegramLabel = Instance.new("TextLabel")
     telegramLabel.Size = UDim2.new(1, -10, 0, 25)
     telegramLabel.Position = UDim2.new(0, 5, 0, 70)
@@ -288,7 +283,6 @@ local function ShowWelcomeMessage()
     telegramLabel.Font = Enum.Font.Gotham
     telegramLabel.Parent = welcomeFrame
     
-    -- Discord (белый)
     local discordLabel = Instance.new("TextLabel")
     discordLabel.Size = UDim2.new(1, -10, 0, 25)
     discordLabel.Position = UDim2.new(0, 5, 0, 100)
@@ -382,13 +376,13 @@ local function SwitchLanguage()
         langButton.Text = "EN"
     end
     
-    -- Обновляем заголовок
+    -- Обновляем заголовок окна
     titleLabel.Text = T("WindowTitle")
     
     -- Обновляем док-кнопку
     dockButton.Text = T("DockText")
     
-    -- Показываем уведомление
+    -- Показываем уведомление о смене языка
     ShowNotification(
         T("Messages", "LangChanged"),
         "",
