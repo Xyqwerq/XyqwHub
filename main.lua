@@ -96,6 +96,20 @@ local function CanRun(name)
     return true
 end
 
+-- ========== ФУНКЦИЯ ДЛЯ КОПИРОВАНИЯ В БУФЕР ==========
+local function CopyToClipboard(text)
+    local success, err = pcall(function()
+        setclipboard(text)
+    end)
+    if success then
+        print("[XyqwHub] Copied to clipboard!")
+        return true
+    else
+        print("[XyqwHub] Failed to copy: " .. tostring(err))
+        return false
+    end
+end
+
 -- ========== ФУНКЦИЯ КНОПКИ ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
@@ -206,12 +220,63 @@ addButton("RemainsHub V2", "https://rawscripts.net/raw/Universal-Script-RemainsH
 addButton("R6 Emotes", "https://rawscripts.net/raw/Universal-Script-r6-emotes-OPEN-SOURCE-69464")
 addButton("Jujutsu Sheninagouns", "https://raw.githubusercontent.com/peeky-co/scripts/refs/heads/main/tbo")
 addButton("Free Cam", "https://rawscripts.net/raw/Universal-Script-Free-cam-script-pc-and-mobile-223089")
-addButton("Doors (Abysall)", "https://rawscripts.net/raw/Universal-Script-fling-gui-99753")
-addButton("Doors V2", "https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download")
-addButton("Doors V3 (Cheesy)", "https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua")
+addButton("Doors (Abysall)", "https://rawscripts.net/raw/DOORS-Abysall-hub-OP-205906")
+addButton("Fling Gui", "https://rawscripts.net/raw/Universal-Script-fling-gui-99753")
 addButton("Blade Ball 2", "https://wings.ac/loader")
 addButton("Blade Ball 3", "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub")
 addButton("AX Scripts (INK)", "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua")
+
+-- ===== DOORS V2 (КОПИРОВАНИЕ В БУФЕР) =====
+local doorsV2Btn = CreateButton("Doors V2 (Copy)", function()
+    local scriptText = [[getgenv().SCRIPT_KEY = "KEYLESS"
+loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()]]
+    
+    local copied = CopyToClipboard(scriptText)
+    
+    local notificationFrame = Instance.new("Frame")
+    notificationFrame.Size = UDim2.new(0, 320, 0, 80)
+    notificationFrame.Position = UDim2.new(0.5, -160, 0.5, -40)
+    notificationFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    notificationFrame.BorderSizePixel = 2
+    notificationFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    notificationFrame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = notificationFrame
+    
+    local topLabel = Instance.new("TextLabel")
+    topLabel.Size = UDim2.new(1, -10, 0, 30)
+    topLabel.Position = UDim2.new(0, 5, 0, 5)
+    topLabel.BackgroundTransparency = 1
+    topLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    topLabel.Text = "Sorry, Doors V2 cannot be run using XyqwHub"
+    topLabel.TextScaled = true
+    topLabel.Font = Enum.Font.GothamBold
+    topLabel.Parent = notificationFrame
+    
+    local bottomLabel = Instance.new("TextLabel")
+    bottomLabel.Size = UDim2.new(1, -10, 0, 30)
+    bottomLabel.Position = UDim2.new(0, 5, 0, 40)
+    bottomLabel.BackgroundTransparency = 1
+    bottomLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    bottomLabel.Text = "Script copied to clipboard. Paste it into your executor"
+    bottomLabel.TextScaled = true
+    bottomLabel.Font = Enum.Font.Gotham
+    bottomLabel.Parent = notificationFrame
+    
+    if not copied then
+        bottomLabel.Text = "Failed to copy! Please copy manually"
+    end
+    
+    task.wait(3.5)
+    notificationFrame:Destroy()
+end)
+doorsV2Btn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
+
+-- ===== DOORS V3 (Cheesy) =====
+addButton("Doors V3 (Cheesy)", "https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua")
 
 -- ========== КНОПКА DESTROY XyqwHub (В САМОМ НИЗУ) ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
