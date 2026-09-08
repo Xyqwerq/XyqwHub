@@ -2,7 +2,7 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "1.7"
+local VERSION = "1.8"
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -30,7 +30,9 @@ local LANG = {
         Telegram = "Telegram: t.me/xyqwsquad",
         Discord = "Discord: xyqwerqyt",
         LangHintTop = "Press EN/RU in the top right corner to change language",
-        LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык"
+        LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык",
+        DeathOrder = "Simon Says script loaded",
+        DeathOrderBottom = "Have fun!"
     },
     RU = {
         Welcome = "Добро пожаловать в XyqwHub!",
@@ -56,7 +58,9 @@ local LANG = {
         Telegram = "Telegram: t.me/xyqwsquad",
         Discord = "Discord: xyqwerqyt",
         LangHintTop = "Press EN/RU in the top right corner to change language",
-        LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык"
+        LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык",
+        DeathOrder = "Скрипт Simon Says загружен",
+        DeathOrderBottom = "Приятной игры!"
     }
 }
 
@@ -567,6 +571,25 @@ addButton("Corridor", "https://saga2015.b-cdn.net/corridor.luau")
 addButton("BloxStrike", "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/BloxStrike.lua")
 addButton("RIVALS", "https://raw.githubusercontent.com/imshrak/rivals/refs/heads/main/main")
 addButton("Troll script", "https://mois7.xyz/loader")
+
+-- ===== DEATH ORDER [SIMON] (С СООБЩЕНИЕМ) =====
+local deathOrderBtn = CreateButton("Death Order [SIMON]", function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Death-Order:-Simon-Says-BEST-DEATH-ORDER-SCRIPT-226542"))()
+    end)
+    if success then
+        print("[XyqwHub] Death Order [SIMON] - " .. _("Loaded") .. "!")
+        ShowNotification(_("DeathOrder"), _("DeathOrderBottom"))
+    else
+        print("[XyqwHub] Death Order [SIMON] - " .. _("Error") .. ": " .. tostring(err))
+        ShowNotification(_("DeathOrder"), _("Failed") .. ": " .. tostring(err))
+    end
+end)
+deathOrderBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
+
+-- ===== CANDYWARE (MM2) =====
+addButton("CandyWare (MM2)", "https://raw.githubusercontent.com/Be1for/Scripts/refs/heads/main/candyware.luau")
 
 -- ========== DESTROY ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
