@@ -2,7 +2,7 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "1.8"
+local VERSION = "1.9"
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -32,7 +32,9 @@ local LANG = {
         LangHintTop = "Press EN/RU in the top right corner to change language",
         LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык",
         DeathOrder = "Simon Says script loaded",
-        DeathOrderBottom = "Have fun!"
+        DeathOrderBottom = "Have fun!",
+        CheesyKey = "Key: joincheesydsc",
+        CheesyBottom = "Script should be loaded"
     },
     RU = {
         Welcome = "Добро пожаловать в XyqwHub!",
@@ -60,7 +62,9 @@ local LANG = {
         LangHintTop = "Press EN/RU in the top right corner to change language",
         LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык",
         DeathOrder = "Скрипт Simon Says загружен",
-        DeathOrderBottom = "Приятной игры!"
+        DeathOrderBottom = "Приятной игры!",
+        CheesyKey = "Ключ: joincheesydsc",
+        CheesyBottom = "Скрипт должен запуститься"
     }
 }
 
@@ -474,7 +478,22 @@ end)
 doorsV2Btn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
-addButton("Doors V3 (Cheesy)", "https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua")
+-- ===== DOORS V3 (Cheesy) С СООБЩЕНИЕМ О КЛЮЧЕ =====
+local cheesyBtn = CreateButton("Doors V3 (Cheesy)", function()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua"))()
+    end)
+    if success then
+        print("[XyqwHub] Doors V3 (Cheesy) - " .. _("Loaded") .. "!")
+        ShowNotification(_("CheesyKey"), _("CheesyBottom"))
+    else
+        print("[XyqwHub] Doors V3 (Cheesy) - " .. _("Error") .. ": " .. tostring(err))
+        ShowNotification(_("CheesyKey"), _("Failed") .. ": " .. tostring(err))
+    end
+end)
+cheesyBtn.Position = UDim2.new(0, 5, 0, y)
+y = y + 45
+
 addButton("Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
 
 -- ===== WALK ON WALLS =====
