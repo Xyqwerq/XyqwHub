@@ -2,7 +2,7 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "1.9"
+local VERSION = "2.0"
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -34,7 +34,9 @@ local LANG = {
         DeathOrder = "Simon Says script loaded",
         DeathOrderBottom = "Have fun!",
         CheesyKey = "Key: joincheesydsc",
-        CheesyBottom = "Script should be loaded"
+        CheesyBottom = "Script should be loaded",
+        AutoExecuteENABLE = "Auto Execute: ENABLE",
+        AutoExecuteDISABLE = "Auto Execute: DISABLE"
     },
     RU = {
         Welcome = "Добро пожаловать в XyqwHub!",
@@ -64,7 +66,9 @@ local LANG = {
         DeathOrder = "Скрипт Simon Says загружен",
         DeathOrderBottom = "Приятной игры!",
         CheesyKey = "Ключ: joincheesydsc",
-        CheesyBottom = "Скрипт должен запуститься"
+        CheesyBottom = "Скрипт должен запуститься",
+        AutoExecuteENABLE = "Авто-запуск: включен",
+        AutoExecuteDISABLE = "Авто-запуск: выключен"
     }
 }
 
@@ -110,15 +114,17 @@ mainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
+-- Заголовок
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.Size = UDim2.new(1, 0, 0, 60)
 titleBar.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
+-- Название (слева)
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -70, 1, 0)
-titleLabel.Position = UDim2.new(0, 5, 0, 0)
+titleLabel.Size = UDim2.new(0.5, -5, 0.5, 0)
+titleLabel.Position = UDim2.new(0, 5, 0, 5)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = _("WindowTitle")
 titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -126,9 +132,24 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
+-- Кнопка Auto Execute (слева, под названием)
+local autoExecButton = Instance.new("TextButton")
+autoExecButton.Size = UDim2.new(0.5, -5, 0.4, 0)
+autoExecButton.Position = UDim2.new(0, 5, 0.5, 2)
+autoExecButton.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+autoExecButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoExecButton.Text = _("AutoExecuteENABLE")
+autoExecButton.TextScaled = true
+autoExecButton.Font = Enum.Font.GothamBold
+autoExecButton.BorderSizePixel = 1
+autoExecButton.BorderColor3 = Color3.fromRGB(255, 0, 0)
+autoExecButton.Parent = titleBar
+autoExecButton.AutoButtonColor = false
+
+-- Кнопка смены языка (справа, сверху)
 local langButton = Instance.new("TextButton")
-langButton.Size = UDim2.new(0, 35, 1, 0)
-langButton.Position = UDim2.new(1, -65, 0, 0)
+langButton.Size = UDim2.new(0, 35, 0.45, 0)
+langButton.Position = UDim2.new(1, -65, 0, 5)
 langButton.BackgroundTransparency = 1
 langButton.Text = "EN"
 langButton.TextColor3 = Color3.fromRGB(255, 200, 0)
@@ -137,9 +158,10 @@ langButton.Font = Enum.Font.GothamBold
 langButton.Parent = titleBar
 langButton.AutoButtonColor = false
 
+-- Крестик (справа, снизу)
 local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 30, 1, 0)
-closeButton.Position = UDim2.new(1, -30, 0, 0)
+closeButton.Size = UDim2.new(0, 30, 0.45, 0)
+closeButton.Position = UDim2.new(1, -30, 0.5, 2)
 closeButton.BackgroundTransparency = 1
 closeButton.Text = "X"
 closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -150,8 +172,8 @@ closeButton.AutoButtonColor = false
 
 -- ========== СКРОЛЛ ==========
 local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(1, -10, 1, -40)
-scrollFrame.Position = UDim2.new(0, 5, 0, 35)
+scrollFrame.Size = UDim2.new(1, -10, 1, -70)
+scrollFrame.Position = UDim2.new(0, 5, 0, 65)
 scrollFrame.BackgroundTransparency = 1
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollFrame.ScrollBarThickness = 4
@@ -178,6 +200,9 @@ local function CanRun(name)
     cooldowns[name] = tick()
     return true
 end
+
+-- ========== АВТО-ВЫПОЛНЕНИЕ ==========
+local autoExecuteEnabled = true
 
 -- ========== КОПИРОВАНИЕ ==========
 local function CopyToClipboard(text)
@@ -407,6 +432,13 @@ local function SwitchLanguage()
     dockButton.Text = _("DockText")
     langButton.Text = _("LangButton")
     
+    -- Обновляем текст Auto Execute с переводом
+    if autoExecuteEnabled then
+        autoExecButton.Text = _("AutoExecuteENABLE")
+    else
+        autoExecButton.Text = _("AutoExecuteDISABLE")
+    end
+    
     ShowNotification(_("LangChanged"), "", 2)
     
     print("[XyqwHub] Language changed to: " .. currentLang)
@@ -416,20 +448,30 @@ local function SwitchLanguage()
 end
 
 langButton.MouseButton1Click:Connect(SwitchLanguage)
+langButton.TouchTap:Connect(SwitchLanguage)
+
+-- ========== ПЕРЕКЛЮЧЕНИЕ AUTO EXECUTE ==========
+local function ToggleAutoExecute()
+    autoExecuteEnabled = not autoExecuteEnabled
+    
+    if autoExecuteEnabled then
+        autoExecButton.Text = _("AutoExecuteENABLE")
+        print("[XyqwHub] Auto Execute: ENABLED")
+    else
+        autoExecButton.Text = _("AutoExecuteDISABLE")
+        print("[XyqwHub] Auto Execute: DISABLED")
+    end
+end
+
+autoExecButton.MouseButton1Click:Connect(ToggleAutoExecute)
+autoExecButton.TouchTap:Connect(ToggleAutoExecute)
 
 -- ========== ВСЕ КНОПКИ ==========
 local y = 5
 
 -- ===== BLADE BALL =====
 local bladeBtn = CreateButton("Blade Ball", function()
-    local success, err = pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"))()
-    end)
-    if success then
-        print("[XyqwHub] Blade Ball - " .. _("Loaded") .. "!")
-    else
-        print("[XyqwHub] Blade Ball - " .. _("Error") .. ": " .. tostring(err))
-    end
+    RunScript("Blade Ball", "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua")
 end)
 bladeBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
@@ -478,7 +520,7 @@ end)
 doorsV2Btn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== DOORS V3 (Cheesy) С СООБЩЕНИЕМ О КЛЮЧЕ =====
+-- ===== DOORS V3 (Cheesy) =====
 local cheesyBtn = CreateButton("Doors V3 (Cheesy)", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua"))()
@@ -591,7 +633,7 @@ addButton("BloxStrike", "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs
 addButton("RIVALS", "https://raw.githubusercontent.com/imshrak/rivals/refs/heads/main/main")
 addButton("Troll script", "https://mois7.xyz/loader")
 
--- ===== DEATH ORDER [SIMON] (С СООБЩЕНИЕМ) =====
+-- ===== DEATH ORDER [SIMON] =====
 local deathOrderBtn = CreateButton("Death Order [SIMON]", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://rawscripts.net/raw/Death-Order:-Simon-Says-BEST-DEATH-ORDER-SCRIPT-226542"))()
