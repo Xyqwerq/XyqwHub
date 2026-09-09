@@ -2,7 +2,12 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.1"
+local VERSION = "2.2"
+
+-- ========== ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ AUTO EXECUTE ==========
+if getgenv().XyqwAutoExecute == nil then
+    getgenv().XyqwAutoExecute = true
+end
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -138,7 +143,11 @@ autoExecButton.Size = UDim2.new(0.5, -5, 0.4, 0)
 autoExecButton.Position = UDim2.new(0, 5, 0.5, 2)
 autoExecButton.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
 autoExecButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoExecButton.Text = _("AutoExecuteENABLE")
+if getgenv().XyqwAutoExecute then
+    autoExecButton.Text = _("AutoExecuteENABLE")
+else
+    autoExecButton.Text = _("AutoExecuteDISABLE")
+end
 autoExecButton.TextScaled = true
 autoExecButton.Font = Enum.Font.GothamBold
 autoExecButton.BorderSizePixel = 1
@@ -200,9 +209,6 @@ local function CanRun(name)
     cooldowns[name] = tick()
     return true
 end
-
--- ========== АВТО-ВЫПОЛНЕНИЕ ==========
-local autoExecuteEnabled = true
 
 -- ========== КОПИРОВАНИЕ ==========
 local function CopyToClipboard(text)
@@ -417,7 +423,7 @@ end
 
 -- ========== ПЕРЕЗАПУСК ХАБА ==========
 local function RestartHub()
-    if not autoExecuteEnabled then
+    if not getgenv().XyqwAutoExecute then
         print("[XyqwHub] Auto Execute is DISABLED. Hub not restarted.")
         return
     end
@@ -452,7 +458,7 @@ local function SwitchLanguage()
     langButton.Text = _("LangButton")
     
     -- Обновляем текст Auto Execute с переводом
-    if autoExecuteEnabled then
+    if getgenv().XyqwAutoExecute then
         autoExecButton.Text = _("AutoExecuteENABLE")
     else
         autoExecButton.Text = _("AutoExecuteDISABLE")
@@ -471,9 +477,9 @@ langButton.TouchTap:Connect(SwitchLanguage)
 
 -- ========== ПЕРЕКЛЮЧЕНИЕ AUTO EXECUTE ==========
 local function ToggleAutoExecute()
-    autoExecuteEnabled = not autoExecuteEnabled
+    getgenv().XyqwAutoExecute = not getgenv().XyqwAutoExecute
     
-    if autoExecuteEnabled then
+    if getgenv().XyqwAutoExecute then
         autoExecButton.Text = _("AutoExecuteENABLE")
         print("[XyqwHub] Auto Execute: ENABLED")
     else
