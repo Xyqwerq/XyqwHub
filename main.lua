@@ -2,7 +2,7 @@
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.0"
+local VERSION = "2.1"
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -415,6 +415,25 @@ local function RunScript(name, url)
     end
 end
 
+-- ========== ПЕРЕЗАПУСК ХАБА ==========
+local function RestartHub()
+    if not autoExecuteEnabled then
+        print("[XyqwHub] Auto Execute is DISABLED. Hub not restarted.")
+        return
+    end
+    
+    print("[XyqwHub] Restarting...")
+    
+    -- Удаляем старый GUI
+    if screenGui then
+        screenGui:Destroy()
+    end
+    
+    -- Загружаем скрипт заново через loadstring
+    local scriptUrl = "https://raw.githubusercontent.com/Xyqwerq/XyqwHub/main/main.lua"
+    loadstring(game:HttpGet(scriptUrl))()
+end
+
 -- ========== СМЕНА ЯЗЫКА ==========
 local langCooldown = false
 
@@ -465,6 +484,18 @@ end
 
 autoExecButton.MouseButton1Click:Connect(ToggleAutoExecute)
 autoExecButton.TouchTap:Connect(ToggleAutoExecute)
+
+-- ========== АВТО-ПЕРЕЗАПУСК ПРИ ПЕРЕЗАХОДЕ ==========
+local Players = game:GetService("Players")
+local function onPlayerAdded(player)
+    if player == Players.LocalPlayer then
+        print("[XyqwHub] Player rejoined! Restarting hub...")
+        task.wait(0.5)
+        RestartHub()
+    end
+end
+
+Players.PlayerAdded:Connect(onPlayerAdded)
 
 -- ========== ВСЕ КНОПКИ ==========
 local y = 5
