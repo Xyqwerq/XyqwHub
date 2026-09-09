@@ -1,8 +1,7 @@
--- ========== СТАТУСЫ ==========
-print("[XyqwHub] Loading...")
+-- ========== XyqwHub - Версия 2.4 ==========
+-- Работает как Infinite Yield: загружается один раз и живёт в памяти
 
--- ========== ВЕРСИЯ ==========
-local VERSION = "2.3"
+print("[XyqwHub] Loading...")
 
 -- ========== ГЛОБАЛЬНЫЕ НАСТРОЙКИ ==========
 if getgenv().XyqwAutoExecute == nil then
@@ -81,31 +80,32 @@ local LANG = {
     }
 }
 
--- ========== ФУНКЦИЯ ДЛЯ ТЕКСТА ==========
+-- ========== ФУНКЦИЯ ПОЛУЧЕНИЯ ТЕКСТА ==========
 local function _(key)
     return LANG[getgenv().XyqwLanguage][key]
 end
 
--- ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ДЛЯ GUI ==========
+-- ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
 local screenGui = nil
-local dockButton = nil
 local mainFrame = nil
+local dockButton = nil
+local scrollFrame = nil
 local titleLabel = nil
 local autoExecButton = nil
 local langButton = nil
 local closeButton = nil
-local scrollFrame = nil
+local isGUIVisible = true
 local buttonsBlocked = false
 local cooldowns = {}
+local isFirstLaunch = true
 
--- ========== ФУНКЦИЯ БЛОКИРОВКИ ==========
+-- ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 local function blockButtonsTemporarily()
     buttonsBlocked = true
     task.wait(0.5)
     buttonsBlocked = false
 end
 
--- ========== ФУНКЦИЯ АНТИ-СПАМ ==========
 local function CanRun(name)
     local lastRun = cooldowns[name] or 0
     if tick() - lastRun < 1.5 then
@@ -115,7 +115,6 @@ local function CanRun(name)
     return true
 end
 
--- ========== ФУНКЦИЯ КОПИРОВАНИЯ ==========
 local function CopyToClipboard(text)
     local success, err = pcall(function()
         setclipboard(text)
@@ -129,10 +128,8 @@ local function CopyToClipboard(text)
     end
 end
 
--- ========== ФУНКЦИЯ УВЕДОМЛЕНИЙ ==========
 local function ShowNotification(topText, bottomText, duration)
     duration = duration or 3.5
-    
     if not screenGui then return end
     
     local notificationFrame = Instance.new("Frame")
@@ -171,7 +168,6 @@ local function ShowNotification(topText, bottomText, duration)
     notificationFrame:Destroy()
 end
 
--- ========== ФУНКЦИЯ ПРИВЕТСТВИЯ ==========
 local function ShowWelcomeMessage()
     if not screenGui then return end
     
@@ -252,7 +248,7 @@ local function ShowWelcomeMessage()
     versionLabel.Position = UDim2.new(0, 5, 0, 153)
     versionLabel.BackgroundTransparency = 1
     versionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    versionLabel.Text = "Version: " .. VERSION
+    versionLabel.Text = "Version: 2.4"
     versionLabel.TextScaled = true
     versionLabel.Font = Enum.Font.Gotham
     versionLabel.Parent = welcomeFrame
@@ -261,7 +257,7 @@ local function ShowWelcomeMessage()
     welcomeFrame:Destroy()
 end
 
--- ========== ФУНКЦИЯ СОЗДАНИЯ КНОПОК ==========
+-- ========== ФУНКЦИЯ СОЗДАНИЯ КНОПКИ ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 40)
@@ -332,13 +328,17 @@ end
 
 -- ========== ГЛАВНАЯ ФУНКЦИЯ СОЗДАНИЯ GUI ==========
 local function CreateGUI()
-    -- Удаляем старый GUI, если есть
+    -- Удаляем старый GUI
     if screenGui then
         screenGui:Destroy()
         screenGui = nil
     end
     
-    -- Создаём новый GUI
+    -- Ждём, пока CoreGui загрузится
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
+    end
+    
     screenGui = Instance.new("ScreenGui")
     screenGui.Name = "XyqwHubGui"
     screenGui.Parent = game:GetService("CoreGui")
@@ -391,7 +391,7 @@ local function CreateGUI()
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.Parent = titleBar
     
-    -- Кнопка Auto Execute
+    -- Auto Execute
     autoExecButton = Instance.new("TextButton")
     autoExecButton.Size = UDim2.new(0.5, -5, 0.4, 0)
     autoExecButton.Position = UDim2.new(0, 5, 0.5, 2)
@@ -443,14 +443,8 @@ local function CreateGUI()
     scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
     scrollFrame.Parent = mainFrame
     
-    -- ===== ВСЕ КНОПКИ =====
+    -- ===== СОЗДАНИЕ ВСЕХ КНОПОК =====
     local y = 5
-    
-    local bladeBtn = CreateButton("Blade Ball", function()
-        RunScript("Blade Ball", "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua")
-    end)
-    bladeBtn.Position = UDim2.new(0, 5, 0, y)
-    y = y + 45
     
     local function addButton(text, url)
         local btn = CreateButton(text, function()
@@ -459,6 +453,13 @@ local function CreateGUI()
         btn.Position = UDim2.new(0, 5, 0, y)
         y = y + 45
     end
+    
+    -- Blade Ball
+    local bladeBtn = CreateButton("Blade Ball", function()
+        RunScript("Blade Ball", "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua")
+    end)
+    bladeBtn.Position = UDim2.new(0, 5, 0, y)
+    y = y + 45
     
     addButton("AntiKillParts", "https://raw.githubusercontent.com/sovetskii-shashlik/Anti-kill-parts-updated-/refs/heads/main/Anti%20kill%20parts%20by%20Zephyr")
     addButton("PulseHub", "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua")
@@ -479,13 +480,11 @@ local function CreateGUI()
     addButton("Blade Ball 3", "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub")
     addButton("AX Scripts (INK)", "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua")
     
-    -- Doors V2 (копирование)
+    -- Doors V2 (Copy)
     local doorsV2Btn = CreateButton("Doors V2 (Copy)", function()
         local scriptText = [[getgenv().SCRIPT_KEY = "KEYLESS"
     loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()]]
-        
         local copied = CopyToClipboard(scriptText)
-        
         if copied then
             ShowNotification(_("DoorsV2"), _("DoorsV2Bottom"))
         else
@@ -606,7 +605,7 @@ local function CreateGUI()
     addButton("RIVALS", "https://raw.githubusercontent.com/imshrak/rivals/refs/heads/main/main")
     addButton("Troll script", "https://mois7.xyz/loader")
     
-    -- Death Order [SIMON]
+    -- Death Order
     local deathOrderBtn = CreateButton("Death Order [SIMON]", function()
         local success, err = pcall(function()
             loadstring(game:HttpGet("https://rawscripts.net/raw/Death-Order:-Simon-Says-BEST-DEATH-ORDER-SCRIPT-226542"))()
@@ -639,7 +638,7 @@ local function CreateGUI()
     
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
     
-    -- ===== ПЕРЕТАСКИВАНИЕ =====
+    -- ===== ПЕРЕТАСКИВАНИЕ ОКНА =====
     local dragging = false
     local dragStart, startPos
     
@@ -699,19 +698,27 @@ local function CreateGUI()
         end
     end)
     
-    -- ===== ЗАКРЫТИЕ =====
+    -- ===== ЗАКРЫТИЕ (крестик) =====
     local function closeGUI()
-        mainFrame.Visible = false
-        dockButton.Visible = true
+        if mainFrame then
+            mainFrame.Visible = false
+        end
+        if dockButton then
+            dockButton.Visible = true
+        end
     end
     
     closeButton.MouseButton1Click:Connect(closeGUI)
     closeButton.TouchTap:Connect(closeGUI)
     
-    -- ===== ОТКРЫТИЕ =====
+    -- ===== ОТКРЫТИЕ (док-кнопка) =====
     local function openGUI()
-        mainFrame.Visible = true
-        dockButton.Visible = false
+        if mainFrame then
+            mainFrame.Visible = true
+        end
+        if dockButton then
+            dockButton.Visible = false
+        end
         blockButtonsTemporarily()
     end
     
@@ -722,25 +729,24 @@ local function CreateGUI()
     local function ToggleAutoExecute()
         getgenv().XyqwAutoExecute = not getgenv().XyqwAutoExecute
         
-        if getgenv().XyqwAutoExecute then
-            autoExecButton.Text = _("AutoExecuteENABLE")
-            print("[XyqwHub] Auto Execute: ENABLED")
-        else
-            autoExecButton.Text = _("AutoExecuteDISABLE")
-            print("[XyqwHub] Auto Execute: DISABLED")
+        if autoExecButton then
+            if getgenv().XyqwAutoExecute then
+                autoExecButton.Text = _("AutoExecuteENABLE")
+                print("[XyqwHub] Auto Execute: ENABLED")
+            else
+                autoExecButton.Text = _("AutoExecuteDISABLE")
+                print("[XyqwHub] Auto Execute: DISABLED")
+            end
         end
     end
     
-    autoExecButton.MouseButton1Click:Connect(ToggleAutoExecute)
-    autoExecButton.TouchTap:Connect(ToggleAutoExecute)
+    if autoExecButton then
+        autoExecButton.MouseButton1Click:Connect(ToggleAutoExecute)
+        autoExecButton.TouchTap:Connect(ToggleAutoExecute)
+    end
     
     -- ===== КНОПКА ЯЗЫКА =====
-    local langCooldown = false
-    
     local function SwitchLanguage()
-        if langCooldown then return end
-        langCooldown = true
-        
         if getgenv().XyqwLanguage == "EN" then
             getgenv().XyqwLanguage = "RU"
         else
@@ -749,24 +755,22 @@ local function CreateGUI()
         
         -- Пересоздаём GUI с новым языком
         CreateGUI()
-        
         print("[XyqwHub] Language changed to: " .. getgenv().XyqwLanguage)
-        
-        task.wait(0.5)
-        langCooldown = false
     end
     
-    langButton.MouseButton1Click:Connect(SwitchLanguage)
-    langButton.TouchTap:Connect(SwitchLanguage)
+    if langButton then
+        langButton.MouseButton1Click:Connect(SwitchLanguage)
+        langButton.TouchTap:Connect(SwitchLanguage)
+    end
     
-    -- ===== ПОКАЗЫВАЕМ ПРИВЕТСТВИЕ =====
+    -- ===== ПРИВЕТСТВИЕ =====
     task.wait(0.5)
     ShowWelcomeMessage()
     
-    print("[XyqwHub] XyqwHub loaded! Version: " .. VERSION)
+    print("[XyqwHub] XyqwHub loaded! Version: 2.4")
 end
 
--- ========== ЗАПУСК ПРИ ПЕРВОМ ЗАПУСКЕ ==========
+-- ========== ПЕРВЫЙ ЗАПУСК ==========
 CreateGUI()
 
 -- ========== АВТО-ПЕРЕЗАПУСК ПРИ ПЕРЕЗАХОДЕ ==========
@@ -775,7 +779,7 @@ local function onPlayerAdded(player)
     if player == Players.LocalPlayer then
         if getgenv().XyqwAutoExecute then
             print("[XyqwHub] Player rejoined! Restarting GUI...")
-            task.wait(0.5)
+            task.wait(1)
             CreateGUI()
         else
             print("[XyqwHub] Auto Execute is DISABLED. GUI not restarted.")
