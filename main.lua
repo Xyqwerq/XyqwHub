@@ -1,16 +1,21 @@
--- ========== XyqwHub - Версия 2.5 ==========
+-- ========== XyqwHub - Версия 2.0 ==========
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.5"
+local VERSION = "2.0"
 
--- ========== ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ AUTO EXECUTE ==========
+-- ========== ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ AUTO EXECUTE (INSPIRED BY IY) ==========
 if getgenv().KeepXyqwHub == nil then
     getgenv().KeepXyqwHub = true
 end
 
 -- ========== ПРОВЕРКА QUEUE_ON_TELEPORT ==========
 local queueteleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+
+-- ========== ТЕКУЩИЙ ЯЗЫК ==========
+if getgenv().XyqwLanguage == nil then
+    getgenv().XyqwLanguage = "EN"
+end
 
 -- ========== ТЕКСТЫ ==========
 local LANG = {
@@ -82,15 +87,10 @@ local LANG = {
 
 -- ========== ФУНКЦИЯ ПОЛУЧЕНИЯ ТЕКСТА ==========
 local function _(key)
-    return LANG[getgenv().XyqwLanguage or "EN"][key]
+    return LANG[getgenv().XyqwLanguage][key]
 end
 
--- ========== ТЕКУЩИЙ ЯЗЫК ==========
-if getgenv().XyqwLanguage == nil then
-    getgenv().XyqwLanguage = "EN"
-end
-
--- ========== СОЗДАЁМ GUI ==========
+-- ========== GUI ==========
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "XyqwHubGui"
 screenGui.Parent = game:GetService("CoreGui")
@@ -461,23 +461,23 @@ end
 langButton.MouseButton1Click:Connect(SwitchLanguage)
 langButton.TouchTap:Connect(SwitchLanguage)
 
--- ========== КНОПКА AUTO EXECUTE (ПЕРЕКЛЮЧАЕТ KeepXyqwHub) ==========
+-- ========== ПЕРЕКЛЮЧЕНИЕ AUTO EXECUTE ==========
 local function ToggleAutoExecute()
     getgenv().KeepXyqwHub = not getgenv().KeepXyqwHub
     
     if getgenv().KeepXyqwHub then
         autoExecButton.Text = _("AutoExecuteENABLE")
-        print("[XyqwHub] Auto Execute: ENABLED (will auto-start after teleport)")
+        print("[XyqwHub] Auto Execute: ENABLED")
     else
         autoExecButton.Text = _("AutoExecuteDISABLE")
-        print("[XyqwHub] Auto Execute: DISABLED (will NOT auto-start after teleport)")
+        print("[XyqwHub] Auto Execute: DISABLED")
     end
 end
 
 autoExecButton.MouseButton1Click:Connect(ToggleAutoExecute)
 autoExecButton.TouchTap:Connect(ToggleAutoExecute)
 
--- ========== АВТО-ЗАПУСК ПРИ ТЕЛЕПОРТАЦИИ (КАК В INFINITE YIELD) ==========
+-- ========== АВТО-ЗАПУСК ПРИ ТЕЛЕПОРТАЦИИ ==========
 local Players = game:GetService("Players")
 
 Players.LocalPlayer.OnTeleport:Connect(function(State)
@@ -769,9 +769,9 @@ dockButton.TouchTap:Connect(openGUI)
 
 -- ========== ПРОВЕРКА ПРИ ЗАПУСКЕ ==========
 if getgenv().KeepXyqwHub then
-    print("[XyqwHub] KeepXyqwHub is ENABLED. Will auto-start after teleport.")
+    print("[XyqwHub] Auto Execute: ENABLED")
 else
-    print("[XyqwHub] KeepXyqwHub is DISABLED. Will NOT auto-start after teleport.")
+    print("[XyqwHub] Auto Execute: DISABLED")
 end
 
 -- ========== ЗАПУСК ==========
