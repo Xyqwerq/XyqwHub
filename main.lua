@@ -4,7 +4,7 @@ print("[XyqwHub] Loading...")
 -- ========== ВЕРСИЯ ==========
 local VERSION = "2.0"
 
--- ========== ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ AUTO EXECUTE (INSPIRED BY IY) ==========
+-- ========== ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ AUTO EXECUTE ==========
 if getgenv().KeepXyqwHub == nil then
     getgenv().KeepXyqwHub = true
 end
@@ -132,7 +132,7 @@ titleBar.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
--- Название (слева)
+-- Название
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(0.5, -5, 0.5, 0)
 titleLabel.Position = UDim2.new(0, 5, 0, 5)
@@ -143,7 +143,7 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Кнопка Auto Execute (слева, под названием)
+-- Кнопка Auto Execute
 local autoExecButton = Instance.new("TextButton")
 autoExecButton.Size = UDim2.new(0.5, -5, 0.4, 0)
 autoExecButton.Position = UDim2.new(0, 5, 0.5, 2)
@@ -161,7 +161,7 @@ autoExecButton.BorderColor3 = Color3.fromRGB(255, 0, 0)
 autoExecButton.Parent = titleBar
 autoExecButton.AutoButtonColor = false
 
--- Кнопка смены языка (справа, сверху)
+-- Кнопка смены языка
 local langButton = Instance.new("TextButton")
 langButton.Size = UDim2.new(0, 35, 0.45, 0)
 langButton.Position = UDim2.new(1, -65, 0, 5)
@@ -173,7 +173,7 @@ langButton.Font = Enum.Font.GothamBold
 langButton.Parent = titleBar
 langButton.AutoButtonColor = false
 
--- Крестик (справа, снизу)
+-- Крестик
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 30, 0.45, 0)
 closeButton.Position = UDim2.new(1, -30, 0.5, 2)
@@ -676,6 +676,10 @@ y = y + 45
 -- ===== CANDYWARE (MM2) =====
 addButton("CandyWare (MM2)", "https://raw.githubusercontent.com/Be1for/Scripts/refs/heads/main/candyware.luau")
 
+-- ===== НОВЫЕ СКРИПТЫ (DROPKICK + EVADE) =====
+addButton("DropKick", "https://raw.githubusercontent.com/yes-d3v-scripts/drop-kick-fling/refs/heads/main/script")
+addButton("Evade", "https://github.com/imc72s/LaztDex/raw/refs/heads/main/EvadeScriptLaztDex")
+
 -- ========== DESTROY ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
@@ -748,7 +752,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- ========== ЗАКРЫТИЕ (крестик) ==========
+-- ========== ЗАКРЫТИЕ ==========
 local function closeGUI()
     mainFrame.Visible = false
     dockButton.Visible = true
@@ -757,7 +761,7 @@ end
 closeButton.MouseButton1Click:Connect(closeGUI)
 closeButton.TouchTap:Connect(closeGUI)
 
--- ========== ОТКРЫТИЕ (док-кнопка) ==========
+-- ========== ОТКРЫТИЕ ==========
 local function openGUI()
     mainFrame.Visible = true
     dockButton.Visible = false
@@ -766,13 +770,6 @@ end
 
 dockButton.MouseButton1Click:Connect(openGUI)
 dockButton.TouchTap:Connect(openGUI)
-
--- ========== ПРОВЕРКА ПРИ ЗАПУСКЕ ==========
-if getgenv().KeepXyqwHub then
-    print("[XyqwHub] Auto Execute: ENABLED")
-else
-    print("[XyqwHub] Auto Execute: DISABLED")
-end
 
 -- ========== ЗАПУСК ==========
 task.wait(0.5)
