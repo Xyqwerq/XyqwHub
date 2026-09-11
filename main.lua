@@ -1,16 +1,8 @@
--- ========== XyqwHub - Версия 2.0 ==========
+-- ========== XyqwHub - Версия 2.1 ==========
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.0"
-
--- ========== ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ AUTO EXECUTE ==========
-if getgenv().KeepXyqwHub == nil then
-    getgenv().KeepXyqwHub = true
-end
-
--- ========== ПРОВЕРКА QUEUE_ON_TELEPORT ==========
-local queueteleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+local VERSION = "2.1"
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 if getgenv().XyqwLanguage == nil then
@@ -47,9 +39,7 @@ local LANG = {
         DeathOrder = "Simon Says script loaded",
         DeathOrderBottom = "Have fun!",
         CheesyKey = "Key: joincheesydsc",
-        CheesyBottom = "Script should be loaded",
-        AutoExecuteENABLE = "Auto Execute: ENABLE",
-        AutoExecuteDISABLE = "Auto Execute: DISABLE"
+        CheesyBottom = "Script should be loaded"
     },
     RU = {
         Welcome = "Добро пожаловать в XyqwHub!",
@@ -79,9 +69,7 @@ local LANG = {
         DeathOrder = "Скрипт Simon Says загружен",
         DeathOrderBottom = "Приятной игры!",
         CheesyKey = "Ключ: joincheesydsc",
-        CheesyBottom = "Скрипт должен запуститься",
-        AutoExecuteENABLE = "Авто-запуск: включен",
-        AutoExecuteDISABLE = "Авто-запуск: выключен"
+        CheesyBottom = "Скрипт должен запуститься"
     }
 }
 
@@ -127,15 +115,14 @@ mainFrame.Parent = screenGui
 
 -- Заголовок
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 60)
+titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
--- Название
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(0.5, -5, 0.5, 0)
-titleLabel.Position = UDim2.new(0, 5, 0, 5)
+titleLabel.Size = UDim2.new(1, -70, 1, 0)
+titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = _("WindowTitle")
 titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -143,28 +130,9 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Кнопка Auto Execute
-local autoExecButton = Instance.new("TextButton")
-autoExecButton.Size = UDim2.new(0.5, -5, 0.4, 0)
-autoExecButton.Position = UDim2.new(0, 5, 0.5, 2)
-autoExecButton.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-autoExecButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-if getgenv().KeepXyqwHub then
-    autoExecButton.Text = _("AutoExecuteENABLE")
-else
-    autoExecButton.Text = _("AutoExecuteDISABLE")
-end
-autoExecButton.TextScaled = true
-autoExecButton.Font = Enum.Font.GothamBold
-autoExecButton.BorderSizePixel = 1
-autoExecButton.BorderColor3 = Color3.fromRGB(255, 0, 0)
-autoExecButton.Parent = titleBar
-autoExecButton.AutoButtonColor = false
-
--- Кнопка смены языка
 local langButton = Instance.new("TextButton")
-langButton.Size = UDim2.new(0, 35, 0.45, 0)
-langButton.Position = UDim2.new(1, -65, 0, 5)
+langButton.Size = UDim2.new(0, 35, 1, 0)
+langButton.Position = UDim2.new(1, -65, 0, 0)
 langButton.BackgroundTransparency = 1
 langButton.Text = getgenv().XyqwLanguage
 langButton.TextColor3 = Color3.fromRGB(255, 200, 0)
@@ -173,10 +141,9 @@ langButton.Font = Enum.Font.GothamBold
 langButton.Parent = titleBar
 langButton.AutoButtonColor = false
 
--- Крестик
 local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 30, 0.45, 0)
-closeButton.Position = UDim2.new(1, -30, 0.5, 2)
+closeButton.Size = UDim2.new(0, 30, 1, 0)
+closeButton.Position = UDim2.new(1, -30, 0, 0)
 closeButton.BackgroundTransparency = 1
 closeButton.Text = "X"
 closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -187,8 +154,8 @@ closeButton.AutoButtonColor = false
 
 -- ========== СКРОЛЛ ==========
 local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(1, -10, 1, -70)
-scrollFrame.Position = UDim2.new(0, 5, 0, 65)
+scrollFrame.Size = UDim2.new(1, -10, 1, -40)
+scrollFrame.Position = UDim2.new(0, 5, 0, 35)
 scrollFrame.BackgroundTransparency = 1
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollFrame.ScrollBarThickness = 4
@@ -444,12 +411,6 @@ local function SwitchLanguage()
     dockButton.Text = _("DockText")
     langButton.Text = getgenv().XyqwLanguage
     
-    if getgenv().KeepXyqwHub then
-        autoExecButton.Text = _("AutoExecuteENABLE")
-    else
-        autoExecButton.Text = _("AutoExecuteDISABLE")
-    end
-    
     ShowNotification(_("LangChanged"), "", 2)
     
     print("[XyqwHub] Language changed to: " .. getgenv().XyqwLanguage)
@@ -461,46 +422,9 @@ end
 langButton.MouseButton1Click:Connect(SwitchLanguage)
 langButton.TouchTap:Connect(SwitchLanguage)
 
--- ========== ПЕРЕКЛЮЧЕНИЕ AUTO EXECUTE ==========
-local function ToggleAutoExecute()
-    getgenv().KeepXyqwHub = not getgenv().KeepXyqwHub
-    
-    if getgenv().KeepXyqwHub then
-        autoExecButton.Text = _("AutoExecuteENABLE")
-        print("[XyqwHub] Auto Execute: ENABLED")
-    else
-        autoExecButton.Text = _("AutoExecuteDISABLE")
-        print("[XyqwHub] Auto Execute: DISABLED")
-    end
-end
-
-autoExecButton.MouseButton1Click:Connect(ToggleAutoExecute)
-autoExecButton.TouchTap:Connect(ToggleAutoExecute)
-
--- ========== АВТО-ЗАПУСК ПРИ ТЕЛЕПОРТАЦИИ ==========
-local Players = game:GetService("Players")
-
-Players.LocalPlayer.OnTeleport:Connect(function(State)
-    if State == Enum.TeleportState.Started then
-        if getgenv().KeepXyqwHub and queueteleport then
-            local scriptUrl = "https://raw.githubusercontent.com/Xyqwerq/XyqwHub/main/main.lua"
-            queueteleport("loadstring(game:HttpGet('"..scriptUrl.."'))()")
-            print("[XyqwHub] Queued for teleport")
-        end
-    end
-end)
-
--- ========== ВСЕ КНОПКИ ==========
+-- ========== ВСЕ КНОПКИ (ОДНИМ СПИСКОМ) ==========
 local y = 5
 
--- ===== BLADE BALL =====
-local bladeBtn = CreateButton("Blade Ball", function()
-    RunScript("Blade Ball", "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua")
-end)
-bladeBtn.Position = UDim2.new(0, 5, 0, y)
-y = y + 45
-
--- ===== ОСНОВНЫЕ СКРИПТЫ =====
 local function addButton(text, url)
     local btn = CreateButton(text, function()
         RunScript(text, url)
@@ -509,6 +433,7 @@ local function addButton(text, url)
     y = y + 45
 end
 
+addButton("Blade Ball", "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua")
 addButton("AntiKillParts", "https://raw.githubusercontent.com/sovetskii-shashlik/Anti-kill-parts-updated-/refs/heads/main/Anti%20kill%20parts%20by%20Zephyr")
 addButton("PulseHub", "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua")
 addButton("RUNAWAYS", "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua")
@@ -528,7 +453,6 @@ addButton("Blade Ball 2", "https://wings.ac/loader")
 addButton("Blade Ball 3", "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub")
 addButton("AX Scripts (INK)", "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua")
 
--- ===== DOORS V2 (КОПИРОВАНИЕ) =====
 local doorsV2Btn = CreateButton("Doors V2 (Copy)", function()
     local scriptText = [[getgenv().SCRIPT_KEY = "KEYLESS"
 loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()]]
@@ -544,7 +468,6 @@ end)
 doorsV2Btn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== DOORS V3 (Cheesy) =====
 local cheesyBtn = CreateButton("Doors V3 (Cheesy)", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua"))()
@@ -562,7 +485,6 @@ y = y + 45
 
 addButton("Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
 
--- ===== WALK ON WALLS =====
 local walkBtn = CreateButton("Walk on walls", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://rawscripts.net/raw/The-patience-obby-Universal-Walk-on-walls-18129"))()
@@ -578,7 +500,6 @@ end)
 walkBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== AETHERX =====
 local aetherBtn = CreateButton("AetherX (Death Penalty)", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"))()
@@ -596,7 +517,6 @@ y = y + 45
 
 addButton("Voidware (INK/99N/Forsaken)", "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua")
 
--- ===== LALOL HUB =====
 local lalolBtn = CreateButton("LaLol Hub (B4ckd0or)", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Miygteet/Hacker101/refs/heads/main/LALOL-Backdoor-Secure.lua"))()
@@ -612,7 +532,6 @@ end)
 lalolBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== FTAP =====
 local ftapBtn = CreateButton("FTAP", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/4078649e4397f0e2cdaddde241d69bfd67b2b7107917891384735129c85cae18/download"))()
@@ -630,7 +549,6 @@ y = y + 45
 
 addButton("MinhNat Hub (TSB)", "https://rawscripts.net/raw/Universal-Script-MinhNhat-Tsb-62161")
 
--- ===== BC9 (UTG) =====
 local bc9Btn = CreateButton("BC9 (UTG)", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://rawscripts.net/raw/untitled-tag-game-BC9-UTG-MENU-116806"))()
@@ -648,8 +566,6 @@ y = y + 45
 
 addButton("FTAP (WITH KEY!!)", "https://raw.githubusercontent.com/BlizTBr/scripts/main/FTAP.lua")
 addButton("RadiumHub (Pressure)", "https://rawscripts.net/raw/UPDATE-Pressure-God-Mode-Auto-Loot-ESP-Full-Bright-No-Eyefestation-224409")
-
--- ===== НОВЫЕ СКРИПТЫ =====
 addButton("Steal an egg", "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua")
 addButton("Universal script", "https://raw.githubusercontent.com/fleecelolll/Fleece-s-Utility-Panel/refs/heads/main/Script.lua")
 addButton("Corridor", "https://saga2015.b-cdn.net/corridor.luau")
@@ -657,7 +573,6 @@ addButton("BloxStrike", "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs
 addButton("RIVALS", "https://raw.githubusercontent.com/imshrak/rivals/refs/heads/main/main")
 addButton("Troll script", "https://mois7.xyz/loader")
 
--- ===== DEATH ORDER [SIMON] =====
 local deathOrderBtn = CreateButton("Death Order [SIMON]", function()
     local success, err = pcall(function()
         loadstring(game:HttpGet("https://rawscripts.net/raw/Death-Order:-Simon-Says-BEST-DEATH-ORDER-SCRIPT-226542"))()
@@ -673,12 +588,11 @@ end)
 deathOrderBtn.Position = UDim2.new(0, 5, 0, y)
 y = y + 45
 
--- ===== CANDYWARE (MM2) =====
 addButton("CandyWare (MM2)", "https://raw.githubusercontent.com/Be1for/Scripts/refs/heads/main/candyware.luau")
-
--- ===== НОВЫЕ СКРИПТЫ (DROPKICK + EVADE) =====
 addButton("DropKick", "https://raw.githubusercontent.com/yes-d3v-scripts/drop-kick-fling/refs/heads/main/script")
 addButton("Evade", "https://github.com/imc72s/LaztDex/raw/refs/heads/main/EvadeScriptLaztDex")
+addButton("A dusty trip", "https://raw.githubusercontent.com/BalintTheDevXBack/Games/refs/heads/main/aDustyTrip")
+addButton("A dusty trip v2", "https://raw.githubusercontent.com/VoxlarWIP/Src/refs/heads/main/adustytrip.lua")
 
 -- ========== DESTROY ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
