@@ -1,8 +1,8 @@
--- ========== XyqwHub - Версия 2.1 ==========
+-- ========== XyqwHub - Версия 2.2 ==========
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.1"
+local VERSION = "2.2"
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 if getgenv().XyqwLanguage == nil then
@@ -422,7 +422,7 @@ end
 langButton.MouseButton1Click:Connect(SwitchLanguage)
 langButton.TouchTap:Connect(SwitchLanguage)
 
--- ========== ВСЕ КНОПКИ (ОДНИМ СПИСКОМ) ==========
+-- ========== ВСЕ КНОПКИ ==========
 local y = 5
 
 local function addButton(text, url)
@@ -593,6 +593,8 @@ addButton("DropKick", "https://raw.githubusercontent.com/yes-d3v-scripts/drop-ki
 addButton("Evade", "https://github.com/imc72s/LaztDex/raw/refs/heads/main/EvadeScriptLaztDex")
 addButton("A dusty trip", "https://raw.githubusercontent.com/BalintTheDevXBack/Games/refs/heads/main/aDustyTrip")
 addButton("A dusty trip v2", "https://raw.githubusercontent.com/VoxlarWIP/Src/refs/heads/main/adustytrip.lua")
+addButton("bLockman's minesweaper", "https://pastefy.app/T5XIfiMo/raw")
+addButton("Cheating during test", "https://files.catbox.moe/pkulzc.txt")
 
 -- ========== DESTROY ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
