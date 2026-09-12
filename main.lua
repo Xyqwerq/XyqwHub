@@ -1,8 +1,8 @@
--- ========== XyqwHub - Версия 2.2 ==========
+-- ========== XyqwHub - Версия 2.3 ==========
 print("[XyqwHub] Loading...")
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.2"
+local VERSION = "2.3"
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 if getgenv().XyqwLanguage == nil then
@@ -595,6 +595,7 @@ addButton("A dusty trip", "https://raw.githubusercontent.com/BalintTheDevXBack/G
 addButton("A dusty trip v2", "https://raw.githubusercontent.com/VoxlarWIP/Src/refs/heads/main/adustytrip.lua")
 addButton("bLockman's minesweaper", "https://pastefy.app/T5XIfiMo/raw")
 addButton("Cheating during test", "https://files.catbox.moe/pkulzc.txt")
+addButton("Adopt me", "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem")
 
 -- ========== DESTROY ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
