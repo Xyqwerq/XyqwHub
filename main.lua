@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 2.7 ==========
+-- ========== XyqwHub - Версия 2.8 ==========
 -- Roblox Loading
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
@@ -25,7 +25,7 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.6"
+local VERSION = "2.8"
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 if getgenv().XyqwLanguage == nil then
@@ -58,7 +58,72 @@ local LANG = {
         DeathOrderBottom = "Have fun!",
         CheesyKey = "Key: joincheesydsc",
         CheesyBottom = "Script should be loaded",
-        CopyFailed = "Failed to copy! Please copy manually"
+        CopyFailed = "Failed to copy! Please copy manually",
+        ChangeLogTitle = "ChangeLog",
+        ChangeLogText = [[XyqwHub ChangeLog
+
+Version 2.8
+- XyqwHub Loaded! now appears immediately
+- ChangeLog translated to EN/RU
+
+Version 2.7
+- Roblox notifications (bottom right)
+- ChangeLog button added
+- Loading / Loaded notifications
+
+Version 2.6
+- Notifications moved to bottom right
+
+Version 2.5
+- All messages translated to EN/RU
+- Re-launch protection
+
+Version 2.4
+- Re-launch protection added
+- DESTROY button resets the flag
+
+Version 2.3
+- Added Adopt me
+
+Version 2.2
+- Added bLockman's minesweaper and Cheating during test
+
+Version 2.1
+- Added DropKick, Evade, A Dusty Trip, A Dusty Trip v2
+
+Version 2.0
+- Removed Auto Execute
+- All buttons in one list
+
+Version 1.9
+- Added key for Doors V3 (Cheesy)
+
+Version 1.8
+- Added Death Order [SIMON] and CandyWare (MM2)
+
+Version 1.7
+- Added Troll script
+
+Version 1.6
+- Added Steal an egg, Universal script, Corridor, BloxStrike, RIVALS
+
+Version 1.5
+- EN/RU hint at top and bottom of welcome
+
+Version 1.4
+- EN/RU hint in welcome
+
+Version 1.3
+- Hint how to change language after welcome
+
+Version 1.2
+- Fixed language change button
+
+Version 1.1
+- Added language change
+
+Version 1.0
+- First release]]
     },
     RU = {
         WindowTitle = "XyqwHub",
@@ -84,7 +149,72 @@ local LANG = {
         DeathOrderBottom = "Приятной игры!",
         CheesyKey = "Ключ: joincheesydsc",
         CheesyBottom = "Скрипт должен запуститься",
-        CopyFailed = "Не удалось скопировать! Скопируйте вручную"
+        CopyFailed = "Не удалось скопировать! Скопируйте вручную",
+        ChangeLogTitle = "Ченджлог",
+        ChangeLogText = [[XyqwHub Ченджлог
+
+Версия 2.8
+- XyqwHub Loaded! теперь появляется сразу
+- Ченджлог переведён на RU/EN
+
+Версия 2.7
+- Уведомления Roblox (справа снизу)
+- Добавлена кнопка Ченджлог
+- Уведомления Loading / Loaded
+
+Версия 2.6
+- Уведомления перенесены вправо вниз
+
+Версия 2.5
+- Все сообщения переведены на RU/EN
+- Защита от повторного запуска
+
+Версия 2.4
+- Добавлена защита от повторного запуска
+- Кнопка DESTROY сбрасывает флаг
+
+Версия 2.3
+- Добавлен Adopt me
+
+Версия 2.2
+- Добавлены bLockman's minesweaper и Cheating during test
+
+Версия 2.1
+- Добавлены DropKick, Evade, A Dusty Trip, A Dusty Trip v2
+
+Версия 2.0
+- Убран Auto Execute
+- Все кнопки одним списком
+
+Версия 1.9
+- Добавлен ключ для Doors V3 (Cheesy)
+
+Версия 1.8
+- Добавлены Death Order [SIMON] и CandyWare (MM2)
+
+Версия 1.7
+- Добавлен Troll script
+
+Версия 1.6
+- Добавлены Steal an egg, Universal script, Corridor, BloxStrike, RIVALS
+
+Версия 1.5
+- Подсказка EN/RU вверху и внизу приветствия
+
+Версия 1.4
+- Подсказка EN/RU в приветствии
+
+Версия 1.3
+- Подсказка как сменить язык после приветствия
+
+Версия 1.2
+- Исправлена кнопка смены языка
+
+Версия 1.1
+- Добавлена смена языка
+
+Версия 1.0
+- Первый релиз]]
     }
 }
 
@@ -157,7 +287,6 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Кнопка ChangeLog (рядом с названием)
 local changelogButton = Instance.new("TextButton")
 changelogButton.Size = UDim2.new(0, 70, 0.8, 0)
 changelogButton.Position = UDim2.new(1, -140, 0.1, 0)
@@ -341,7 +470,7 @@ local function ShowChangeLog()
     titleLbl.Position = UDim2.new(0, 5, 0, 5)
     titleLbl.BackgroundTransparency = 1
     titleLbl.TextColor3 = Color3.fromRGB(255, 100, 100)
-    titleLbl.Text = "ChangeLog"
+    titleLbl.Text = _("ChangeLogTitle")
     titleLbl.TextScaled = true
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Parent = changelogFrame
@@ -361,13 +490,13 @@ local function ShowChangeLog()
     scroll.Size = UDim2.new(1, -20, 1, -50)
     scroll.Position = UDim2.new(0, 10, 0, 40)
     scroll.BackgroundTransparency = 1
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 700)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 1200)
     scroll.ScrollBarThickness = 4
     scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
     scroll.Parent = changelogFrame
     
     local textLbl = Instance.new("TextLabel")
-    textLbl.Size = UDim2.new(1, -10, 0, 690)
+    textLbl.Size = UDim2.new(1, -10, 0, 1190)
     textLbl.Position = UDim2.new(0, 5, 0, 5)
     textLbl.BackgroundTransparency = 1
     textLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -377,71 +506,8 @@ local function ShowChangeLog()
     textLbl.TextScaled = false
     textLbl.TextSize = 14
     textLbl.Font = Enum.Font.Gotham
+    textLbl.Text = _("ChangeLogText")
     textLbl.Parent = scroll
-    
-    textLbl.Text = [[
-XyqwHub ChangeLog
-
-Version 2.7
-- Уведомления теперь в стиле Roblox (справа снизу)
-- Добавлена кнопка ChangeLog
-- Приветствие и ченджлог по центру
-- Roblox-сообщения: "XyqwHub Loading..." и "XyqwHub Loaded!"
-
-Version 2.6
-- Уведомления перенесены вправо вниз
-
-Version 2.5
-- Все сообщения переведены на RU/EN
-- Защита от повторного запуска
-
-Version 2.4
-- Добавлена защита от повторного запуска
-- Кнопка DESTROY сбрасывает флаг
-
-Version 2.3
-- Добавлен Adopt me
-
-Version 2.2
-- Добавлены bLockman's minesweaper и Cheating during test
-
-Version 2.1
-- Добавлены DropKick, Evade, A Dusty Trip, A Dusty Trip v2
-
-Version 2.0
-- Убран Auto Execute
-- Все кнопки одним списком
-
-Version 1.9
-- Добавлен ключ для Doors V3 (Cheesy)
-
-Version 1.8
-- Добавлены Death Order [SIMON] и CandyWare (MM2)
-
-Version 1.7
-- Добавлен Troll script
-
-Version 1.6
-- Добавлены Steal an egg, Universal script, Corridor, BloxStrike, RIVALS
-
-Version 1.5
-- Подсказка EN/RU вверху и внизу приветствия
-
-Version 1.4
-- Подсказка EN/RU в приветствии
-
-Version 1.3
-- Подсказка как сменить язык после приветствия
-
-Version 1.2
-- Исправлена кнопка смены языка
-
-Version 1.1
-- Добавлена смена языка
-
-Version 1.0
-- Первый релиз
-]]
     
     closeCL.MouseButton1Click:Connect(function()
         changelogFrame:Destroy()
@@ -810,9 +876,10 @@ end
 dockButton.MouseButton1Click:Connect(openGUI)
 dockButton.TouchTap:Connect(openGUI)
 
-task.wait(0.5)
-ShowWelcomeMessage()
-
--- Roblox Loaded
+-- Roblox Loaded — СРАЗУ
 ShowRobloxNotification("XyqwHub Loaded!", 3)
 print("[XyqwHub] XyqwHub loaded! Version: " .. VERSION)
+
+-- Приветствие
+task.wait(0.3)
+ShowWelcomeMessage()
