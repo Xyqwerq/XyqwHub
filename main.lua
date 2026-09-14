@@ -1,21 +1,25 @@
--- ========== XyqwHub - Версия 2.4 ==========
+-- ========== XyqwHub - Версия 2.5 ==========
 print("[XyqwHub] Loading...")
 
 -- ========== ЗАЩИТА ОТ ПОВТОРНОГО ЗАПУСКА ==========
 if getgenv().XyqwHubRunning then
+    local msg = "Повторный запуск скрипта был заблокирован!"
+    if getgenv().XyqwLanguage == "EN" then
+        msg = "Script re-launch has been blocked!"
+    end
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "XyqwHub",
-        Text = "Повторный запуск скрипта был заблокирован!",
+        Text = msg,
         Duration = 5
     })
-    print("[XyqwHub] Повторный запуск скрипта был заблокирован!")
+    print("[XyqwHub] " .. msg)
     return
 end
 
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.4"
+local VERSION = "2.5"
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 if getgenv().XyqwLanguage == nil then
@@ -25,7 +29,6 @@ end
 -- ========== ТЕКСТЫ ==========
 local LANG = {
     EN = {
-        Welcome = "Welcome to XyqwHub!",
         WindowTitle = "XyqwHub",
         DockText = "XyqwHub",
         LangButton = "EN",
@@ -44,18 +47,14 @@ local LANG = {
         BetaBottom = "Script should be loaded",
         Destroy = "XyqwHub DESTROYED",
         LangChanged = "Language changed to English",
-        TikTok = "TikTok: xyqwerq.tvink",
-        Telegram = "Telegram: t.me/xyqwsquad",
-        Discord = "Discord: xyqwerqyt",
-        LangHintTop = "Press EN/RU in the top right corner to change language",
-        LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык",
         DeathOrder = "Simon Says script loaded",
         DeathOrderBottom = "Have fun!",
         CheesyKey = "Key: joincheesydsc",
-        CheesyBottom = "Script should be loaded"
+        CheesyBottom = "Script should be loaded",
+        CopySuccess = "Script copied to clipboard. Paste it into your executor",
+        CopyFailed = "Failed to copy! Please copy manually"
     },
     RU = {
-        Welcome = "Добро пожаловать в XyqwHub!",
         WindowTitle = "XyqwHub",
         DockText = "XyqwHub",
         LangButton = "RU",
@@ -74,15 +73,12 @@ local LANG = {
         BetaBottom = "Скрипт должен запуститься",
         Destroy = "XyqwHub УНИЧТОЖЕН",
         LangChanged = "Язык изменён на Русский",
-        TikTok = "TikTok: xyqwerq.tvink",
-        Telegram = "Telegram: t.me/xyqwsquad",
-        Discord = "Discord: xyqwerqyt",
-        LangHintTop = "Press EN/RU in the top right corner to change language",
-        LangHintBottom = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык",
         DeathOrder = "Скрипт Simon Says загружен",
         DeathOrderBottom = "Приятной игры!",
         CheesyKey = "Ключ: joincheesydsc",
-        CheesyBottom = "Скрипт должен запуститься"
+        CheesyBottom = "Скрипт должен запуститься",
+        CopySuccess = "Скрипт скопирован в буфер обмена. Вставьте его в свой executor",
+        CopyFailed = "Не удалось скопировать! Скопируйте вручную"
     }
 }
 
@@ -126,7 +122,6 @@ mainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
--- Заголовок
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
@@ -165,7 +160,6 @@ closeButton.Font = Enum.Font.GothamBold
 closeButton.Parent = titleBar
 closeButton.AutoButtonColor = false
 
--- ========== СКРОЛЛ ==========
 local scrollFrame = Instance.new("ScrollingFrame")
 scrollFrame.Size = UDim2.new(1, -10, 1, -40)
 scrollFrame.Position = UDim2.new(0, 5, 0, 35)
@@ -175,7 +169,6 @@ scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
 scrollFrame.Parent = mainFrame
 
--- ========== БЛОКИРОВКА ==========
 local buttonsBlocked = false
 
 local function blockButtonsTemporarily()
@@ -184,7 +177,6 @@ local function blockButtonsTemporarily()
     buttonsBlocked = false
 end
 
--- ========== АНТИ-СПАМ ==========
 local cooldowns = {}
 
 local function CanRun(name)
@@ -196,7 +188,6 @@ local function CanRun(name)
     return true
 end
 
--- ========== КОПИРОВАНИЕ ==========
 local function CopyToClipboard(text)
     local success, err = pcall(function()
         setclipboard(text)
@@ -210,7 +201,6 @@ local function CopyToClipboard(text)
     end
 end
 
--- ========== УВЕДОМЛЕНИЯ ==========
 local function ShowNotification(topText, bottomText, duration)
     duration = duration or 3.5
     
@@ -250,7 +240,6 @@ local function ShowNotification(topText, bottomText, duration)
     notificationFrame:Destroy()
 end
 
--- ========== ПРИВЕТСТВИЕ ==========
 local function ShowWelcomeMessage()
     local welcomeFrame = Instance.new("Frame")
     welcomeFrame.Size = UDim2.new(0, 320, 0, 175)
@@ -269,7 +258,7 @@ local function ShowWelcomeMessage()
     topHint.Position = UDim2.new(0, 5, 0, 5)
     topHint.BackgroundTransparency = 1
     topHint.TextColor3 = Color3.fromRGB(255, 200, 100)
-    topHint.Text = _("LangHintTop")
+    topHint.Text = "Press EN/RU in the top right corner to change language"
     topHint.TextScaled = true
     topHint.Font = Enum.Font.Gotham
     topHint.Parent = welcomeFrame
@@ -279,7 +268,7 @@ local function ShowWelcomeMessage()
     titleLabelW.Position = UDim2.new(0, 5, 0, 28)
     titleLabelW.BackgroundTransparency = 1
     titleLabelW.TextColor3 = Color3.fromRGB(255, 100, 100)
-    titleLabelW.Text = _("Welcome")
+    titleLabelW.Text = "Welcome to XyqwHub!"
     titleLabelW.TextScaled = true
     titleLabelW.Font = Enum.Font.GothamBold
     titleLabelW.Parent = welcomeFrame
@@ -289,7 +278,7 @@ local function ShowWelcomeMessage()
     tiktokLabel.Position = UDim2.new(0, 5, 0, 56)
     tiktokLabel.BackgroundTransparency = 1
     tiktokLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tiktokLabel.Text = _("TikTok")
+    tiktokLabel.Text = "TikTok: xyqwerq.tvink"
     tiktokLabel.TextScaled = true
     tiktokLabel.Font = Enum.Font.Gotham
     tiktokLabel.Parent = welcomeFrame
@@ -299,7 +288,7 @@ local function ShowWelcomeMessage()
     telegramLabel.Position = UDim2.new(0, 5, 0, 80)
     telegramLabel.BackgroundTransparency = 1
     telegramLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    telegramLabel.Text = _("Telegram")
+    telegramLabel.Text = "Telegram: t.me/xyqwsquad"
     telegramLabel.TextScaled = true
     telegramLabel.Font = Enum.Font.Gotham
     telegramLabel.Parent = welcomeFrame
@@ -309,7 +298,7 @@ local function ShowWelcomeMessage()
     discordLabel.Position = UDim2.new(0, 5, 0, 104)
     discordLabel.BackgroundTransparency = 1
     discordLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    discordLabel.Text = _("Discord")
+    discordLabel.Text = "Discord: xyqwerqyt"
     discordLabel.TextScaled = true
     discordLabel.Font = Enum.Font.Gotham
     discordLabel.Parent = welcomeFrame
@@ -319,7 +308,7 @@ local function ShowWelcomeMessage()
     bottomHint.Position = UDim2.new(0, 5, 0, 130)
     bottomHint.BackgroundTransparency = 1
     bottomHint.TextColor3 = Color3.fromRGB(255, 200, 100)
-    bottomHint.Text = _("LangHintBottom")
+    bottomHint.Text = "Нажмите EN/RU в правом верхнем углу, чтобы сменить язык"
     bottomHint.TextScaled = true
     bottomHint.Font = Enum.Font.Gotham
     bottomHint.Parent = welcomeFrame
@@ -338,7 +327,6 @@ local function ShowWelcomeMessage()
     welcomeFrame:Destroy()
 end
 
--- ========== КНОПКИ ==========
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 40)
@@ -394,7 +382,6 @@ local function CreateButton(text, callback)
     return btn
 end
 
--- ========== ЗАПУСК СКРИПТА ==========
 local function RunScript(name, url)
     print("[XyqwHub] " .. name .. " - STARTING...")
     local success, err = pcall(function()
@@ -407,7 +394,6 @@ local function RunScript(name, url)
     end
 end
 
--- ========== СМЕНА ЯЗЫКА ==========
 local langCooldown = false
 
 local function SwitchLanguage()
@@ -435,7 +421,6 @@ end
 langButton.MouseButton1Click:Connect(SwitchLanguage)
 langButton.TouchTap:Connect(SwitchLanguage)
 
--- ========== ВСЕ КНОПКИ ==========
 local y = 5
 
 local function addButton(text, url)
@@ -475,7 +460,7 @@ loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54
     if copied then
         ShowNotification(_("DoorsV2"), _("DoorsV2Bottom"))
     else
-        ShowNotification(_("DoorsV2"), "Failed to copy! Please copy manually")
+        ShowNotification(_("DoorsV2"), _("CopyFailed"))
     end
 end)
 doorsV2Btn.Position = UDim2.new(0, 5, 0, y)
@@ -610,7 +595,6 @@ addButton("bLockman's minesweaper", "https://pastefy.app/T5XIfiMo/raw")
 addButton("Cheating during test", "https://files.catbox.moe/pkulzc.txt")
 addButton("Adopt me", "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem")
 
--- ========== DESTROY (СБРАСЫВАЕТ ФЛАГ) ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
     getgenv().XyqwHubRunning = false
@@ -623,7 +607,6 @@ y = y + 45
 
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
 
--- ========== ПЕРЕТАСКИВАНИЕ ОКНА ==========
 local dragging = false
 local dragStart, startPos
 
@@ -653,7 +636,6 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- ========== ПЕРЕТАСКИВАНИЕ ДОК-КНОПКИ ==========
 local dockDragging = false
 local dockDragStart, dockStartPos
 
@@ -683,7 +665,6 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- ========== ЗАКРЫТИЕ ==========
 local function closeGUI()
     mainFrame.Visible = false
     dockButton.Visible = true
@@ -692,7 +673,6 @@ end
 closeButton.MouseButton1Click:Connect(closeGUI)
 closeButton.TouchTap:Connect(closeGUI)
 
--- ========== ОТКРЫТИЕ ==========
 local function openGUI()
     mainFrame.Visible = true
     dockButton.Visible = false
@@ -702,7 +682,6 @@ end
 dockButton.MouseButton1Click:Connect(openGUI)
 dockButton.TouchTap:Connect(openGUI)
 
--- ========== ЗАПУСК ==========
 task.wait(0.5)
 ShowWelcomeMessage()
 
