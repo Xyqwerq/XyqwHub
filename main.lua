@@ -1,4 +1,10 @@
--- ========== XyqwHub - Версия 2.6 ==========
+-- ========== XyqwHub - Версия 2.7 ==========
+-- Roblox Loading
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "XyqwHub",
+    Text = "XyqwHub Loading...",
+    Duration = 3
+})
 print("[XyqwHub] Loading...")
 
 -- ========== ЗАЩИТА ОТ ПОВТОРНОГО ЗАПУСКА ==========
@@ -19,7 +25,7 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.5"
+local VERSION = "2.6"
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 if getgenv().XyqwLanguage == nil then
@@ -32,6 +38,7 @@ local LANG = {
         WindowTitle = "XyqwHub",
         DockText = "XyqwHub",
         LangButton = "EN",
+        ChangeLogBtn = "ChangeLog",
         Loaded = "loaded",
         Error = "error",
         Failed = "failed to load",
@@ -57,6 +64,7 @@ local LANG = {
         WindowTitle = "XyqwHub",
         DockText = "XyqwHub",
         LangButton = "RU",
+        ChangeLogBtn = "Ченджлог",
         Loaded = "загружен",
         Error = "ошибка",
         Failed = "не удалось загрузить",
@@ -86,17 +94,13 @@ local function _(key)
     return LANG[lang][key] or key
 end
 
--- ========== УВЕДОМЛЕНИЯ (ROBLOX CORE, СПРАВА СНИЗУ) ==========
-local function ShowNotification(topText, bottomText, duration)
+-- ========== УВЕДОМЛЕНИЯ ROBLOX (СПРАВА СНИЗУ) ==========
+local function ShowRobloxNotification(text, duration)
     duration = duration or 3.5
-    local finalText = topText
-    if bottomText and bottomText ~= "" then
-        finalText = topText .. "\n" .. bottomText
-    end
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "XyqwHub",
-            Text = finalText,
+            Text = text,
             Duration = duration
         })
     end)
@@ -144,7 +148,7 @@ titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -70, 1, 0)
+titleLabel.Size = UDim2.new(1, -145, 1, 0)
 titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = _("WindowTitle")
@@ -152,6 +156,20 @@ titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
+
+-- Кнопка ChangeLog (рядом с названием)
+local changelogButton = Instance.new("TextButton")
+changelogButton.Size = UDim2.new(0, 70, 0.8, 0)
+changelogButton.Position = UDim2.new(1, -140, 0.1, 0)
+changelogButton.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+changelogButton.TextColor3 = Color3.fromRGB(255, 200, 0)
+changelogButton.Text = _("ChangeLogBtn")
+changelogButton.TextScaled = true
+changelogButton.Font = Enum.Font.GothamBold
+changelogButton.BorderSizePixel = 1
+changelogButton.BorderColor3 = Color3.fromRGB(255, 0, 0)
+changelogButton.Parent = titleBar
+changelogButton.AutoButtonColor = false
 
 local langButton = Instance.new("TextButton")
 langButton.Size = UDim2.new(0, 35, 1, 0)
@@ -216,6 +234,7 @@ local function CopyToClipboard(text)
     end
 end
 
+-- ========== ПРИВЕТСТВИЕ (ПО ЦЕНТРУ) ==========
 local function ShowWelcomeMessage()
     local welcomeFrame = Instance.new("Frame")
     welcomeFrame.Size = UDim2.new(0, 320, 0, 175)
@@ -303,6 +322,135 @@ local function ShowWelcomeMessage()
     welcomeFrame:Destroy()
 end
 
+-- ========== ЧЕНДЖЛОГ (ПО ЦЕНТРУ) ==========
+local function ShowChangeLog()
+    local changelogFrame = Instance.new("Frame")
+    changelogFrame.Size = UDim2.new(0, 400, 0, 350)
+    changelogFrame.Position = UDim2.new(0.5, -200, 0.5, -175)
+    changelogFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    changelogFrame.BorderSizePixel = 2
+    changelogFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    changelogFrame.Parent = screenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = changelogFrame
+    
+    local titleLbl = Instance.new("TextLabel")
+    titleLbl.Size = UDim2.new(1, -40, 0, 30)
+    titleLbl.Position = UDim2.new(0, 5, 0, 5)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.TextColor3 = Color3.fromRGB(255, 100, 100)
+    titleLbl.Text = "ChangeLog"
+    titleLbl.TextScaled = true
+    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.Parent = changelogFrame
+    
+    local closeCL = Instance.new("TextButton")
+    closeCL.Size = UDim2.new(0, 30, 0, 30)
+    closeCL.Position = UDim2.new(1, -35, 0, 0)
+    closeCL.BackgroundTransparency = 1
+    closeCL.Text = "X"
+    closeCL.TextColor3 = Color3.fromRGB(255, 0, 0)
+    closeCL.TextScaled = true
+    closeCL.Font = Enum.Font.GothamBold
+    closeCL.Parent = changelogFrame
+    closeCL.AutoButtonColor = false
+    
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(1, -20, 1, -50)
+    scroll.Position = UDim2.new(0, 10, 0, 40)
+    scroll.BackgroundTransparency = 1
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 700)
+    scroll.ScrollBarThickness = 4
+    scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+    scroll.Parent = changelogFrame
+    
+    local textLbl = Instance.new("TextLabel")
+    textLbl.Size = UDim2.new(1, -10, 0, 690)
+    textLbl.Position = UDim2.new(0, 5, 0, 5)
+    textLbl.BackgroundTransparency = 1
+    textLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLbl.TextWrapped = true
+    textLbl.TextXAlignment = Enum.TextXAlignment.Left
+    textLbl.TextYAlignment = Enum.TextYAlignment.Top
+    textLbl.TextScaled = false
+    textLbl.TextSize = 14
+    textLbl.Font = Enum.Font.Gotham
+    textLbl.Parent = scroll
+    
+    textLbl.Text = [[
+XyqwHub ChangeLog
+
+Version 2.7
+- Уведомления теперь в стиле Roblox (справа снизу)
+- Добавлена кнопка ChangeLog
+- Приветствие и ченджлог по центру
+- Roblox-сообщения: "XyqwHub Loading..." и "XyqwHub Loaded!"
+
+Version 2.6
+- Уведомления перенесены вправо вниз
+
+Version 2.5
+- Все сообщения переведены на RU/EN
+- Защита от повторного запуска
+
+Version 2.4
+- Добавлена защита от повторного запуска
+- Кнопка DESTROY сбрасывает флаг
+
+Version 2.3
+- Добавлен Adopt me
+
+Version 2.2
+- Добавлены bLockman's minesweaper и Cheating during test
+
+Version 2.1
+- Добавлены DropKick, Evade, A Dusty Trip, A Dusty Trip v2
+
+Version 2.0
+- Убран Auto Execute
+- Все кнопки одним списком
+
+Version 1.9
+- Добавлен ключ для Doors V3 (Cheesy)
+
+Version 1.8
+- Добавлены Death Order [SIMON] и CandyWare (MM2)
+
+Version 1.7
+- Добавлен Troll script
+
+Version 1.6
+- Добавлены Steal an egg, Universal script, Corridor, BloxStrike, RIVALS
+
+Version 1.5
+- Подсказка EN/RU вверху и внизу приветствия
+
+Version 1.4
+- Подсказка EN/RU в приветствии
+
+Version 1.3
+- Подсказка как сменить язык после приветствия
+
+Version 1.2
+- Исправлена кнопка смены языка
+
+Version 1.1
+- Добавлена смена языка
+
+Version 1.0
+- Первый релиз
+]]
+    
+    closeCL.MouseButton1Click:Connect(function()
+        changelogFrame:Destroy()
+    end)
+    closeCL.TouchTap:Connect(function()
+        changelogFrame:Destroy()
+    end)
+end
+
 local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 40)
@@ -385,8 +533,9 @@ local function SwitchLanguage()
     titleLabel.Text = _("WindowTitle")
     dockButton.Text = _("DockText")
     langButton.Text = getgenv().XyqwLanguage
+    changelogButton.Text = _("ChangeLogBtn")
     
-    ShowNotification(_("LangChanged"), "", 2)
+    ShowRobloxNotification(_("LangChanged"), 2)
     
     print("[XyqwHub] Language changed to: " .. getgenv().XyqwLanguage)
     
@@ -396,6 +545,9 @@ end
 
 langButton.MouseButton1Click:Connect(SwitchLanguage)
 langButton.TouchTap:Connect(SwitchLanguage)
+
+changelogButton.MouseButton1Click:Connect(ShowChangeLog)
+changelogButton.TouchTap:Connect(ShowChangeLog)
 
 local y = 5
 
@@ -434,9 +586,9 @@ loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54
     local copied = CopyToClipboard(scriptText)
     
     if copied then
-        ShowNotification(_("DoorsV2"), _("DoorsV2Bottom"))
+        ShowRobloxNotification(_("DoorsV2") .. " - " .. _("DoorsV2Bottom"))
     else
-        ShowNotification(_("DoorsV2"), _("CopyFailed"))
+        ShowRobloxNotification(_("DoorsV2") .. " - " .. _("CopyFailed"))
     end
 end)
 doorsV2Btn.Position = UDim2.new(0, 5, 0, y)
@@ -448,10 +600,10 @@ local cheesyBtn = CreateButton("Doors V3 (Cheesy)", function()
     end)
     if success then
         print("[XyqwHub] Doors V3 (Cheesy) - " .. _("Loaded") .. "!")
-        ShowNotification(_("CheesyKey"), _("CheesyBottom"))
+        ShowRobloxNotification(_("CheesyKey") .. " - " .. _("CheesyBottom"))
     else
         print("[XyqwHub] Doors V3 (Cheesy) - " .. _("Error") .. ": " .. tostring(err))
-        ShowNotification(_("CheesyKey"), _("Failed") .. ": " .. tostring(err))
+        ShowRobloxNotification(_("CheesyKey") .. " - " .. _("Failed"))
     end
 end)
 cheesyBtn.Position = UDim2.new(0, 5, 0, y)
@@ -465,10 +617,10 @@ local walkBtn = CreateButton("Walk on walls", function()
     end)
     if success then
         print("[XyqwHub] Walk on walls - " .. _("Loaded") .. "!")
-        ShowNotification(_("WalkOnWalls"), _("WalkOnWallsBottom"))
+        ShowRobloxNotification(_("WalkOnWalls") .. " - " .. _("WalkOnWallsBottom"))
     else
         print("[XyqwHub] Walk on walls - " .. _("Error") .. ": " .. tostring(err))
-        ShowNotification(_("WalkOnWalls"), _("Failed") .. ": " .. tostring(err))
+        ShowRobloxNotification(_("WalkOnWalls") .. " - " .. _("Failed"))
     end
 end)
 walkBtn.Position = UDim2.new(0, 5, 0, y)
@@ -480,10 +632,10 @@ local aetherBtn = CreateButton("AetherX (Death Penalty)", function()
     end)
     if success then
         print("[XyqwHub] AetherX - " .. _("Loaded") .. "!")
-        ShowNotification(_("AetherX"), _("AetherXBottom"))
+        ShowRobloxNotification(_("AetherX") .. " - " .. _("AetherXBottom"))
     else
         print("[XyqwHub] AetherX - " .. _("Error") .. ": " .. tostring(err))
-        ShowNotification(_("AetherX"), _("Failed") .. ": " .. tostring(err))
+        ShowRobloxNotification(_("AetherX") .. " - " .. _("Failed"))
     end
 end)
 aetherBtn.Position = UDim2.new(0, 5, 0, y)
@@ -497,10 +649,10 @@ local lalolBtn = CreateButton("LaLol Hub (B4ckd0or)", function()
     end)
     if success then
         print("[XyqwHub] LaLol Hub - " .. _("Loaded") .. "!")
-        ShowNotification(_("Beta"), _("BetaBottom"))
+        ShowRobloxNotification(_("Beta") .. " - " .. _("BetaBottom"))
     else
         print("[XyqwHub] LaLol Hub - " .. _("Error") .. ": " .. tostring(err))
-        ShowNotification(_("Beta"), _("Failed") .. ": " .. tostring(err))
+        ShowRobloxNotification(_("Beta") .. " - " .. _("Failed"))
     end
 end)
 lalolBtn.Position = UDim2.new(0, 5, 0, y)
@@ -512,10 +664,10 @@ local ftapBtn = CreateButton("FTAP", function()
     end)
     if success then
         print("[XyqwHub] FTAP - " .. _("Loaded") .. "!")
-        ShowNotification(_("Beta"), _("BetaBottom"))
+        ShowRobloxNotification(_("Beta") .. " - " .. _("BetaBottom"))
     else
         print("[XyqwHub] FTAP - " .. _("Error") .. ": " .. tostring(err))
-        ShowNotification(_("Beta"), _("Failed") .. ": " .. tostring(err))
+        ShowRobloxNotification(_("Beta") .. " - " .. _("Failed"))
     end
 end)
 ftapBtn.Position = UDim2.new(0, 5, 0, y)
@@ -529,10 +681,10 @@ local bc9Btn = CreateButton("BC9 (UTG)", function()
     end)
     if success then
         print("[XyqwHub] BC9 (UTG) - " .. _("Loaded") .. "!")
-        ShowNotification(_("BC9"), _("BC9Bottom"))
+        ShowRobloxNotification(_("BC9") .. " - " .. _("BC9Bottom"))
     else
         print("[XyqwHub] BC9 (UTG) - " .. _("Error") .. ": " .. tostring(err))
-        ShowNotification(_("BC9"), _("Failed") .. ": " .. tostring(err))
+        ShowRobloxNotification(_("BC9") .. " - " .. _("Failed"))
     end
 end)
 bc9Btn.Position = UDim2.new(0, 5, 0, y)
@@ -553,10 +705,10 @@ local deathOrderBtn = CreateButton("Death Order [SIMON]", function()
     end)
     if success then
         print("[XyqwHub] Death Order [SIMON] - " .. _("Loaded") .. "!")
-        ShowNotification(_("DeathOrder"), _("DeathOrderBottom"))
+        ShowRobloxNotification(_("DeathOrder") .. " - " .. _("DeathOrderBottom"))
     else
         print("[XyqwHub] Death Order [SIMON] - " .. _("Error") .. ": " .. tostring(err))
-        ShowNotification(_("DeathOrder"), _("Failed") .. ": " .. tostring(err))
+        ShowRobloxNotification(_("DeathOrder") .. " - " .. _("Failed"))
     end
 end)
 deathOrderBtn.Position = UDim2.new(0, 5, 0, y)
@@ -661,4 +813,6 @@ dockButton.TouchTap:Connect(openGUI)
 task.wait(0.5)
 ShowWelcomeMessage()
 
+-- Roblox Loaded
+ShowRobloxNotification("XyqwHub Loaded!", 3)
 print("[XyqwHub] XyqwHub loaded! Version: " .. VERSION)
