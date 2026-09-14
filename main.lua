@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 3.5 ==========
+-- ========== XyqwHub - Версия 3.6 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
     Text = "XyqwHub Loading...",
@@ -24,7 +24,7 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "3.5"
+local VERSION = "3.6"
 
 -- ========== ТВОИ USER ID (OWNER) ==========
 local OWNER_IDS = {
@@ -69,6 +69,11 @@ local LANG = {
         OwnerWelcome = "Welcome, my father :3",
         ChangeLogTitle = "ChangeLog",
         ChangeLogText = [[XyqwHub ChangeLog
+
+Version 3.6
+- Fixed accidental button clicks in title bar
+- Added cooldown for ChangeLog and language buttons
+- Added Active property to title buttons
 
 Version 3.5
 - Added owner-only welcome message
@@ -185,6 +190,11 @@ Version 1.0
         OwnerWelcome = "Welcome, my father :3",
         ChangeLogTitle = "Ченджлог",
         ChangeLogText = [[XyqwHub Ченджлог
+
+Версия 3.6
+- Исправлены случайные нажатия на кнопки в шапке
+- Добавлен кулдаун для ChangeLog и смены языка
+- Добавлено свойство Active для кнопок в шапке
 
 Версия 3.5
 - Добавлено приветственное сообщение только для овнеров
@@ -488,6 +498,7 @@ local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
 titleBar.BorderSizePixel = 0
+titleBar.Active = false
 titleBar.Parent = mainFrame
 
 local titleLabel = Instance.new("TextLabel")
@@ -512,6 +523,7 @@ changelogButton.BorderSizePixel = 1
 changelogButton.BorderColor3 = Color3.fromRGB(255, 0, 0)
 changelogButton.Parent = titleBar
 changelogButton.AutoButtonColor = false
+changelogButton.Active = true
 
 local langButton = Instance.new("TextButton")
 langButton.Size = UDim2.new(0, 35, 1, 0)
@@ -523,6 +535,7 @@ langButton.TextScaled = true
 langButton.Font = Enum.Font.GothamBold
 langButton.Parent = titleBar
 langButton.AutoButtonColor = false
+langButton.Active = true
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 30, 1, 0)
@@ -534,6 +547,7 @@ closeButton.TextScaled = true
 closeButton.Font = Enum.Font.GothamBold
 closeButton.Parent = titleBar
 closeButton.AutoButtonColor = false
+closeButton.Active = true
 
 local scrollFrame = Instance.new("ScrollingFrame")
 scrollFrame.Size = UDim2.new(1, -10, 1, -40)
@@ -820,11 +834,24 @@ local function SwitchLanguage()
     langCooldown = false
 end
 
-langButton.MouseButton1Click:Connect(SwitchLanguage)
-langButton.TouchTap:Connect(SwitchLanguage)
+-- Защита от случайных нажатий в шапке
+local titleCooldown = false
 
-changelogButton.MouseButton1Click:Connect(ShowChangeLog)
-changelogButton.TouchTap:Connect(ShowChangeLog)
+local function SafeClick(callback)
+    return function()
+        if titleCooldown then return end
+        titleCooldown = true
+        pcall(callback)
+        task.wait(0.5)
+        titleCooldown = false
+    end
+end
+
+langButton.MouseButton1Click:Connect(SafeClick(SwitchLanguage))
+langButton.TouchTap:Connect(SafeClick(SwitchLanguage))
+
+changelogButton.MouseButton1Click:Connect(SafeClick(ShowChangeLog))
+changelogButton.TouchTap:Connect(SafeClick(ShowChangeLog))
 
 local y = 5
 
@@ -1017,11 +1044,25 @@ y = y + 45
 
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
 
+-- ========== ПЕРЕТАСКИВАНИЕ ОКНА ==========
 local dragging = false
 local dragStart, startPos
 
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        local mousePos = input.Position
+        local function IsOverButton(btn)
+            local btnPos = btn.AbsolutePosition
+            local btnSize = btn.AbsoluteSize
+            if mousePos.X >= btnPos.X and mousePos.X <= btnPos.X + btnSize.X and
+               mousePos.Y >= btnPos.Y and mousePos.Y <= btnPos.Y + btnSize.Y then
+                return true
+            end
+            return false
+        end
+        if IsOverButton(changelogButton) or IsOverButton(langButton) or IsOverButton(closeButton) then
+            return
+        end
         dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
@@ -1075,6 +1116,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
+-- ========== ЗАКРЫТИЕ (крестик) ==========
 local function closeGUI()
     mainFrame.Visible = false
     dockButton.Visible = true
@@ -1083,6 +1125,7 @@ end
 closeButton.MouseButton1Click:Connect(closeGUI)
 closeButton.TouchTap:Connect(closeGUI)
 
+-- ========== ОТКРЫТИЕ (док-кнопка) ==========
 local function openGUI()
     mainFrame.Visible = true
     dockButton.Visible = false
@@ -1092,6 +1135,7 @@ end
 dockButton.MouseButton1Click:Connect(openGUI)
 dockButton.TouchTap:Connect(openGUI)
 
+-- ========== ФИНАЛ ==========
 ShowRobloxNotification("XyqwHub Loaded!", 3)
 print("[XyqwHub] XyqwHub loaded! Version: " .. VERSION)
 
