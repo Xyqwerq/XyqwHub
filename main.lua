@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 2.5 ==========
+-- ========== XyqwHub - Версия 2.6 ==========
 print("[XyqwHub] Loading...")
 
 -- ========== ЗАЩИТА ОТ ПОВТОРНОГО ЗАПУСКА ==========
@@ -51,7 +51,6 @@ local LANG = {
         DeathOrderBottom = "Have fun!",
         CheesyKey = "Key: joincheesydsc",
         CheesyBottom = "Script should be loaded",
-        CopySuccess = "Script copied to clipboard. Paste it into your executor",
         CopyFailed = "Failed to copy! Please copy manually"
     },
     RU = {
@@ -77,7 +76,6 @@ local LANG = {
         DeathOrderBottom = "Приятной игры!",
         CheesyKey = "Ключ: joincheesydsc",
         CheesyBottom = "Скрипт должен запуститься",
-        CopySuccess = "Скрипт скопирован в буфер обмена. Вставьте его в свой executor",
         CopyFailed = "Не удалось скопировать! Скопируйте вручную"
     }
 }
@@ -86,6 +84,22 @@ local LANG = {
 local function _(key)
     local lang = getgenv().XyqwLanguage or "EN"
     return LANG[lang][key] or key
+end
+
+-- ========== УВЕДОМЛЕНИЯ (ROBLOX CORE, СПРАВА СНИЗУ) ==========
+local function ShowNotification(topText, bottomText, duration)
+    duration = duration or 3.5
+    local finalText = topText
+    if bottomText and bottomText ~= "" then
+        finalText = topText .. "\n" .. bottomText
+    end
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "XyqwHub",
+            Text = finalText,
+            Duration = duration
+        })
+    end)
 end
 
 -- ========== GUI ==========
@@ -200,45 +214,6 @@ local function CopyToClipboard(text)
         print("[XyqwHub] Failed to copy: " .. tostring(err))
         return false
     end
-end
-
-local function ShowNotification(topText, bottomText, duration)
-    duration = duration or 3.5
-    
-    local notificationFrame = Instance.new("Frame")
-    notificationFrame.Size = UDim2.new(0, 320, 0, 80)
-    notificationFrame.Position = UDim2.new(0.5, -160, 0.5, -40)
-    notificationFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    notificationFrame.BorderSizePixel = 2
-    notificationFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
-    notificationFrame.Parent = screenGui
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = notificationFrame
-    
-    local topLabel = Instance.new("TextLabel")
-    topLabel.Size = UDim2.new(1, -10, 0, 30)
-    topLabel.Position = UDim2.new(0, 5, 0, 5)
-    topLabel.BackgroundTransparency = 1
-    topLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-    topLabel.Text = topText
-    topLabel.TextScaled = true
-    topLabel.Font = Enum.Font.GothamBold
-    topLabel.Parent = notificationFrame
-    
-    local bottomLabel = Instance.new("TextLabel")
-    bottomLabel.Size = UDim2.new(1, -10, 0, 30)
-    bottomLabel.Position = UDim2.new(0, 5, 0, 40)
-    bottomLabel.BackgroundTransparency = 1
-    bottomLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    bottomLabel.Text = bottomText
-    bottomLabel.TextScaled = true
-    bottomLabel.Font = Enum.Font.Gotham
-    bottomLabel.Parent = notificationFrame
-    
-    task.wait(duration)
-    notificationFrame:Destroy()
 end
 
 local function ShowWelcomeMessage()
