@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 3.4 ==========
+-- ========== XyqwHub - Версия 3.5 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
     Text = "XyqwHub Loading...",
@@ -24,7 +24,7 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "3.4"
+local VERSION = "3.5"
 
 -- ========== ТВОИ USER ID (OWNER) ==========
 local OWNER_IDS = {
@@ -66,19 +66,21 @@ local LANG = {
         CheesyBottom = "Script should be loaded",
         CopyFailed = "Failed to copy! Please copy manually",
         TagRemoved = "XyqwHub tag has been removed!",
+        OwnerWelcome = "Welcome, my father :3",
         ChangeLogTitle = "ChangeLog",
         ChangeLogText = [[XyqwHub ChangeLog
+
+Version 3.5
+- Added owner-only welcome message
 
 Version 3.4
 - Darker red color for tag
 - Normal background for Remove/Destroy buttons
-- Normal border for Remove/Destroy buttons
 
 Version 3.3
 - Fixed tag size (no longer stretches)
 - Fixed gradient (now works via Rotation)
 - Gradient visible for everyone
-- Fixed text position
 
 Version 3.2
 - Brought back gradient animation
@@ -180,19 +182,21 @@ Version 1.0
         CheesyBottom = "Скрипт должен запуститься",
         CopyFailed = "Не удалось скопировать! Скопируйте вручную",
         TagRemoved = "Тег XyqwHub был удалён!",
+        OwnerWelcome = "Welcome, my father :3",
         ChangeLogTitle = "Ченджлог",
         ChangeLogText = [[XyqwHub Ченджлог
+
+Версия 3.5
+- Добавлено приветственное сообщение только для овнеров
 
 Версия 3.4
 - Более насыщенный красный цвет тега
 - Обычный фон для кнопок Remove/Destroy
-- Обычная обводка для кнопок Remove/Destroy
 
 Версия 3.3
 - Исправлен размер тега (больше не растягивается)
 - Исправлен градиент (теперь через Rotation)
 - Градиент виден всем
-- Исправлена позиция текста
 
 Версия 3.2
 - Возвращена градиентная анимация
@@ -285,6 +289,23 @@ local function ShowRobloxNotification(text, duration)
             Duration = duration
         })
     end)
+end
+
+-- ========== ПРОВЕРКА НА OWNER ПРИ ЗАПУСКЕ ==========
+local function IsLocalPlayerOwner()
+    local LocalPlayer = game:GetService("Players").LocalPlayer
+    for _, id in ipairs(OWNER_IDS) do
+        if LocalPlayer.UserId == id then
+            return true
+        end
+    end
+    return false
+end
+
+if IsLocalPlayerOwner() then
+    task.wait(0.5)
+    ShowRobloxNotification(_("OwnerWelcome"), 5)
+    print("[XyqwHub] " .. _("OwnerWelcome"))
 end
 
 -- ========== СИСТЕМА ТЕГОВ С ГРАДИЕНТОМ ==========
