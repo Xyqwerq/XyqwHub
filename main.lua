@@ -70,13 +70,11 @@ local LANG = {
         ChangeLogText = [[XyqwHub ChangeLog
 
 Version 2.9
-- Added XyqwHub OWNER tag (visible only to owners)
+- Tags now visible on ALL owners (even without script)
 - Added "Remove XyqwHub Tag" button
-- Gradient animation for owner tag
 
 Version 2.8
 - XyqwHub Loaded! appears immediately
-- ChangeLog translated to EN/RU
 
 Version 2.7
 - Roblox notifications (bottom right)
@@ -102,7 +100,6 @@ Version 2.1
 
 Version 2.0
 - Removed Auto Execute
-- All buttons in one list
 
 Version 1.9
 - Added key for Doors V3 (Cheesy)
@@ -165,13 +162,11 @@ Version 1.0
         ChangeLogText = [[XyqwHub Ченджлог
 
 Версия 2.9
-- Добавлен тег XyqwHub OWNER (виден только владельцам)
+- Теги видны у ВСЕХ овнеров (даже без скрипта)
 - Добавлена кнопка "Убрать тег XyqwHub"
-- Градиентная анимация для тега владельца
 
 Версия 2.8
 - XyqwHub Loaded! появляется сразу
-- Ченджлог переведён на RU/EN
 
 Версия 2.7
 - Уведомления Roblox (справа снизу)
@@ -197,7 +192,6 @@ Version 1.0
 
 Версия 2.0
 - Убран Auto Execute
-- Все кнопки одним списком
 
 Версия 1.9
 - Добавлен ключ для Doors V3 (Cheesy)
@@ -249,9 +243,8 @@ local function ShowRobloxNotification(text, duration)
     end)
 end
 
--- ========== ТЕГ ТОЛЬКО ДЛЯ OWNER ==========
+-- ========== ТЕГИ У ВСЕХ OWNER'ОВ (СКАНИРОВАНИЕ) ==========
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 local tagsEnabled = true
 
 local function isOwner(plr)
@@ -271,8 +264,7 @@ local function ApplyTag(plr)
     local head = plr.Character:FindFirstChild("Head")
     if not head then return end
 
-    local old = head:FindFirstChild("XyqwTag")
-    if old then old:Destroy() end
+    if head:FindFirstChild("XyqwTag") then return end -- уже есть
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "XyqwTag"
@@ -319,6 +311,15 @@ local function ApplyTag(plr)
     label.Parent = billboard
 end
 
+local function ScanAllPlayers()
+    if not tagsEnabled then return end
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if isOwner(plr) and plr.Character and plr.Character:FindFirstChild("Head") then
+            ApplyTag(plr)
+        end
+    end
+end
+
 local function RemoveAllTags()
     tagsEnabled = false
     for _, plr in ipairs(Players:GetPlayers()) do
@@ -332,21 +333,39 @@ local function RemoveAllTags()
     end
 end
 
+-- Сканируем сразу и каждые 2 секунды
+ScanAllPlayers()
 task.spawn(function()
-    if not isOwner(LocalPlayer) then return end
-    if LocalPlayer.Character then
-        ApplyTag(LocalPlayer)
-    else
-        LocalPlayer.CharacterAdded:Wait()
-        ApplyTag(LocalPlayer)
+    while tagsEnabled do
+        task.wait(2)
+        ScanAllPlayers()
     end
 end)
 
-LocalPlayer.CharacterAdded:Connect(function()
-    if not isOwner(LocalPlayer) then return end
-    task.wait(0.5)
-    ApplyTag(LocalPlayer)
+-- При добавлении игрока
+Players.PlayerAdded:Connect(function(plr)
+    task.spawn(function()
+        if plr.Character then
+            ApplyTag(plr)
+        else
+            plr.CharacterAdded:Wait()
+            task.wait(0.5)
+            ApplyTag(plr)
+        end
+    end)
+    plr.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        ApplyTag(plr)
+    end)
 end)
+
+-- Для уже зашедших игроков
+for _, plr in ipairs(Players:GetPlayers()) do
+    plr.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        ApplyTag(plr)
+    end)
+end
 
 -- ========== GUI ==========
 local screenGui = Instance.new("ScreenGui")
