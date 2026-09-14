@@ -1,5 +1,4 @@
--- ========== XyqwHub - Версия 2.8 ==========
--- Roblox Loading
+-- ========== XyqwHub - Версия 2.9 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
     Text = "XyqwHub Loading...",
@@ -25,7 +24,13 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.8"
+local VERSION = "2.9"
+
+-- ========== ТВОИ USER ID (OWNER) ==========
+local OWNER_IDS = {
+    4396977722,
+    8527910367
+}
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 if getgenv().XyqwLanguage == nil then
@@ -39,6 +44,7 @@ local LANG = {
         DockText = "XyqwHub",
         LangButton = "EN",
         ChangeLogBtn = "ChangeLog",
+        RemoveTagBtn = "Remove XyqwHub Tag",
         Loaded = "loaded",
         Error = "error",
         Failed = "failed to load",
@@ -59,28 +65,31 @@ local LANG = {
         CheesyKey = "Key: joincheesydsc",
         CheesyBottom = "Script should be loaded",
         CopyFailed = "Failed to copy! Please copy manually",
+        TagRemoved = "XyqwHub tag has been removed!",
         ChangeLogTitle = "ChangeLog",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 2.9
+- Added XyqwHub OWNER tag (visible only to owners)
+- Added "Remove XyqwHub Tag" button
+- Gradient animation for owner tag
+
 Version 2.8
-- XyqwHub Loaded! now appears immediately
+- XyqwHub Loaded! appears immediately
 - ChangeLog translated to EN/RU
 
 Version 2.7
 - Roblox notifications (bottom right)
 - ChangeLog button added
-- Loading / Loaded notifications
 
 Version 2.6
 - Notifications moved to bottom right
 
 Version 2.5
 - All messages translated to EN/RU
-- Re-launch protection
 
 Version 2.4
 - Re-launch protection added
-- DESTROY button resets the flag
 
 Version 2.3
 - Added Adopt me
@@ -130,6 +139,7 @@ Version 1.0
         DockText = "XyqwHub",
         LangButton = "RU",
         ChangeLogBtn = "Ченджлог",
+        RemoveTagBtn = "Убрать тег XyqwHub",
         Loaded = "загружен",
         Error = "ошибка",
         Failed = "не удалось загрузить",
@@ -150,28 +160,31 @@ Version 1.0
         CheesyKey = "Ключ: joincheesydsc",
         CheesyBottom = "Скрипт должен запуститься",
         CopyFailed = "Не удалось скопировать! Скопируйте вручную",
+        TagRemoved = "Тег XyqwHub был удалён!",
         ChangeLogTitle = "Ченджлог",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 2.9
+- Добавлен тег XyqwHub OWNER (виден только владельцам)
+- Добавлена кнопка "Убрать тег XyqwHub"
+- Градиентная анимация для тега владельца
+
 Версия 2.8
-- XyqwHub Loaded! теперь появляется сразу
+- XyqwHub Loaded! появляется сразу
 - Ченджлог переведён на RU/EN
 
 Версия 2.7
 - Уведомления Roblox (справа снизу)
 - Добавлена кнопка Ченджлог
-- Уведомления Loading / Loaded
 
 Версия 2.6
 - Уведомления перенесены вправо вниз
 
 Версия 2.5
 - Все сообщения переведены на RU/EN
-- Защита от повторного запуска
 
 Версия 2.4
 - Добавлена защита от повторного запуска
-- Кнопка DESTROY сбрасывает флаг
 
 Версия 2.3
 - Добавлен Adopt me
@@ -224,7 +237,7 @@ local function _(key)
     return LANG[lang][key] or key
 end
 
--- ========== УВЕДОМЛЕНИЯ ROBLOX (СПРАВА СНИЗУ) ==========
+-- ========== УВЕДОМЛЕНИЯ ROBLOX ==========
 local function ShowRobloxNotification(text, duration)
     duration = duration or 3.5
     pcall(function()
@@ -236,12 +249,110 @@ local function ShowRobloxNotification(text, duration)
     end)
 end
 
+-- ========== ТЕГ ТОЛЬКО ДЛЯ OWNER ==========
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local tagsEnabled = true
+
+local function isOwner(plr)
+    for _, id in ipairs(OWNER_IDS) do
+        if plr.UserId == id then
+            return true
+        end
+    end
+    return false
+end
+
+local function ApplyTag(plr)
+    if not tagsEnabled then return end
+    if not plr.Character then return end
+    if not isOwner(plr) then return end
+
+    local head = plr.Character:FindFirstChild("Head")
+    if not head then return end
+
+    local old = head:FindFirstChild("XyqwTag")
+    if old then old:Destroy() end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "XyqwTag"
+    billboard.Size = UDim2.new(0, 150, 0, 22)
+    billboard.StudsOffset = Vector3.new(0, 3.2, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = head
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.GothamBold
+    label.TextScaled = false
+    label.TextSize = 14
+    label.TextStrokeTransparency = 0
+    label.Text = "XyqwHub OWNER"
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextStrokeColor3 = Color3.fromRGB(80, 0, 0)
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 50)),
+        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(120, 0, 0)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 50, 50)),
+        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(120, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 50))
+    })
+    gradient.Rotation = 0
+    gradient.Parent = label
+
+    local glow = Instance.new("UIStroke")
+    glow.Color = Color3.fromRGB(255, 0, 0)
+    glow.Thickness = 1
+    glow.Transparency = 0.2
+    glow.Parent = label
+
+    task.spawn(function()
+        while label.Parent do
+            gradient.Offset = Vector2.new((gradient.Offset.X + 0.01) % 1, 0)
+            task.wait(0.03)
+        end
+    end)
+
+    label.Parent = billboard
+end
+
+local function RemoveAllTags()
+    tagsEnabled = false
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.Character then
+            local head = plr.Character:FindFirstChild("Head")
+            if head then
+                local tag = head:FindFirstChild("XyqwTag")
+                if tag then tag:Destroy() end
+            end
+        end
+    end
+end
+
+task.spawn(function()
+    if not isOwner(LocalPlayer) then return end
+    if LocalPlayer.Character then
+        ApplyTag(LocalPlayer)
+    else
+        LocalPlayer.CharacterAdded:Wait()
+        ApplyTag(LocalPlayer)
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if not isOwner(LocalPlayer) then return end
+    task.wait(0.5)
+    ApplyTag(LocalPlayer)
+end)
+
 -- ========== GUI ==========
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "XyqwHubGui"
 screenGui.Parent = game:GetService("CoreGui")
 
--- ========== ДОК-КНОПКА ==========
 local dockButton = Instance.new("TextButton")
 dockButton.Name = "DockButton"
 dockButton.Size = UDim2.new(0, 90, 0, 30)
@@ -261,7 +372,6 @@ local dockCorner = Instance.new("UICorner")
 dockCorner.CornerRadius = UDim.new(0, 6)
 dockCorner.Parent = dockButton
 
--- ========== ГЛАВНОЕ ОКНО ==========
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 280, 0, 400)
 mainFrame.Position = UDim2.new(0.5, -140, 0.5, -200)
@@ -363,7 +473,6 @@ local function CopyToClipboard(text)
     end
 end
 
--- ========== ПРИВЕТСТВИЕ (ПО ЦЕНТРУ) ==========
 local function ShowWelcomeMessage()
     local welcomeFrame = Instance.new("Frame")
     welcomeFrame.Size = UDim2.new(0, 320, 0, 175)
@@ -451,7 +560,6 @@ local function ShowWelcomeMessage()
     welcomeFrame:Destroy()
 end
 
--- ========== ЧЕНДЖЛОГ (ПО ЦЕНТРУ) ==========
 local function ShowChangeLog()
     local changelogFrame = Instance.new("Frame")
     changelogFrame.Size = UDim2.new(0, 400, 0, 350)
@@ -789,6 +897,15 @@ addButton("bLockman's minesweaper", "https://pastefy.app/T5XIfiMo/raw")
 addButton("Cheating during test", "https://files.catbox.moe/pkulzc.txt")
 addButton("Adopt me", "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem")
 
+local removeTagBtn = CreateButton(_("RemoveTagBtn"), function()
+    RemoveAllTags()
+    ShowRobloxNotification(_("TagRemoved"), 3)
+end)
+removeTagBtn.Position = UDim2.new(0, 5, 0, y)
+removeTagBtn.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+removeTagBtn.BorderColor3 = Color3.fromRGB(255, 100, 100)
+y = y + 45
+
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
     getgenv().XyqwHubRunning = false
@@ -876,10 +993,8 @@ end
 dockButton.MouseButton1Click:Connect(openGUI)
 dockButton.TouchTap:Connect(openGUI)
 
--- Roblox Loaded — СРАЗУ
 ShowRobloxNotification("XyqwHub Loaded!", 3)
 print("[XyqwHub] XyqwHub loaded! Version: " .. VERSION)
 
--- Приветствие
 task.wait(0.3)
 ShowWelcomeMessage()
