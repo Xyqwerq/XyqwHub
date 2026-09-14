@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 3.7 ==========
+-- ========== XyqwHub - Версия 3.8 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
     Text = "XyqwHub Loading...",
@@ -24,7 +24,7 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "3.7"
+local VERSION = "3.8"
 
 -- ========== USER ID (OWNER) ==========
 local OWNER_IDS = {
@@ -73,36 +73,36 @@ local LANG = {
         CopyFailed = "Failed to copy! Please copy manually",
         TagRemoved = "XyqwHub tag has been removed!",
         OwnerWelcome = "Welcome, my father :3",
-        BetaWelcome = "Glad you're here, beta tester ♡",
+        BetaWelcome = "Glad you're here, tester ♡",
         ChangeLogTitle = "ChangeLog",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 3.8
+- Fixed tag not restoring after respawn
+- Tag now uses CharacterAdded + task.wait properly
+- Renamed BETA tag to Tester
+
 Version 3.7
-- Added beta tester tag (blue gradient)
-- Added beta tester welcome message
-- Added 2 beta testers
+- Added tester tag (blue gradient)
+- Added tester welcome message
 
 Version 3.6
 - Fixed accidental button clicks in title bar
-- Added cooldown for ChangeLog and language buttons
 
 Version 3.5
 - Added owner-only welcome message
 
 Version 3.4
 - Darker red color for tag
-- Normal background for Remove/Destroy buttons
 
 Version 3.3
-- Fixed tag size (no longer stretches)
-- Fixed gradient (now works via Rotation)
+- Fixed tag size and gradient
 
 Version 3.2
 - Brought back gradient animation
 
 Version 3.1
 - Rewrote tag system
-- Tag attached to HumanoidRootPart
 
 Version 3.0
 - Removed gradient
@@ -196,29 +196,30 @@ Version 1.0
         CopyFailed = "Не удалось скопировать! Скопируйте вручную",
         TagRemoved = "Тег XyqwHub был удалён!",
         OwnerWelcome = "Welcome, my father :3",
-        BetaWelcome = "Glad you're here, beta tester ♡",
+        BetaWelcome = "Glad you're here, tester ♡",
         ChangeLogTitle = "Ченджлог",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 3.8
+- Исправлено восстановление тега после респавна
+- Тег теперь использует CharacterAdded + task.wait
+- BETA переименован в Tester
+
 Версия 3.7
-- Добавлен тег бета-тестера (синий градиент)
-- Добавлено приветствие для бета-тестеров
-- Добавлено 2 бета-тестера
+- Добавлен тег тестера (синий градиент)
+- Добавлено приветствие для тестеров
 
 Версия 3.6
-- Исправлены случайные нажатия на кнопки в шапке
-- Добавлен кулдаун для ChangeLog и смены языка
+- Исправлены случайные нажатия в шапке
 
 Версия 3.5
-- Добавлено приветственное сообщение только для овнеров
+- Добавлено приветствие для овнеров
 
 Версия 3.4
-- Более насыщенный красный цвет тега
-- Обычный фон для кнопок Remove/Destroy
+- Более насыщенный красный тег
 
 Версия 3.3
-- Исправлен размер тега (больше не растягивается)
-- Исправлен градиент (теперь через Rotation)
+- Исправлен размер и градиент тега
 
 Версия 3.2
 - Возвращена градиентная анимация
@@ -355,7 +356,7 @@ local function GetRole(plr)
     end
     for _, id in ipairs(BETA_IDS) do
         if plr.UserId == id then
-            return "BETA"
+            return "TESTER"
         end
     end
     return nil
@@ -408,7 +409,7 @@ local function CreateTagForPlayer(plr)
             ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
         })
     else
-        label.Text = "XyqwHub TESTER"
+        label.Text = "XyqwHub Tester"
         gradient.Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 120, 255)),
             ColorSequenceKeypoint.new(0.25, Color3.fromRGB(10, 20, 60)),
@@ -466,6 +467,32 @@ local function CheckAllPlayers()
     end
 end
 
+-- ФИКС: функция ожидания персонажа + создания тега
+local function SetupCharacterTag(plr)
+    task.spawn(function()
+        local char = plr.Character or plr.CharacterAdded:Wait()
+        
+        -- Ждём HumanoidRootPart (макс 5 сек)
+        local rootPart = char:WaitForChild("HumanoidRootPart", 5)
+        if not rootPart then
+            print("[XyqwHub Tag] Не дождался HumanoidRootPart для " .. plr.Name)
+            return
+        end
+        
+        -- Удаляем старый тег если есть
+        local oldTag = char:FindFirstChild("XyqwTag")
+        if oldTag then oldTag:Destroy() end
+        activeTags[plr] = nil
+        
+        -- Небольшая задержка для полной загрузки
+        task.wait(0.5)
+        
+        if GetRole(plr) then
+            CreateTagForPlayer(plr)
+        end
+    end)
+end
+
 CheckAllPlayers()
 
 local heartbeatConn
@@ -478,18 +505,10 @@ heartbeatConn = RunService.Heartbeat:Connect(function()
 end)
 
 Players.PlayerAdded:Connect(function(plr)
+    SetupCharacterTag(plr)
     plr.CharacterAdded:Connect(function()
-        task.wait(1)
-        if GetRole(plr) then
-            CreateTagForPlayer(plr)
-        end
+        SetupCharacterTag(plr)
     end)
-    if plr.Character then
-        task.wait(1)
-        if GetRole(plr) then
-            CreateTagForPlayer(plr)
-        end
-    end
 end)
 
 Players.PlayerRemoving:Connect(function(plr)
@@ -497,11 +516,9 @@ Players.PlayerRemoving:Connect(function(plr)
 end)
 
 for _, plr in ipairs(Players:GetPlayers()) do
+    SetupCharacterTag(plr)
     plr.CharacterAdded:Connect(function()
-        task.wait(1)
-        if GetRole(plr) then
-            CreateTagForPlayer(plr)
-        end
+        SetupCharacterTag(plr)
     end)
 end
 
