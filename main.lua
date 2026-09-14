@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 2.9 ==========
+-- ========== XyqwHub - Версия 3.4 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
     Text = "XyqwHub Loading...",
@@ -24,7 +24,7 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.9"
+local VERSION = "3.4"
 
 -- ========== ТВОИ USER ID (OWNER) ==========
 local OWNER_IDS = {
@@ -69,18 +69,38 @@ local LANG = {
         ChangeLogTitle = "ChangeLog",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 3.4
+- Darker red color for tag
+- Normal background for Remove/Destroy buttons
+- Normal border for Remove/Destroy buttons
+
+Version 3.3
+- Fixed tag size (no longer stretches)
+- Fixed gradient (now works via Rotation)
+- Gradient visible for everyone
+- Fixed text position
+
+Version 3.2
+- Brought back gradient animation
+- Smaller text size
+
+Version 3.1
+- Rewrote tag system
+- Tag attached to HumanoidRootPart
+
+Version 3.0
+- Removed gradient
+- Added debug prints
+
 Version 2.9
-- Added XyqwHub OWNER tag (visible only to owners)
+- Added XyqwHub OWNER tag
 - Added "Remove XyqwHub Tag" button
-- Gradient animation for owner tag
 
 Version 2.8
 - XyqwHub Loaded! appears immediately
-- ChangeLog translated to EN/RU
 
 Version 2.7
 - Roblox notifications (bottom right)
-- ChangeLog button added
 
 Version 2.6
 - Notifications moved to bottom right
@@ -102,7 +122,6 @@ Version 2.1
 
 Version 2.0
 - Removed Auto Execute
-- All buttons in one list
 
 Version 1.9
 - Added key for Doors V3 (Cheesy)
@@ -164,18 +183,38 @@ Version 1.0
         ChangeLogTitle = "Ченджлог",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 3.4
+- Более насыщенный красный цвет тега
+- Обычный фон для кнопок Remove/Destroy
+- Обычная обводка для кнопок Remove/Destroy
+
+Версия 3.3
+- Исправлен размер тега (больше не растягивается)
+- Исправлен градиент (теперь через Rotation)
+- Градиент виден всем
+- Исправлена позиция текста
+
+Версия 3.2
+- Возвращена градиентная анимация
+- Уменьшен размер текста
+
+Версия 3.1
+- Переписана система тегов
+- Тег крепится к HumanoidRootPart
+
+Версия 3.0
+- Убран градиент
+- Добавлены отладочные принты
+
 Версия 2.9
-- Добавлен тег XyqwHub OWNER (виден только владельцам)
+- Добавлен тег XyqwHub OWNER
 - Добавлена кнопка "Убрать тег XyqwHub"
-- Градиентная анимация для тега владельца
 
 Версия 2.8
 - XyqwHub Loaded! появляется сразу
-- Ченджлог переведён на RU/EN
 
 Версия 2.7
 - Уведомления Roblox (справа снизу)
-- Добавлена кнопка Ченджлог
 
 Версия 2.6
 - Уведомления перенесены вправо вниз
@@ -197,7 +236,6 @@ Version 1.0
 
 Версия 2.0
 - Убран Auto Execute
-- Все кнопки одним списком
 
 Версия 1.9
 - Добавлен ключ для Doors V3 (Cheesy)
@@ -249,10 +287,11 @@ local function ShowRobloxNotification(text, duration)
     end)
 end
 
--- ========== ТЕГ ТОЛЬКО ДЛЯ OWNER ==========
+-- ========== СИСТЕМА ТЕГОВ С ГРАДИЕНТОМ ==========
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 local tagsEnabled = true
+local activeTags = {}
 
 local function isOwner(plr)
     for _, id in ipairs(OWNER_IDS) do
@@ -263,42 +302,49 @@ local function isOwner(plr)
     return false
 end
 
-local function ApplyTag(plr)
+local function CreateTagForPlayer(plr)
     if not tagsEnabled then return end
-    if not plr.Character then return end
     if not isOwner(plr) then return end
+    if activeTags[plr] and activeTags[plr].Parent then return end
 
-    local head = plr.Character:FindFirstChild("Head")
-    if not head then return end
+    local char = plr.Character
+    if not char then return end
 
-    local old = head:FindFirstChild("XyqwTag")
-    if old then old:Destroy() end
+    local rootPart = char:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "XyqwTag"
-    billboard.Size = UDim2.new(0, 150, 0, 22)
-    billboard.StudsOffset = Vector3.new(0, 3.2, 0)
+    billboard.Size = UDim2.new(0, 160, 0, 20)
+    billboard.StudsOffset = Vector3.new(0, 4, 0)
     billboard.AlwaysOnTop = true
-    billboard.Parent = head
+    billboard.LightInfluence = 0
+    billboard.MaxDistance = 500
+    billboard.Adornee = rootPart
+    billboard.Parent = char
 
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 1, 0)
+    label.Name = "XyqwLabel"
+    label.Size = UDim2.new(0, 150, 0, 18)
+    label.Position = UDim2.new(0.5, -75, 0.5, -9)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
-    label.TextScaled = false
     label.TextSize = 14
+    label.TextScaled = false
+    label.TextWrapped = false
     label.TextStrokeTransparency = 0
     label.Text = "XyqwHub OWNER"
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextStrokeColor3 = Color3.fromRGB(80, 0, 0)
+    label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    label.Parent = billboard
 
     local gradient = Instance.new("UIGradient")
     gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 50)),
-        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(120, 0, 0)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 50, 50)),
-        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(120, 0, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 50))
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 0, 0)),
+        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(60, 0, 0)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 0, 0)),
+        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(60, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
     })
     gradient.Rotation = 0
     gradient.Parent = label
@@ -306,47 +352,83 @@ local function ApplyTag(plr)
     local glow = Instance.new("UIStroke")
     glow.Color = Color3.fromRGB(255, 0, 0)
     glow.Thickness = 1
-    glow.Transparency = 0.2
+    glow.Transparency = 0.3
     glow.Parent = label
 
     task.spawn(function()
-        while label.Parent do
-            gradient.Offset = Vector2.new((gradient.Offset.X + 0.01) % 1, 0)
+        local rotation = 0
+        while label.Parent and tagsEnabled do
+            rotation = (rotation + 2) % 360
+            gradient.Rotation = rotation
             task.wait(0.03)
         end
     end)
 
-    label.Parent = billboard
+    activeTags[plr] = billboard
+end
+
+local function RemoveTagForPlayer(plr)
+    if activeTags[plr] then
+        activeTags[plr]:Destroy()
+        activeTags[plr] = nil
+    end
 end
 
 local function RemoveAllTags()
     tagsEnabled = false
+    for plr, tag in pairs(activeTags) do
+        if tag then tag:Destroy() end
+    end
+    activeTags = {}
+end
+
+local function CheckAllPlayers()
+    if not tagsEnabled then return end
     for _, plr in ipairs(Players:GetPlayers()) do
-        if plr.Character then
-            local head = plr.Character:FindFirstChild("Head")
-            if head then
-                local tag = head:FindFirstChild("XyqwTag")
-                if tag then tag:Destroy() end
-            end
+        if isOwner(plr) and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            CreateTagForPlayer(plr)
         end
     end
 end
 
-task.spawn(function()
-    if not isOwner(LocalPlayer) then return end
-    if LocalPlayer.Character then
-        ApplyTag(LocalPlayer)
-    else
-        LocalPlayer.CharacterAdded:Wait()
-        ApplyTag(LocalPlayer)
+CheckAllPlayers()
+
+local heartbeatConn
+heartbeatConn = RunService.Heartbeat:Connect(function()
+    if not tagsEnabled then
+        if heartbeatConn then heartbeatConn:Disconnect() end
+        return
+    end
+    CheckAllPlayers()
+end)
+
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        task.wait(1)
+        if isOwner(plr) then
+            CreateTagForPlayer(plr)
+        end
+    end)
+    if plr.Character then
+        task.wait(1)
+        if isOwner(plr) then
+            CreateTagForPlayer(plr)
+        end
     end
 end)
 
-LocalPlayer.CharacterAdded:Connect(function()
-    if not isOwner(LocalPlayer) then return end
-    task.wait(0.5)
-    ApplyTag(LocalPlayer)
+Players.PlayerRemoving:Connect(function(plr)
+    RemoveTagForPlayer(plr)
 end)
+
+for _, plr in ipairs(Players:GetPlayers()) do
+    plr.CharacterAdded:Connect(function()
+        task.wait(1)
+        if isOwner(plr) then
+            CreateTagForPlayer(plr)
+        end
+    end)
+end
 
 -- ========== GUI ==========
 local screenGui = Instance.new("ScreenGui")
@@ -481,11 +563,11 @@ local function ShowWelcomeMessage()
     welcomeFrame.BorderSizePixel = 2
     welcomeFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
     welcomeFrame.Parent = screenGui
-    
+
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = welcomeFrame
-    
+
     local topHint = Instance.new("TextLabel")
     topHint.Size = UDim2.new(1, -10, 0, 20)
     topHint.Position = UDim2.new(0, 5, 0, 5)
@@ -495,7 +577,7 @@ local function ShowWelcomeMessage()
     topHint.TextScaled = true
     topHint.Font = Enum.Font.Gotham
     topHint.Parent = welcomeFrame
-    
+
     local titleLabelW = Instance.new("TextLabel")
     titleLabelW.Size = UDim2.new(1, -10, 0, 25)
     titleLabelW.Position = UDim2.new(0, 5, 0, 28)
@@ -505,7 +587,7 @@ local function ShowWelcomeMessage()
     titleLabelW.TextScaled = true
     titleLabelW.Font = Enum.Font.GothamBold
     titleLabelW.Parent = welcomeFrame
-    
+
     local tiktokLabel = Instance.new("TextLabel")
     tiktokLabel.Size = UDim2.new(1, -10, 0, 22)
     tiktokLabel.Position = UDim2.new(0, 5, 0, 56)
@@ -515,7 +597,7 @@ local function ShowWelcomeMessage()
     tiktokLabel.TextScaled = true
     tiktokLabel.Font = Enum.Font.Gotham
     tiktokLabel.Parent = welcomeFrame
-    
+
     local telegramLabel = Instance.new("TextLabel")
     telegramLabel.Size = UDim2.new(1, -10, 0, 22)
     telegramLabel.Position = UDim2.new(0, 5, 0, 80)
@@ -525,7 +607,7 @@ local function ShowWelcomeMessage()
     telegramLabel.TextScaled = true
     telegramLabel.Font = Enum.Font.Gotham
     telegramLabel.Parent = welcomeFrame
-    
+
     local discordLabel = Instance.new("TextLabel")
     discordLabel.Size = UDim2.new(1, -10, 0, 22)
     discordLabel.Position = UDim2.new(0, 5, 0, 104)
@@ -535,7 +617,7 @@ local function ShowWelcomeMessage()
     discordLabel.TextScaled = true
     discordLabel.Font = Enum.Font.Gotham
     discordLabel.Parent = welcomeFrame
-    
+
     local bottomHint = Instance.new("TextLabel")
     bottomHint.Size = UDim2.new(1, -10, 0, 20)
     bottomHint.Position = UDim2.new(0, 5, 0, 130)
@@ -545,7 +627,7 @@ local function ShowWelcomeMessage()
     bottomHint.TextScaled = true
     bottomHint.Font = Enum.Font.Gotham
     bottomHint.Parent = welcomeFrame
-    
+
     local versionLabel = Instance.new("TextLabel")
     versionLabel.Size = UDim2.new(1, -10, 0, 18)
     versionLabel.Position = UDim2.new(0, 5, 0, 153)
@@ -555,7 +637,7 @@ local function ShowWelcomeMessage()
     versionLabel.TextScaled = true
     versionLabel.Font = Enum.Font.Gotham
     versionLabel.Parent = welcomeFrame
-    
+
     task.wait(5)
     welcomeFrame:Destroy()
 end
@@ -568,11 +650,11 @@ local function ShowChangeLog()
     changelogFrame.BorderSizePixel = 2
     changelogFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
     changelogFrame.Parent = screenGui
-    
+
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = changelogFrame
-    
+
     local titleLbl = Instance.new("TextLabel")
     titleLbl.Size = UDim2.new(1, -40, 0, 30)
     titleLbl.Position = UDim2.new(0, 5, 0, 5)
@@ -582,7 +664,7 @@ local function ShowChangeLog()
     titleLbl.TextScaled = true
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Parent = changelogFrame
-    
+
     local closeCL = Instance.new("TextButton")
     closeCL.Size = UDim2.new(0, 30, 0, 30)
     closeCL.Position = UDim2.new(1, -35, 0, 0)
@@ -593,18 +675,18 @@ local function ShowChangeLog()
     closeCL.Font = Enum.Font.GothamBold
     closeCL.Parent = changelogFrame
     closeCL.AutoButtonColor = false
-    
+
     local scroll = Instance.new("ScrollingFrame")
     scroll.Size = UDim2.new(1, -20, 1, -50)
     scroll.Position = UDim2.new(0, 10, 0, 40)
     scroll.BackgroundTransparency = 1
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 1200)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 1500)
     scroll.ScrollBarThickness = 4
     scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
     scroll.Parent = changelogFrame
-    
+
     local textLbl = Instance.new("TextLabel")
-    textLbl.Size = UDim2.new(1, -10, 0, 1190)
+    textLbl.Size = UDim2.new(1, -10, 0, 1490)
     textLbl.Position = UDim2.new(0, 5, 0, 5)
     textLbl.BackgroundTransparency = 1
     textLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -616,7 +698,7 @@ local function ShowChangeLog()
     textLbl.Font = Enum.Font.Gotham
     textLbl.Text = _("ChangeLogText")
     textLbl.Parent = scroll
-    
+
     closeCL.MouseButton1Click:Connect(function()
         changelogFrame:Destroy()
     end)
@@ -697,22 +779,22 @@ local langCooldown = false
 local function SwitchLanguage()
     if langCooldown then return end
     langCooldown = true
-    
+
     if getgenv().XyqwLanguage == "EN" then
         getgenv().XyqwLanguage = "RU"
     else
         getgenv().XyqwLanguage = "EN"
     end
-    
+
     titleLabel.Text = _("WindowTitle")
     dockButton.Text = _("DockText")
     langButton.Text = getgenv().XyqwLanguage
     changelogButton.Text = _("ChangeLogBtn")
-    
+
     ShowRobloxNotification(_("LangChanged"), 2)
-    
+
     print("[XyqwHub] Language changed to: " .. getgenv().XyqwLanguage)
-    
+
     task.wait(0.5)
     langCooldown = false
 end
@@ -756,9 +838,9 @@ addButton("AX Scripts (INK)", "https://officialaxscripts.vercel.app/scripts/AX-L
 local doorsV2Btn = CreateButton("Doors V2 (Copy)", function()
     local scriptText = [[getgenv().SCRIPT_KEY = "KEYLESS"
 loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()]]
-    
+
     local copied = CopyToClipboard(scriptText)
-    
+
     if copied then
         ShowRobloxNotification(_("DoorsV2") .. " - " .. _("DoorsV2Bottom"))
     else
@@ -902,8 +984,6 @@ local removeTagBtn = CreateButton(_("RemoveTagBtn"), function()
     ShowRobloxNotification(_("TagRemoved"), 3)
 end)
 removeTagBtn.Position = UDim2.new(0, 5, 0, y)
-removeTagBtn.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
-removeTagBtn.BorderColor3 = Color3.fromRGB(255, 100, 100)
 y = y + 45
 
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
@@ -912,8 +992,6 @@ local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     print("[XyqwHub] " .. _("Destroy"))
 end)
 destroyBtn.Position = UDim2.new(0, 5, 0, y)
-destroyBtn.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-destroyBtn.BorderColor3 = Color3.fromRGB(255, 50, 50)
 y = y + 45
 
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
