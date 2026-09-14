@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 3.6 ==========
+-- ========== XyqwHub - Версия 3.7 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
     Text = "XyqwHub Loading...",
@@ -24,12 +24,18 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "3.6"
+local VERSION = "3.7"
 
--- ========== ТВОИ USER ID (OWNER) ==========
+-- ========== USER ID (OWNER) ==========
 local OWNER_IDS = {
     4396977722,
     8527910367
+}
+
+-- ========== USER ID (BETA TESTERS) ==========
+local BETA_IDS = {
+    9686718765,
+    3701387385
 }
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
@@ -67,13 +73,18 @@ local LANG = {
         CopyFailed = "Failed to copy! Please copy manually",
         TagRemoved = "XyqwHub tag has been removed!",
         OwnerWelcome = "Welcome, my father :3",
+        BetaWelcome = "Glad you're here, beta tester ♡",
         ChangeLogTitle = "ChangeLog",
         ChangeLogText = [[XyqwHub ChangeLog
+
+Version 3.7
+- Added beta tester tag (blue gradient)
+- Added beta tester welcome message
+- Added 2 beta testers
 
 Version 3.6
 - Fixed accidental button clicks in title bar
 - Added cooldown for ChangeLog and language buttons
-- Added Active property to title buttons
 
 Version 3.5
 - Added owner-only welcome message
@@ -85,11 +96,9 @@ Version 3.4
 Version 3.3
 - Fixed tag size (no longer stretches)
 - Fixed gradient (now works via Rotation)
-- Gradient visible for everyone
 
 Version 3.2
 - Brought back gradient animation
-- Smaller text size
 
 Version 3.1
 - Rewrote tag system
@@ -97,7 +106,6 @@ Version 3.1
 
 Version 3.0
 - Removed gradient
-- Added debug prints
 
 Version 2.9
 - Added XyqwHub OWNER tag
@@ -188,13 +196,18 @@ Version 1.0
         CopyFailed = "Не удалось скопировать! Скопируйте вручную",
         TagRemoved = "Тег XyqwHub был удалён!",
         OwnerWelcome = "Welcome, my father :3",
+        BetaWelcome = "Glad you're here, beta tester ♡",
         ChangeLogTitle = "Ченджлог",
         ChangeLogText = [[XyqwHub Ченджлог
+
+Версия 3.7
+- Добавлен тег бета-тестера (синий градиент)
+- Добавлено приветствие для бета-тестеров
+- Добавлено 2 бета-тестера
 
 Версия 3.6
 - Исправлены случайные нажатия на кнопки в шапке
 - Добавлен кулдаун для ChangeLog и смены языка
-- Добавлено свойство Active для кнопок в шапке
 
 Версия 3.5
 - Добавлено приветственное сообщение только для овнеров
@@ -206,19 +219,15 @@ Version 1.0
 Версия 3.3
 - Исправлен размер тега (больше не растягивается)
 - Исправлен градиент (теперь через Rotation)
-- Градиент виден всем
 
 Версия 3.2
 - Возвращена градиентная анимация
-- Уменьшен размер текста
 
 Версия 3.1
 - Переписана система тегов
-- Тег крепится к HumanoidRootPart
 
 Версия 3.0
 - Убран градиент
-- Добавлены отладочные принты
 
 Версия 2.9
 - Добавлен тег XyqwHub OWNER
@@ -301,10 +310,20 @@ local function ShowRobloxNotification(text, duration)
     end)
 end
 
--- ========== ПРОВЕРКА НА OWNER ПРИ ЗАПУСКЕ ==========
+-- ========== ПРОВЕРКА РОЛИ ==========
 local function IsLocalPlayerOwner()
     local LocalPlayer = game:GetService("Players").LocalPlayer
     for _, id in ipairs(OWNER_IDS) do
+        if LocalPlayer.UserId == id then
+            return true
+        end
+    end
+    return false
+end
+
+local function IsLocalPlayerBeta()
+    local LocalPlayer = game:GetService("Players").LocalPlayer
+    for _, id in ipairs(BETA_IDS) do
         if LocalPlayer.UserId == id then
             return true
         end
@@ -316,26 +335,36 @@ if IsLocalPlayerOwner() then
     task.wait(0.5)
     ShowRobloxNotification(_("OwnerWelcome"), 5)
     print("[XyqwHub] " .. _("OwnerWelcome"))
+elseif IsLocalPlayerBeta() then
+    task.wait(0.5)
+    ShowRobloxNotification(_("BetaWelcome"), 5)
+    print("[XyqwHub] " .. _("BetaWelcome"))
 end
 
--- ========== СИСТЕМА ТЕГОВ С ГРАДИЕНТОМ ==========
+-- ========== СИСТЕМА ТЕГОВ ==========
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local tagsEnabled = true
 local activeTags = {}
 
-local function isOwner(plr)
+local function GetRole(plr)
     for _, id in ipairs(OWNER_IDS) do
         if plr.UserId == id then
-            return true
+            return "OWNER"
         end
     end
-    return false
+    for _, id in ipairs(BETA_IDS) do
+        if plr.UserId == id then
+            return "BETA"
+        end
+    end
+    return nil
 end
 
 local function CreateTagForPlayer(plr)
     if not tagsEnabled then return end
-    if not isOwner(plr) then return end
+    local role = GetRole(plr)
+    if not role then return end
     if activeTags[plr] and activeTags[plr].Parent then return end
 
     local char = plr.Character
@@ -364,24 +393,39 @@ local function CreateTagForPlayer(plr)
     label.TextScaled = false
     label.TextWrapped = false
     label.TextStrokeTransparency = 0
-    label.Text = "XyqwHub OWNER"
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     label.Parent = billboard
 
     local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 0, 0)),
-        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(60, 0, 0)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 0, 0)),
-        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(60, 0, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
-    })
+    if role == "OWNER" then
+        label.Text = "XyqwHub OWNER"
+        gradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 0, 0)),
+            ColorSequenceKeypoint.new(0.25, Color3.fromRGB(60, 0, 0)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 0, 0)),
+            ColorSequenceKeypoint.new(0.75, Color3.fromRGB(60, 0, 0)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
+        })
+    else
+        label.Text = "XyqwHub TESTER"
+        gradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 120, 255)),
+            ColorSequenceKeypoint.new(0.25, Color3.fromRGB(10, 20, 60)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(50, 120, 255)),
+            ColorSequenceKeypoint.new(0.75, Color3.fromRGB(10, 20, 60)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 120, 255))
+        })
+    end
     gradient.Rotation = 0
     gradient.Parent = label
 
     local glow = Instance.new("UIStroke")
-    glow.Color = Color3.fromRGB(255, 0, 0)
+    if role == "OWNER" then
+        glow.Color = Color3.fromRGB(255, 0, 0)
+    else
+        glow.Color = Color3.fromRGB(50, 120, 255)
+    end
     glow.Thickness = 1
     glow.Transparency = 0.3
     glow.Parent = label
@@ -416,7 +460,7 @@ end
 local function CheckAllPlayers()
     if not tagsEnabled then return end
     for _, plr in ipairs(Players:GetPlayers()) do
-        if isOwner(plr) and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        if GetRole(plr) and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
             CreateTagForPlayer(plr)
         end
     end
@@ -436,13 +480,13 @@ end)
 Players.PlayerAdded:Connect(function(plr)
     plr.CharacterAdded:Connect(function()
         task.wait(1)
-        if isOwner(plr) then
+        if GetRole(plr) then
             CreateTagForPlayer(plr)
         end
     end)
     if plr.Character then
         task.wait(1)
-        if isOwner(plr) then
+        if GetRole(plr) then
             CreateTagForPlayer(plr)
         end
     end
@@ -455,7 +499,7 @@ end)
 for _, plr in ipairs(Players:GetPlayers()) do
     plr.CharacterAdded:Connect(function()
         task.wait(1)
-        if isOwner(plr) then
+        if GetRole(plr) then
             CreateTagForPlayer(plr)
         end
     end)
@@ -715,13 +759,13 @@ local function ShowChangeLog()
     scroll.Size = UDim2.new(1, -20, 1, -50)
     scroll.Position = UDim2.new(0, 10, 0, 40)
     scroll.BackgroundTransparency = 1
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 1500)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 1600)
     scroll.ScrollBarThickness = 4
     scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
     scroll.Parent = changelogFrame
 
     local textLbl = Instance.new("TextLabel")
-    textLbl.Size = UDim2.new(1, -10, 0, 1490)
+    textLbl.Size = UDim2.new(1, -10, 0, 1590)
     textLbl.Position = UDim2.new(0, 5, 0, 5)
     textLbl.BackgroundTransparency = 1
     textLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -834,7 +878,6 @@ local function SwitchLanguage()
     langCooldown = false
 end
 
--- Защита от случайных нажатий в шапке
 local titleCooldown = false
 
 local function SafeClick(callback)
@@ -1044,7 +1087,6 @@ y = y + 45
 
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, y + 10)
 
--- ========== ПЕРЕТАСКИВАНИЕ ОКНА ==========
 local dragging = false
 local dragStart, startPos
 
@@ -1116,7 +1158,6 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- ========== ЗАКРЫТИЕ (крестик) ==========
 local function closeGUI()
     mainFrame.Visible = false
     dockButton.Visible = true
@@ -1125,7 +1166,6 @@ end
 closeButton.MouseButton1Click:Connect(closeGUI)
 closeButton.TouchTap:Connect(closeGUI)
 
--- ========== ОТКРЫТИЕ (док-кнопка) ==========
 local function openGUI()
     mainFrame.Visible = true
     dockButton.Visible = false
@@ -1135,7 +1175,6 @@ end
 dockButton.MouseButton1Click:Connect(openGUI)
 dockButton.TouchTap:Connect(openGUI)
 
--- ========== ФИНАЛ ==========
 ShowRobloxNotification("XyqwHub Loaded!", 3)
 print("[XyqwHub] XyqwHub loaded! Version: " .. VERSION)
 
