@@ -1,8 +1,21 @@
--- ========== XyqwHub - Версия 2.3 ==========
+-- ========== XyqwHub - Версия 2.4 ==========
 print("[XyqwHub] Loading...")
 
+-- ========== ЗАЩИТА ОТ ПОВТОРНОГО ЗАПУСКА ==========
+if getgenv().XyqwHubRunning then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "XyqwHub",
+        Text = "Повторный запуск скрипта был заблокирован!",
+        Duration = 5
+    })
+    print("[XyqwHub] Повторный запуск скрипта был заблокирован!")
+    return
+end
+
+getgenv().XyqwHubRunning = true
+
 -- ========== ВЕРСИЯ ==========
-local VERSION = "2.3"
+local VERSION = "2.4"
 
 -- ========== ТЕКУЩИЙ ЯЗЫК ==========
 if getgenv().XyqwLanguage == nil then
@@ -597,9 +610,10 @@ addButton("bLockman's minesweaper", "https://pastefy.app/T5XIfiMo/raw")
 addButton("Cheating during test", "https://files.catbox.moe/pkulzc.txt")
 addButton("Adopt me", "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem")
 
--- ========== DESTROY ==========
+-- ========== DESTROY (СБРАСЫВАЕТ ФЛАГ) ==========
 local destroyBtn = CreateButton("DESTROY XyqwHub", function()
     screenGui:Destroy()
+    getgenv().XyqwHubRunning = false
     print("[XyqwHub] " .. _("Destroy"))
 end)
 destroyBtn.Position = UDim2.new(0, 5, 0, y)
