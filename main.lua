@@ -84,7 +84,8 @@ local LANG = {
 
 -- ========== ФУНКЦИЯ ПОЛУЧЕНИЯ ТЕКСТА ==========
 local function _(key)
-    return LANG[getgenv().XyqwLanguage][key]
+    local lang = getgenv().XyqwLanguage or "EN"
+    return LANG[lang][key] or key
 end
 
 -- ========== GUI ==========
