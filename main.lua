@@ -50,6 +50,9 @@ Version 4.2
 - Top bar with Hide button (H)
 - 5 themes: Red, Blue, Green, Purple, Rainbow
 - Remove Tags button
+- Doors V2 (Copy) - copies script to clipboard
+- Doors V3 (Cheesy) added
+- All 48 scripts restored
 - Fixed Rainbow covering header buttons
 - Fixed resize corner (was hidden)
 - Fixed welcome message (was blocked)
@@ -58,8 +61,10 @@ Version 4.2
 - Fixed close button (X minimizes to dock)
 - Fixed dock button not opening
 - Fixed resize stopping outside window
+- Fixed black empty area at bottom
+- Fixed EN/RU button overlapping X
+- Fixed P, S buttons spacing
 - Custom Script now accepts URL + loadstring
-- All 46 scripts restored to original names
 
 Version 4.1
 - All buttons squared (no rounding)
@@ -220,6 +225,9 @@ Version 1.0
 - Топ-бар с кнопкой Hide (H)
 - 5 тем: Red, Blue, Green, Purple, Rainbow
 - Кнопка Remove Tags
+- Doors V2 (Copy) - копирует скрипт в буфер
+- Добавлен Doors V3 (Cheesy)
+- Все 48 скриптов восстановлены
 - Пофикшено перекрытие кнопок заголовка радугой
 - Пофикшен угол ресайза (был невидим)
 - Пофикшено приветствие (было заблокировано)
@@ -228,8 +236,10 @@ Version 1.0
 - Пофикшена кнопка закрытия (X сворачивает в док)
 - Пофикшена док-кнопка (не открывала окно)
 - Пофикшен ресайз (обрывался за пределами окна)
+- Пофикшено чёрное поле внизу
+- Пофикшено наложение EN/RU на крестик
+- Пофикшено расположение кнопок P, S
 - Custom Script теперь принимает URL + loadstring
-- Все 46 скриптов возвращены к исходным названиям
 
 Версия 4.1
 - Все кнопки квадратные (без закруглений)
@@ -703,7 +713,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 dockButton.MouseButton1Click:Connect(function()
-    if dockMoved then return end
+    dockMoved = false
     mainFrame.Visible = true
     dockButton.Visible = false
 end)
@@ -711,8 +721,8 @@ end)
 -- ========== ГЛАВНОЕ ОКНО ==========
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 250, 0, 300)
-mainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+mainFrame.Size = UDim2.new(0, 280, 0, 340)
+mainFrame.Position = UDim2.new(0.5, -140, 0.5, -170)
 mainFrame.BackgroundColor3 = RED_BG
 mainFrame.BorderSizePixel = 3
 mainFrame.BorderColor3 = RED_MAIN
@@ -728,76 +738,50 @@ titleBar.Parent = mainFrame
 
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(0, 60, 1, 0)
+titleLabel.Size = UDim2.new(0, 80, 1, 0)
 titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "XyqwHub"
 titleLabel.TextColor3 = RED_MAIN
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
--- Кнопки заголовка (фикс — прямое позиционирование)
-local themeBtn = Instance.new("TextButton")
-themeBtn.Name = "ThemeBtn"
-themeBtn.Size = UDim2.new(0, 32, 0.8, 0)
-themeBtn.Position = UDim2.new(0, 68, 0.1, 0)
-themeBtn.BackgroundColor3 = RED_DARK
-themeBtn.TextColor3 = RED_MAIN
-themeBtn.Text = "Th"
-themeBtn.TextScaled = true
-themeBtn.Font = Enum.Font.GothamBold
-themeBtn.BorderSizePixel = 1
-themeBtn.BorderColor3 = RED_MAIN
-themeBtn.Parent = titleBar
-themeBtn.AutoButtonColor = false
+-- ========== КНОПКИ ЗАГОЛОВКА (все с обводкой, вплотную справа) ==========
+-- Порядок справа налево: [X] [EN/RU] [S] [P] [C] [CL] [Th]
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseBtn"
+closeButton.Size = UDim2.new(0, 22, 0.8, 0)
+closeButton.Position = UDim2.new(1, -22, 0.1, 0)
+closeButton.BackgroundColor3 = RED_DARK
+closeButton.TextColor3 = RED_MAIN
+closeButton.Text = "X"
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.GothamBold
+closeButton.BorderSizePixel = 1
+closeButton.BorderColor3 = RED_MAIN
+closeButton.Parent = titleBar
+closeButton.AutoButtonColor = false
 
-local changelogButton = Instance.new("TextButton")
-changelogButton.Name = "ChLogBtn"
-changelogButton.Size = UDim2.new(0, 32, 0.8, 0)
-changelogButton.Position = UDim2.new(0, 102, 0.1, 0)
-changelogButton.BackgroundColor3 = RED_DARK
-changelogButton.TextColor3 = RED_MAIN
-changelogButton.Text = "CL"
-changelogButton.TextScaled = true
-changelogButton.Font = Enum.Font.GothamBold
-changelogButton.BorderSizePixel = 1
-changelogButton.BorderColor3 = RED_MAIN
-changelogButton.Parent = titleBar
-changelogButton.AutoButtonColor = false
-
-local customBtn = Instance.new("TextButton")
-customBtn.Name = "CustomBtn"
-customBtn.Size = UDim2.new(0, 32, 0.8, 0)
-customBtn.Position = UDim2.new(0, 136, 0.1, 0)
-customBtn.BackgroundColor3 = RED_DARK
-customBtn.TextColor3 = RED_MAIN
-customBtn.Text = "C"
-customBtn.TextScaled = true
-customBtn.Font = Enum.Font.GothamBold
-customBtn.BorderSizePixel = 1
-customBtn.BorderColor3 = RED_MAIN
-customBtn.Parent = titleBar
-customBtn.AutoButtonColor = false
-
-local playerBtn = Instance.new("TextButton")
-playerBtn.Name = "PlayerBtn"
-playerBtn.Size = UDim2.new(0, 24, 0.8, 0)
-playerBtn.Position = UDim2.new(1, -90, 0.1, 0)
-playerBtn.BackgroundColor3 = RED_DARK
-playerBtn.TextColor3 = RED_MAIN
-playerBtn.Text = "P"
-playerBtn.TextScaled = true
-playerBtn.Font = Enum.Font.GothamBold
-playerBtn.BorderSizePixel = 1
-playerBtn.BorderColor3 = RED_MAIN
-playerBtn.Parent = titleBar
-playerBtn.AutoButtonColor = false
+local langButton = Instance.new("TextButton")
+langButton.Name = "LangBtn"
+langButton.Size = UDim2.new(0, 28, 0.8, 0)
+langButton.Position = UDim2.new(1, -52, 0.1, 0)
+langButton.BackgroundColor3 = RED_DARK
+langButton.TextColor3 = RED_MAIN
+langButton.Text = getgenv().XyqwLanguage
+langButton.TextScaled = true
+langButton.Font = Enum.Font.GothamBold
+langButton.BorderSizePixel = 1
+langButton.BorderColor3 = RED_MAIN
+langButton.Parent = titleBar
+langButton.AutoButtonColor = false
 
 local serverBtn = Instance.new("TextButton")
 serverBtn.Name = "ServerBtn"
-serverBtn.Size = UDim2.new(0, 24, 0.8, 0)
-serverBtn.Position = UDim2.new(1, -64, 0.1, 0)
+serverBtn.Size = UDim2.new(0, 22, 0.8, 0)
+serverBtn.Position = UDim2.new(1, -76, 0.1, 0)
 serverBtn.BackgroundColor3 = RED_DARK
 serverBtn.TextColor3 = RED_MAIN
 serverBtn.Text = "S"
@@ -808,29 +792,61 @@ serverBtn.BorderColor3 = RED_MAIN
 serverBtn.Parent = titleBar
 serverBtn.AutoButtonColor = false
 
-local langButton = Instance.new("TextButton")
-langButton.Name = "LangBtn"
-langButton.Size = UDim2.new(0, 30, 1, 0)
-langButton.Position = UDim2.new(1, -38, 0, 0)
-langButton.BackgroundTransparency = 1
-langButton.Text = getgenv().XyqwLanguage
-langButton.TextColor3 = RED_MAIN
-langButton.TextScaled = true
-langButton.Font = Enum.Font.GothamBold
-langButton.Parent = titleBar
-langButton.AutoButtonColor = false
+local playerBtn = Instance.new("TextButton")
+playerBtn.Name = "PlayerBtn"
+playerBtn.Size = UDim2.new(0, 22, 0.8, 0)
+playerBtn.Position = UDim2.new(1, -100, 0.1, 0)
+playerBtn.BackgroundColor3 = RED_DARK
+playerBtn.TextColor3 = RED_MAIN
+playerBtn.Text = "P"
+playerBtn.TextScaled = true
+playerBtn.Font = Enum.Font.GothamBold
+playerBtn.BorderSizePixel = 1
+playerBtn.BorderColor3 = RED_MAIN
+playerBtn.Parent = titleBar
+playerBtn.AutoButtonColor = false
 
-local closeButton = Instance.new("TextButton")
-closeButton.Name = "CloseBtn"
-closeButton.Size = UDim2.new(0, 30, 1, 0)
-closeButton.Position = UDim2.new(1, -30, 0, 0)
-closeButton.BackgroundTransparency = 1
-closeButton.Text = "X"
-closeButton.TextColor3 = RED_MAIN
-closeButton.TextScaled = true
-closeButton.Font = Enum.Font.GothamBold
-closeButton.Parent = titleBar
-closeButton.AutoButtonColor = false
+local customBtn = Instance.new("TextButton")
+customBtn.Name = "CustomBtn"
+customBtn.Size = UDim2.new(0, 22, 0.8, 0)
+customBtn.Position = UDim2.new(1, -124, 0.1, 0)
+customBtn.BackgroundColor3 = RED_DARK
+customBtn.TextColor3 = RED_MAIN
+customBtn.Text = "C"
+customBtn.TextScaled = true
+customBtn.Font = Enum.Font.GothamBold
+customBtn.BorderSizePixel = 1
+customBtn.BorderColor3 = RED_MAIN
+customBtn.Parent = titleBar
+customBtn.AutoButtonColor = false
+
+local changelogButton = Instance.new("TextButton")
+changelogButton.Name = "ChLogBtn"
+changelogButton.Size = UDim2.new(0, 26, 0.8, 0)
+changelogButton.Position = UDim2.new(1, -152, 0.1, 0)
+changelogButton.BackgroundColor3 = RED_DARK
+changelogButton.TextColor3 = RED_MAIN
+changelogButton.Text = "CL"
+changelogButton.TextScaled = true
+changelogButton.Font = Enum.Font.GothamBold
+changelogButton.BorderSizePixel = 1
+changelogButton.BorderColor3 = RED_MAIN
+changelogButton.Parent = titleBar
+changelogButton.AutoButtonColor = false
+
+local themeBtn = Instance.new("TextButton")
+themeBtn.Name = "ThemeBtn"
+themeBtn.Size = UDim2.new(0, 24, 0.8, 0)
+themeBtn.Position = UDim2.new(1, -178, 0.1, 0)
+themeBtn.BackgroundColor3 = RED_DARK
+themeBtn.TextColor3 = RED_MAIN
+themeBtn.Text = "Th"
+themeBtn.TextScaled = true
+themeBtn.Font = Enum.Font.GothamBold
+themeBtn.BorderSizePixel = 1
+themeBtn.BorderColor3 = RED_MAIN
+themeBtn.Parent = titleBar
+themeBtn.AutoButtonColor = false
 
 -- ========== SEARCH ==========
 local searchBar = Instance.new("TextBox")
@@ -876,7 +892,7 @@ local function SwitchTab(name)
     if RefreshButtons then RefreshButtons() end
 end
 
-local tabW = 33
+local tabW = 36
 for i, name in ipairs(TAB_LIST) do
     local btn = Instance.new("TextButton")
     btn.Name = "Tab_" .. name
@@ -898,7 +914,7 @@ end
 -- ========== SCROLL ==========
 local scrollFrame = Instance.new("ScrollingFrame")
 scrollFrame.Name = "ScriptScroll"
-scrollFrame.Size = UDim2.new(1, -10, 1, -170)
+scrollFrame.Size = UDim2.new(1, -10, 1, -98)
 scrollFrame.Position = UDim2.new(0, 5, 0, 93)
 scrollFrame.BackgroundTransparency = 1
 scrollFrame.BorderSizePixel = 0
@@ -910,7 +926,7 @@ scrollFrame.Parent = mainFrame
 local buttons = {}
 local buttonHeight = 34
 
--- ========== СПИСОК СКРИПТОВ ==========
+-- ========== СПИСОК СКРИПТОВ (48) ==========
 local SCRIPTS = {
     {Name = "Blade Ball", Category = "BB", URL = "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"},
     {Name = "Blade Ball 2", Category = "BB", URL = "https://wings.ac/loader"},
@@ -932,17 +948,19 @@ local SCRIPTS = {
     {Name = "Jujutsu Sheninagouns", Category = "Misc", URL = "https://raw.githubusercontent.com/peeky-co/scripts/refs/heads/main/tbo"},
     {Name = "Free Cam", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-Free-cam-script-pc-and-mobile-223089"},
     {Name = "Doors (Abysall)", Category = "Misc", URL = "https://rawscripts.net/raw/DOORS-Abysall-hub-OP-205906"},
+    {Name = "Doors V2 (Copy)", Category = "Misc", URL = "SPECIAL_COPY_DOORS_V2"},
+    {Name = "Doors V3 (Cheesy)", Category = "Misc", URL = "https://raw.githubusercontent.com/doram44/cheesy/refs/heads/main/cheesy.lua"},
     {Name = "Doors v4", Category = "Misc", URL = "https://raw.githubusercontent.com/sillyleo67/Doors/refs/heads/main/Twinkhook.lua"},
     {Name = "Fling Gui", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-fling-gui-99753"},
     {Name = "Infinite Yield", Category = "Misc", URL = "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
     {Name = "Walk on walls", Category = "Misc", URL = "https://rawscripts.net/raw/The-patience-obby-Universal-Walk-on-walls-18129"},
     {Name = "AetherX (Death Penalty)", Category = "Misc", URL = "https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"},
-    {Name = "Voidware", Category = "Misc", URL = "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua"},
-    {Name = "LaLol Hub", Category = "Misc", URL = "https://raw.githubusercontent.com/Miygteet/Hacker101/refs/heads/main/LALOL-Backdoor-Secure.lua"},
+    {Name = "Voidware (INK/99N/Forsaken)", Category = "Misc", URL = "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua"},
+    {Name = "LaLol Hub (B4ckd0or)", Category = "Misc", URL = "https://raw.githubusercontent.com/Miygteet/Hacker101/refs/heads/main/LALOL-Backdoor-Secure.lua"},
     {Name = "FTAP", Category = "Misc", URL = "https://api.jnkie.com/api/v1/luascripts/public/4078649e4397f0e2cdaddde241d69bfd67b2b7107917891384735129c85cae18/download"},
     {Name = "MinhNat Hub (TSB)", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-MinhNhat-Tsb-62161"},
     {Name = "BC9 (UTG)", Category = "Misc", URL = "https://rawscripts.net/raw/untitled-tag-game-BC9-UTG-MENU-116806"},
-    {Name = "FTAP (WITH KEY)", Category = "Misc", URL = "https://raw.githubusercontent.com/BlizTBr/scripts/main/FTAP.lua"},
+    {Name = "FTAP (WITH KEY!!)", Category = "Misc", URL = "https://raw.githubusercontent.com/BlizTBr/scripts/main/FTAP.lua"},
     {Name = "RadiumHub (Pressure)", Category = "Misc", URL = "https://rawscripts.net/raw/UPDATE-Pressure-God-Mode-Auto-Loot-ESP-Full-Bright-No-Eyefestation-224409"},
     {Name = "Steal an egg", Category = "Misc", URL = "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"},
     {Name = "Universal script", Category = "Misc", URL = "https://raw.githubusercontent.com/fleecelolll/Fleece-s-Utility-Panel/refs/heads/main/Script.lua"},
@@ -1026,17 +1044,26 @@ local function CreateScriptButton(data)
         table.insert(getgenv().XyqwRecent, 1, data.Name)
         if #getgenv().XyqwRecent > 15 then table.remove(getgenv().XyqwRecent) end
 
-        print("[XyqwHub] " .. data.Name .. " - STARTING...")
-        local success, err = pcall(function()
-            loadstring(game:HttpGet(data.URL))()
-        end)
-        if success then
-            print("[XyqwHub] " .. data.Name .. " - " .. _("Loaded") .. "!")
-            ShowRobloxNotification(data.Name .. " - " .. _("ScriptExecuted"), 3)
+        -- СПЕЦИАЛЬНАЯ ОБРАБОТКА
+        if data.URL == "SPECIAL_COPY_DOORS_V2" then
+            local scriptText = 'getgenv().SCRIPT_KEY = "KEYLESS"\nloadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()'
+            pcall(function() setclipboard(scriptText) end)
+            print("[XyqwHub] Doors V2 - Script copied to clipboard!")
+            ShowRobloxNotification("Doors V2 cannot be run via XyqwHub. Script copied to clipboard!", 5)
         else
-            print("[XyqwHub] " .. data.Name .. " - " .. _("Error") .. ": " .. tostring(err))
-            ShowRobloxNotification(data.Name .. " - " .. _("Error"), 5)
+            print("[XyqwHub] " .. data.Name .. " - STARTING...")
+            local success, err = pcall(function()
+                loadstring(game:HttpGet(data.URL))()
+            end)
+            if success then
+                print("[XyqwHub] " .. data.Name .. " - " .. _("Loaded") .. "!")
+                ShowRobloxNotification(data.Name .. " - " .. _("ScriptExecuted"), 3)
+            else
+                print("[XyqwHub] " .. data.Name .. " - " .. _("Error") .. ": " .. tostring(err))
+                ShowRobloxNotification(data.Name .. " - " .. _("Error"), 5)
+            end
         end
+
         task.wait(0.3)
         container.BackgroundColor3 = RED_BG
         isRunning = false
@@ -1469,8 +1496,7 @@ local function ApplyTheme(themeName)
     titleBar.BackgroundColor3 = RED_TITLE
     titleLabel.TextColor3 = RED_MAIN
 
-    closeButton.TextColor3 = RED_MAIN
-    for _, btn in ipairs({langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn}) do
+    for _, btn in ipairs({closeButton, langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn}) do
         btn.BackgroundColor3 = RED_DARK
         btn.TextColor3 = RED_MAIN
         btn.BorderColor3 = RED_MAIN
@@ -1537,8 +1563,7 @@ task.spawn(function()
             mainFrame.BorderColor3 = c
             titleBar.BackgroundColor3 = Color3.fromHSV(hue, 0.8, 0.08)
             titleLabel.TextColor3 = c
-            closeButton.TextColor3 = c
-            for _, btn in ipairs({langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn}) do
+            for _, btn in ipairs({closeButton, langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn}) do
                 btn.BackgroundColor3 = darkHue
                 btn.TextColor3 = c
                 btn.BorderColor3 = c
@@ -1597,7 +1622,7 @@ sizeLabel.Size = UDim2.new(0, 70, 0, 14)
 sizeLabel.Position = UDim2.new(1, -88, 1, -16)
 sizeLabel.BackgroundTransparency = 1
 sizeLabel.TextColor3 = RED_MAIN
-sizeLabel.Text = "250 x 300"
+sizeLabel.Text = "280 x 340"
 sizeLabel.TextSize = 10
 sizeLabel.Font = Enum.Font.Gotham
 sizeLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -1618,8 +1643,8 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - resizeStart
-        local newX = math.clamp(resizeStartSize.X.Offset + delta.X, 250, 900)
-        local newY = math.clamp(resizeStartSize.Y.Offset + delta.Y, 300, 1000)
+        local newX = math.clamp(resizeStartSize.X.Offset + delta.X, 280, 900)
+        local newY = math.clamp(resizeStartSize.Y.Offset + delta.Y, 340, 1000)
         mainFrame.Size = UDim2.new(0, newX, 0, newY)
         sizeLabel.Text = math.floor(newX) .. " x " .. math.floor(newY)
     end
@@ -1747,7 +1772,7 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 11
     doc.Font = Enum.Font.Gotham
-    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons:\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
+    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons:\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
     doc.ZIndex = 101
     doc.Parent = frame
 
