@@ -1,16 +1,12 @@
 -- ========== XyqwHub - Версия 4.2 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "XyqwHub",
-    Text = "XyqwHub Loading...",
-    Duration = 3
+    Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
 print("[XyqwHub] Loading...")
 
 if getgenv().XyqwHubRunning then
     local msg = "Повторный запуск скрипта был заблокирован!"
-    if getgenv().XyqwLanguage == "EN" then
-        msg = "Script re-launch has been blocked!"
-    end
+    if getgenv().XyqwLanguage == "EN" then msg = "Script re-launch has been blocked!" end
     game:GetService("StarterGui"):SetCore("SendNotification", {Title = "XyqwHub", Text = msg, Duration = 5})
     print("[XyqwHub] " .. msg)
     return
@@ -27,7 +23,6 @@ if getgenv().XyqwRecent == nil then getgenv().XyqwRecent = {} end
 if getgenv().XyqwTheme == nil then getgenv().XyqwTheme = "Red" end
 if getgenv().TopBarHidden == nil then getgenv().TopBarHidden = false end
 
--- ========== ТЕМЫ ==========
 local THEMES = {
     Red = {MAIN = Color3.fromRGB(255, 0, 0), DARK = Color3.fromRGB(40, 0, 0), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(20, 0, 0)},
     Blue = {MAIN = Color3.fromRGB(0, 140, 255), DARK = Color3.fromRGB(0, 20, 50), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(0, 10, 25)},
@@ -43,13 +38,11 @@ local RED_TITLE = THEMES[getgenv().XyqwTheme].TITLE
 
 local LANG = {
     EN = {
-        WindowTitle = "XyqwHub", ChangeLogBtn = "ChLog", RemoveTagBtn = "Remove Tag",
         Loaded = "loaded", Error = "error", Search = "Search...",
-        CustomScript = "Custom", CustomPlaceholder = "Paste URL or loadstring...", RunCustom = "Run",
-        PlayerList = "Players", ServerInfo = "Server", JobIdCopied = "JobId copied!",
-        HideTopBarOn = "Hide Top Bar: ON", HideTopBarOff = "Hide Top Bar: OFF",
-        ScriptExecuted = "Script executed!", OwnerWelcome = "Welcome, my father :3",
-        BetaWelcome = "Glad you're here, tester <3", TagRemoved = "Tag removed!",
+        CustomPlaceholder = "Paste URL or loadstring...", RunCustom = "Run",
+        JobIdCopied = "JobId copied!", ScriptExecuted = "Script executed!",
+        OwnerWelcome = "Welcome, my father :3", BetaWelcome = "Glad you're here, tester <3",
+        TagRemoved = "Tag removed!", HideTopBarOn = "Hide Top Bar: ON", HideTopBarOff = "Hide Top Bar: OFF",
         LangChanged = "Language changed to English",
         ChangeLogText = [[XyqwHub ChangeLog
 
@@ -215,13 +208,11 @@ Version 1.0
 - First release]],
     },
     RU = {
-        WindowTitle = "XyqwHub", ChangeLogBtn = "Ченджлог", RemoveTagBtn = "Убрать тег",
         Loaded = "загружен", Error = "ошибка", Search = "Поиск...",
-        CustomScript = "Свой скрипт", CustomPlaceholder = "Ссылка или loadstring...", RunCustom = "Запустить",
-        PlayerList = "Игроки", ServerInfo = "Сервер", JobIdCopied = "JobId скопирован!",
-        HideTopBarOn = "Скрыть топ бар: включено", HideTopBarOff = "Скрыть топ бар: выключено",
-        ScriptExecuted = "Скрипт выполнен!", OwnerWelcome = "Welcome, my father :3",
-        BetaWelcome = "Glad you're here, tester <3", TagRemoved = "Тег убран!",
+        CustomPlaceholder = "Ссылка или loadstring...", RunCustom = "Запустить",
+        JobIdCopied = "JobId скопирован!", ScriptExecuted = "Скрипт выполнен!",
+        OwnerWelcome = "Welcome, my father :3", BetaWelcome = "Glad you're here, tester <3",
+        TagRemoved = "Тег убран!", HideTopBarOn = "Скрыть топ бар: включено", HideTopBarOff = "Скрыть топ бар: выключено",
         LangChanged = "Язык изменён на Русский",
         ChangeLogText = [[XyqwHub Ченджлог
 
@@ -407,17 +398,15 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local function IsOwner()
-    local lp = Players.LocalPlayer
     for _, id in ipairs(OWNER_IDS) do
-        if lp.UserId == id then return true end
+        if Players.LocalPlayer.UserId == id then return true end
     end
     return false
 end
 
 local function IsBeta()
-    local lp = Players.LocalPlayer
     for _, id in ipairs(BETA_IDS) do
-        if lp.UserId == id then return true end
+        if Players.LocalPlayer.UserId == id then return true end
     end
     return false
 end
@@ -427,12 +416,8 @@ local tagsEnabled = true
 local activeTags = {}
 
 local function GetRole(plr)
-    for _, id in ipairs(OWNER_IDS) do
-        if plr.UserId == id then return "OWNER" end
-    end
-    for _, id in ipairs(BETA_IDS) do
-        if plr.UserId == id then return "TESTER" end
-    end
+    for _, id in ipairs(OWNER_IDS) do if plr.UserId == id then return "OWNER" end end
+    for _, id in ipairs(BETA_IDS) do if plr.UserId == id then return "TESTER" end end
     return nil
 end
 
@@ -500,7 +485,6 @@ local function CreateTagForPlayer(plr)
             task.wait(0.03)
         end
     end)
-
     activeTags[plr] = billboard
 end
 
@@ -510,9 +494,7 @@ end
 
 local function RemoveAllTags()
     tagsEnabled = false
-    for _, tag in pairs(activeTags) do
-        if tag then tag:Destroy() end
-    end
+    for _, tag in pairs(activeTags) do if tag then tag:Destroy() end end
     activeTags = {}
 end
 
@@ -540,13 +522,11 @@ end
 
 CheckAllPlayers()
 RunService.Heartbeat:Connect(CheckAllPlayers)
-
 Players.PlayerAdded:Connect(function(plr)
     SetupCharacterTag(plr)
     plr.CharacterAdded:Connect(function() SetupCharacterTag(plr) end)
 end)
 Players.PlayerRemoving:Connect(RemoveTagForPlayer)
-
 for _, plr in ipairs(Players:GetPlayers()) do
     SetupCharacterTag(plr)
     plr.CharacterAdded:Connect(function() SetupCharacterTag(plr) end)
@@ -566,17 +546,11 @@ local fpsTime = 0
 RunService.RenderStepped:Connect(function(dt)
     fpsCounter = fpsCounter + 1
     fpsTime = fpsTime + dt
-    if fpsTime >= 1 then
-        fpsValue = fpsCounter
-        fpsCounter = 0
-        fpsTime = 0
-    end
+    if fpsTime >= 1 then fpsValue = fpsCounter fpsCounter = 0 fpsTime = 0 end
 end)
 
 local function GetPing()
-    local ok, ping = pcall(function()
-        return math.floor(Players.LocalPlayer:GetNetworkPing() * 1000)
-    end)
+    local ok, ping = pcall(function() return math.floor(Players.LocalPlayer:GetNetworkPing() * 1000) end)
     return ok and ping or 0
 end
 
@@ -595,9 +569,7 @@ screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 pcall(function() screenGui.Parent = game:GetService("CoreGui") end)
-if not screenGui.Parent then
-    screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-end
+if not screenGui.Parent then screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
 
 -- ========== ТОП-БАР ==========
 local topBar = Instance.new("TextButton")
@@ -663,8 +635,7 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if topBarDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - topBarDragStart
-        topBar.Position = UDim2.new(topBarStartPos.X.Scale, topBarStartPos.X.Offset + delta.X,
-                                    topBarStartPos.Y.Scale, topBarStartPos.Y.Offset + delta.Y)
+        topBar.Position = UDim2.new(topBarStartPos.X.Scale, topBarStartPos.X.Offset + delta.X, topBarStartPos.Y.Scale, topBarStartPos.Y.Offset + delta.Y)
     end
 end)
 
@@ -728,10 +699,7 @@ UserInputService.InputChanged:Connect(function(input)
     if dockDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dockDragStart
         if math.abs(delta.X) > 3 or math.abs(delta.Y) > 3 then dockMoved = true end
-        dockButton.Position = UDim2.new(
-            dockStartPos.X.Scale, dockStartPos.X.Offset + delta.X,
-            dockStartPos.Y.Scale, dockStartPos.Y.Offset + delta.Y
-        )
+        dockButton.Position = UDim2.new(dockStartPos.X.Scale, dockStartPos.X.Offset + delta.X, dockStartPos.Y.Scale, dockStartPos.Y.Offset + delta.Y)
     end
 end)
 dockButton.MouseButton1Click:Connect(function()
@@ -769,27 +737,48 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
-local function CreateTitleBtn(name, text, xOff, w, callback)
-    local btn = Instance.new("TextButton")
-    btn.Name = name
-    btn.Size = UDim2.new(0, w, 0.8, 0)
-    btn.Position = UDim2.new(xOff.isScale and xOff.scale or 0, xOff.isScale and xOff.off or xOff, 0.1, 0)
-    btn.BackgroundColor3 = RED_DARK
-    btn.TextColor3 = RED_MAIN
-    btn.Text = text
-    btn.TextScaled = true
-    btn.Font = Enum.Font.GothamBold
-    btn.BorderSizePixel = 1
-    btn.BorderColor3 = RED_MAIN
-    btn.Parent = titleBar
-    btn.AutoButtonColor = false
-    btn.MouseButton1Click:Connect(callback)
-    return btn
-end
+-- Кнопки заголовка (фикс — прямое позиционирование)
+local themeBtn = Instance.new("TextButton")
+themeBtn.Name = "ThemeBtn"
+themeBtn.Size = UDim2.new(0, 32, 0.8, 0)
+themeBtn.Position = UDim2.new(0, 68, 0.1, 0)
+themeBtn.BackgroundColor3 = RED_DARK
+themeBtn.TextColor3 = RED_MAIN
+themeBtn.Text = "Th"
+themeBtn.TextScaled = true
+themeBtn.Font = Enum.Font.GothamBold
+themeBtn.BorderSizePixel = 1
+themeBtn.BorderColor3 = RED_MAIN
+themeBtn.Parent = titleBar
+themeBtn.AutoButtonColor = false
 
-local themeBtn = CreateTitleBtn("ThemeBtn", "Th", 68, 32, function() end)
-local changelogButton = CreateTitleBtn("ChLogBtn", "CL", 102, 32, function() end)
-local customBtn = CreateTitleBtn("CustomBtn", "C", 136, 32, function() end)
+local changelogButton = Instance.new("TextButton")
+changelogButton.Name = "ChLogBtn"
+changelogButton.Size = UDim2.new(0, 32, 0.8, 0)
+changelogButton.Position = UDim2.new(0, 102, 0.1, 0)
+changelogButton.BackgroundColor3 = RED_DARK
+changelogButton.TextColor3 = RED_MAIN
+changelogButton.Text = "CL"
+changelogButton.TextScaled = true
+changelogButton.Font = Enum.Font.GothamBold
+changelogButton.BorderSizePixel = 1
+changelogButton.BorderColor3 = RED_MAIN
+changelogButton.Parent = titleBar
+changelogButton.AutoButtonColor = false
+
+local customBtn = Instance.new("TextButton")
+customBtn.Name = "CustomBtn"
+customBtn.Size = UDim2.new(0, 32, 0.8, 0)
+customBtn.Position = UDim2.new(0, 136, 0.1, 0)
+customBtn.BackgroundColor3 = RED_DARK
+customBtn.TextColor3 = RED_MAIN
+customBtn.Text = "C"
+customBtn.TextScaled = true
+customBtn.Font = Enum.Font.GothamBold
+customBtn.BorderSizePixel = 1
+customBtn.BorderColor3 = RED_MAIN
+customBtn.Parent = titleBar
+customBtn.AutoButtonColor = false
 
 local playerBtn = Instance.new("TextButton")
 playerBtn.Name = "PlayerBtn"
@@ -921,7 +910,7 @@ scrollFrame.Parent = mainFrame
 local buttons = {}
 local buttonHeight = 34
 
--- ========== СПИСОК СКРИПТОВ (46 — как было) ==========
+-- ========== СПИСОК СКРИПТОВ ==========
 local SCRIPTS = {
     {Name = "Blade Ball", Category = "BB", URL = "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"},
     {Name = "Blade Ball 2", Category = "BB", URL = "https://wings.ac/loader"},
@@ -1056,11 +1045,9 @@ local function CreateScriptButton(data)
     table.insert(buttons, {Container = container, Btn = btn, Star = star, Data = data})
 end
 
-for _, data in ipairs(SCRIPTS) do
-    CreateScriptButton(data)
-end
+for _, data in ipairs(SCRIPTS) do CreateScriptButton(data) end
 
--- ========== SPECIAL: Remove Tags + Destroy ==========
+-- ========== SPECIAL (Remove Tags + Destroy) ==========
 local specialContainer = Instance.new("Frame")
 specialContainer.Name = "SpecialContainer"
 specialContainer.Size = UDim2.new(1, -10, 0, 36)
@@ -1074,7 +1061,6 @@ specialContainer.Visible = false
 local removeTagsBtn = Instance.new("TextButton")
 removeTagsBtn.Name = "RemoveTagsBtn"
 removeTagsBtn.Size = UDim2.new(0.5, -2, 1, 0)
-removeTagsBtn.Position = UDim2.new(0, 0, 0, 0)
 removeTagsBtn.BackgroundTransparency = 1
 removeTagsBtn.Text = "Remove Tags"
 removeTagsBtn.TextColor3 = RED_MAIN
@@ -1217,11 +1203,7 @@ changelogButton.MouseButton1Click:Connect(ShowChangeLog)
 
 -- ========== СМЕНА ЯЗЫКА ==========
 langButton.MouseButton1Click:Connect(function()
-    if getgenv().XyqwLanguage == "EN" then
-        getgenv().XyqwLanguage = "RU"
-    else
-        getgenv().XyqwLanguage = "EN"
-    end
+    if getgenv().XyqwLanguage == "EN" then getgenv().XyqwLanguage = "RU" else getgenv().XyqwLanguage = "EN" end
     langButton.Text = getgenv().XyqwLanguage
     searchBar.PlaceholderText = _("Search")
     ShowRobloxNotification(_("LangChanged"), 2)
@@ -1336,10 +1318,7 @@ local function ShowServerInfo()
     info.TextYAlignment = Enum.TextYAlignment.Top
     info.TextSize = 13
     info.Font = Enum.Font.Gotham
-    info.Text = "PlaceId: " .. game.PlaceId .. "\n" ..
-                 "JobId: " .. game.JobId .. "\n" ..
-                 "Players: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers .. "\n" ..
-                 "Creator: " .. game.CreatorId
+    info.Text = "PlaceId: " .. game.PlaceId .. "\nJobId: " .. game.JobId .. "\nPlayers: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers .. "\nCreator: " .. game.CreatorId
     info.ZIndex = 51
     info.Parent = frame
 
@@ -1453,13 +1432,10 @@ local function ShowCustomScript()
         local url = ExtractURL(input.Text)
         if not url then
             ShowRobloxNotification("Invalid URL or loadstring!", 3)
-            print("[XyqwHub] Custom - error: invalid input")
             return
         end
         print("[XyqwHub] Custom - STARTING... (" .. url .. ")")
-        local success, err = pcall(function()
-            loadstring(game:HttpGet(url))()
-        end)
+        local success, err = pcall(function() loadstring(game:HttpGet(url))() end)
         if success then
             print("[XyqwHub] Custom - " .. _("Loaded") .. "!")
             ShowRobloxNotification("Custom - " .. _("ScriptExecuted"), 3)
@@ -1472,7 +1448,6 @@ local function ShowCustomScript()
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
 end
 
--- ========== ПРИВЯЗКА ==========
 customBtn.MouseButton1Click:Connect(ShowCustomScript)
 playerBtn.MouseButton1Click:Connect(ShowPlayerList)
 serverBtn.MouseButton1Click:Connect(ShowServerInfo)
@@ -1487,10 +1462,7 @@ end
 local function ApplyTheme(themeName)
     getgenv().XyqwTheme = themeName
     local t = THEMES[themeName]
-    RED_MAIN = t.MAIN
-    RED_DARK = t.DARK
-    RED_BG = t.BG
-    RED_TITLE = t.TITLE
+    RED_MAIN = t.MAIN RED_DARK = t.DARK RED_BG = t.BG RED_TITLE = t.TITLE
 
     mainFrame.BackgroundColor3 = RED_BG
     mainFrame.BorderColor3 = RED_MAIN
@@ -1545,18 +1517,14 @@ local function ApplyTheme(themeName)
     dockButton.TextColor3 = RED_MAIN
     dockButton.BorderColor3 = RED_MAIN
 
-    if themeName ~= "Rainbow" then
-        ShowRobloxNotification("Theme: " .. themeName, 2)
-    end
+    if themeName ~= "Rainbow" then ShowRobloxNotification("Theme: " .. themeName, 2) end
 end
 
 themeBtn.MouseButton1Click:Connect(function()
     themeIndex = themeIndex + 1
     if themeIndex > #themeOrder then themeIndex = 1 end
     ApplyTheme(themeOrder[themeIndex])
-    if getgenv().XyqwTheme == "Rainbow" then
-        ShowRobloxNotification("Theme: Rainbow", 2)
-    end
+    if getgenv().XyqwTheme == "Rainbow" then ShowRobloxNotification("Theme: Rainbow", 2) end
 end)
 
 task.spawn(function()
@@ -1611,7 +1579,7 @@ task.spawn(function()
     end
 end)
 
--- ========== RESIZE (fixed) ==========
+-- ========== RESIZE ==========
 local resizeHandle = Instance.new("TextButton")
 resizeHandle.Name = "ResizeHandle"
 resizeHandle.Size = UDim2.new(0, 14, 0, 14)
@@ -1671,14 +1639,12 @@ titleBar.InputBegan:Connect(function(input)
         local mousePos = input.Position
         local function IsOverButton(btn)
             if not btn then return false end
-            local btnPos = btn.AbsolutePosition
-            local btnSize = btn.AbsoluteSize
-            return mousePos.X >= btnPos.X and mousePos.X <= btnPos.X + btnSize.X and
-                   mousePos.Y >= btnPos.Y and mousePos.Y <= btnPos.Y + btnSize.Y
+            local p = btn.AbsolutePosition
+            local s = btn.AbsoluteSize
+            return mousePos.X >= p.X and mousePos.X <= p.X + s.X and mousePos.Y >= p.Y and mousePos.Y <= p.Y + s.Y
         end
         if IsOverButton(changelogButton) or IsOverButton(langButton) or IsOverButton(closeButton)
-           or IsOverButton(themeBtn) or IsOverButton(customBtn) or IsOverButton(playerBtn)
-           or IsOverButton(serverBtn) then
+           or IsOverButton(themeBtn) or IsOverButton(customBtn) or IsOverButton(playerBtn) or IsOverButton(serverBtn) then
             return
         end
         dragging = true
@@ -1694,10 +1660,7 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(
-            startPos.X.Scale, startPos.X.Offset + delta.X,
-            startPos.Y.Scale, startPos.Y.Offset + delta.Y
-        )
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
@@ -1817,9 +1780,6 @@ end)
 
 task.spawn(function()
     task.wait(2.5)
-    if IsOwner() then
-        ShowRobloxNotification(_("OwnerWelcome"), 5)
-    elseif IsBeta() then
-        ShowRobloxNotification(_("BetaWelcome"), 5)
-    end
+    if IsOwner() then ShowRobloxNotification(_("OwnerWelcome"), 5)
+    elseif IsBeta() then ShowRobloxNotification(_("BetaWelcome"), 5) end
 end)
