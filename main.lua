@@ -503,7 +503,7 @@ local function CreateTagForPlayer(plr)
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
     label.TextScaled = false
-    label.Wrapped = false
+    label.TextWrapped = false
     label.TextStrokeTransparency = 0
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
