@@ -1,21 +1,17 @@
 -- ========== XyqwHub - Версия 4.2 ==========
-pcall(function()
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "XyqwHub",
-        Text = "XyqwHub Loading...",
-        Duration = 3
-    })
-end)
-print("[XyqwHub] XyqwHub Loading...")
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "XyqwHub",
+    Text = "XyqwHub Loading...",
+    Duration = 3
+})
+print("[XyqwHub] Loading...")
 
 if getgenv().XyqwHubRunning then
-    local msg = "Script re-launch has been blocked!"
-    if getgenv().XyqwLanguage == "RU" then
-        msg = "Повторный запуск скрипта был заблокирован!"
+    local msg = "Повторный запуск скрипта был заблокирован!"
+    if getgenv().XyqwLanguage == "EN" then
+        msg = "Script re-launch has been blocked!"
     end
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {Title = "XyqwHub", Text = msg, Duration = 5})
-    end)
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "XyqwHub", Text = msg, Duration = 5})
     print("[XyqwHub] " .. msg)
     return
 end
@@ -33,36 +29,11 @@ if getgenv().TopBarHidden == nil then getgenv().TopBarHidden = false end
 
 -- ========== ТЕМЫ ==========
 local THEMES = {
-    Red = {
-        MAIN = Color3.fromRGB(255, 0, 0),
-        DARK = Color3.fromRGB(40, 0, 0),
-        BG = Color3.fromRGB(0, 0, 0),
-        TITLE = Color3.fromRGB(20, 0, 0),
-    },
-    Blue = {
-        MAIN = Color3.fromRGB(0, 140, 255),
-        DARK = Color3.fromRGB(0, 20, 50),
-        BG = Color3.fromRGB(0, 0, 0),
-        TITLE = Color3.fromRGB(0, 10, 25),
-    },
-    Green = {
-        MAIN = Color3.fromRGB(0, 220, 90),
-        DARK = Color3.fromRGB(0, 40, 15),
-        BG = Color3.fromRGB(0, 0, 0),
-        TITLE = Color3.fromRGB(0, 20, 8),
-    },
-    Purple = {
-        MAIN = Color3.fromRGB(180, 0, 255),
-        DARK = Color3.fromRGB(30, 0, 45),
-        BG = Color3.fromRGB(0, 0, 0),
-        TITLE = Color3.fromRGB(15, 0, 22),
-    },
-    Rainbow = {
-        MAIN = Color3.fromRGB(255, 0, 0),
-        DARK = Color3.fromRGB(40, 0, 40),
-        BG = Color3.fromRGB(0, 0, 0),
-        TITLE = Color3.fromRGB(20, 0, 20),
-    },
+    Red = {MAIN = Color3.fromRGB(255, 0, 0), DARK = Color3.fromRGB(40, 0, 0), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(20, 0, 0)},
+    Blue = {MAIN = Color3.fromRGB(0, 140, 255), DARK = Color3.fromRGB(0, 20, 50), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(0, 10, 25)},
+    Green = {MAIN = Color3.fromRGB(0, 220, 90), DARK = Color3.fromRGB(0, 40, 15), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(0, 20, 8)},
+    Purple = {MAIN = Color3.fromRGB(180, 0, 255), DARK = Color3.fromRGB(30, 0, 45), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(15, 0, 22)},
+    Rainbow = {MAIN = Color3.fromRGB(255, 0, 0), DARK = Color3.fromRGB(40, 0, 40), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(20, 0, 20)},
 }
 
 local RED_MAIN = THEMES[getgenv().XyqwTheme].MAIN
@@ -70,38 +41,32 @@ local RED_DARK = THEMES[getgenv().XyqwTheme].DARK
 local RED_BG = THEMES[getgenv().XyqwTheme].BG
 local RED_TITLE = THEMES[getgenv().XyqwTheme].TITLE
 
--- ========== ЯЗЫКИ ==========
 local LANG = {
     EN = {
-        Loaded = "loaded",
-        Error = "error",
-        Search = "Search...",
-        CustomPlaceholder = "Paste URL or loadstring...",
-        RunCustom = "Run",
-        JobIdCopied = "JobId copied!",
-        ScriptExecuted = "Script executed!",
-        OwnerWelcome = "Welcome, my father :3",
-        BetaWelcome = "Glad you're here, tester <3",
-        TagRemoved = "Tag removed!",
-        HideTopBarOn = "Hide Top Bar: ON",
-        HideTopBarOff = "Hide Top Bar: OFF",
+        WindowTitle = "XyqwHub", ChangeLogBtn = "ChLog", RemoveTagBtn = "Remove Tag",
+        Loaded = "loaded", Error = "error", Search = "Search...",
+        CustomScript = "Custom", CustomPlaceholder = "Paste URL or loadstring...", RunCustom = "Run",
+        PlayerList = "Players", ServerInfo = "Server", JobIdCopied = "JobId copied!",
+        HideTopBarOn = "Hide Top Bar: ON", HideTopBarOff = "Hide Top Bar: OFF",
+        ScriptExecuted = "Script executed!", OwnerWelcome = "Welcome, my father :3",
+        BetaWelcome = "Glad you're here, tester <3", TagRemoved = "Tag removed!",
         LangChanged = "Language changed to English",
         ChangeLogText = [[XyqwHub ChangeLog
 
 Version 4.2
-- Top bar (Executor | User | FPS | Ping)
-- Hide Top Bar button (TB)
+- Top bar with Hide button (H)
+- 5 themes: Red, Blue, Green, Purple, Rainbow
 - Remove Tags button
-- Added Purple theme
-- Fixed Rainbow theme (was covering header buttons)
+- Fixed Rainbow covering header buttons
 - Fixed resize corner (was hidden)
 - Fixed welcome message (was blocked)
 - Fixed "XyqwHub Loaded!" notification
 - Fixed title label visibility
-- Fixed close button (X now minimizes to dock)
-- Added all old scripts back
+- Fixed close button (X minimizes to dock)
+- Fixed dock button not opening
+- Fixed resize stopping outside window
 - Custom Script now accepts URL + loadstring
-- Start size 280x340 (was 250x300)
+- All 46 scripts restored to original names
 
 Version 4.1
 - All buttons squared (no rounding)
@@ -111,14 +76,9 @@ Version 4.1
 - All buttons in 1 row
 - Removed GetTheme()
 - Fixed button overlap
-- Added 4 themes (Red, Blue, Green, Rainbow)
-- Destroy button at bottom of script list
-- Dock button "XyqwHub" rounded
-- Welcome lists keybinds
-- Size indicator near resize
 
 Version 4.0
-- First 4.0 release
+- Top bar (executor, name, FPS, Ping)
 - Search bar
 - Tabs (All, BB, MM2, INK, Misc, Fav, Rct)
 - Favorites system
@@ -129,8 +89,9 @@ Version 4.0
 - Player list
 - Server info
 - Copy JobId
+- Animations
+- Keybinds
 - Anti-AFK
-- 46 scripts
 
 Version 3.9
 - Added "Script executed!" notification for all scripts
@@ -254,35 +215,30 @@ Version 1.0
 - First release]],
     },
     RU = {
-        Loaded = "загружен",
-        Error = "ошибка",
-        Search = "Поиск...",
-        CustomPlaceholder = "Ссылка или loadstring...",
-        RunCustom = "Запустить",
-        JobIdCopied = "JobId скопирован!",
-        ScriptExecuted = "Скрипт выполнен!",
-        OwnerWelcome = "Welcome, my father :3",
-        BetaWelcome = "Glad you're here, tester <3",
-        TagRemoved = "Тег убран!",
-        HideTopBarOn = "Скрыть топ бар: включено",
-        HideTopBarOff = "Скрыть топ бар: выключено",
+        WindowTitle = "XyqwHub", ChangeLogBtn = "Ченджлог", RemoveTagBtn = "Убрать тег",
+        Loaded = "загружен", Error = "ошибка", Search = "Поиск...",
+        CustomScript = "Свой скрипт", CustomPlaceholder = "Ссылка или loadstring...", RunCustom = "Запустить",
+        PlayerList = "Игроки", ServerInfo = "Сервер", JobIdCopied = "JobId скопирован!",
+        HideTopBarOn = "Скрыть топ бар: включено", HideTopBarOff = "Скрыть топ бар: выключено",
+        ScriptExecuted = "Скрипт выполнен!", OwnerWelcome = "Welcome, my father :3",
+        BetaWelcome = "Glad you're here, tester <3", TagRemoved = "Тег убран!",
         LangChanged = "Язык изменён на Русский",
         ChangeLogText = [[XyqwHub Ченджлог
 
 Версия 4.2
-- Топ-бар (Executor | User | FPS | Ping)
-- Кнопка Hide Top Bar (TB)
+- Топ-бар с кнопкой Hide (H)
+- 5 тем: Red, Blue, Green, Purple, Rainbow
 - Кнопка Remove Tags
-- Добавлена фиолетовая тема
-- Пофикшена радужная тема (перекрывала кнопки заголовка)
+- Пофикшено перекрытие кнопок заголовка радугой
 - Пофикшен угол ресайза (был невидим)
 - Пофикшено приветствие (было заблокировано)
 - Пофикшено уведомление "XyqwHub Loaded!"
 - Пофикшена видимость заголовка
-- Пофикшена кнопка закрытия (X теперь сворачивает в док)
-- Возвращены все старые скрипты
+- Пофикшена кнопка закрытия (X сворачивает в док)
+- Пофикшена док-кнопка (не открывала окно)
+- Пофикшен ресайз (обрывался за пределами окна)
 - Custom Script теперь принимает URL + loadstring
-- Стартовый размер 280x340 (было 250x300)
+- Все 46 скриптов возвращены к исходным названиям
 
 Версия 4.1
 - Все кнопки квадратные (без закруглений)
@@ -292,14 +248,9 @@ Version 1.0
 - Все кнопки в 1 ряд
 - Убран GetTheme()
 - Пофикшено наложение кнопок
-- Добавлено 4 темы (Red, Blue, Green, Rainbow)
-- Кнопка Destroy внизу списка скриптов
-- Док-кнопка "XyqwHub" закруглённая
-- Welcome список кнопок
-- Индикатор размера у ресайза
 
 Версия 4.0
-- Первый релиз 4.0
+- Топ-бар (executor, name, FPS, Ping)
 - Строка поиска
 - Вкладки (All, BB, MM2, INK, Misc, Fav, Rct)
 - Система избранного
@@ -310,8 +261,9 @@ Version 1.0
 - Список игроков
 - Инфо о сервере
 - Копирование JobId
+- Анимации
+- Кейбинды
 - Анти-АФК
-- 46 скриптов
 
 Версия 3.9
 - Добавлено уведомление "Скрипт выполнен!" для всех скриптов
@@ -450,9 +402,9 @@ local function ShowRobloxNotification(text, duration)
     end)
 end
 
--- ========== РОЛИ ==========
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local function IsOwner()
     local lp = Players.LocalPlayer
@@ -635,170 +587,267 @@ local function GetExecutorName()
     end)
     return ok and name or "Unknown"
 end
--- ========== СОЗДАНИЕ GUI ==========
+
+-- ========== GUI ==========
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "XyqwHub"
+screenGui.Name = "XyqwHubGui"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-pcall(function()
-    screenGui.Parent = game:GetService("CoreGui")
-end)
+pcall(function() screenGui.Parent = game:GetService("CoreGui") end)
 if not screenGui.Parent then
     screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- ========== ТОП-БАР (инфо) ==========
-local topBar = Instance.new("Frame")
+-- ========== ТОП-БАР ==========
+local topBar = Instance.new("TextButton")
 topBar.Name = "TopBar"
-topBar.Size = UDim2.new(1, 0, 0, 22)
-topBar.Position = UDim2.new(0, 0, 1, 16)
-topBar.BackgroundColor3 = RED_TITLE
-topBar.BorderSizePixel = 0
-topBar.Visible = not getgenv().TopBarHidden
+topBar.Size = UDim2.new(0, 420, 0, 24)
+topBar.Position = UDim2.new(0.5, -210, 0, 10)
+topBar.BackgroundColor3 = RED_BG
+topBar.BorderSizePixel = 2
+topBar.BorderColor3 = RED_MAIN
+topBar.Text = ""
+topBar.AutoButtonColor = false
+topBar.Active = true
 topBar.Parent = screenGui
 
-local topBarLabel = Instance.new("TextLabel")
-topBarLabel.Name = "TopBarLabel"
-topBarLabel.Size = UDim2.new(1, -10, 1, 0)
-topBarLabel.Position = UDim2.new(0, 5, 0, 0)
-topBarLabel.BackgroundTransparency = 1
-topBarLabel.TextColor3 = RED_MAIN
-topBarLabel.Text = "Loading..."
-topBarLabel.TextSize = 12
-topBarLabel.Font = Enum.Font.GothamBold
-topBarLabel.TextXAlignment = Enum.TextXAlignment.Left
-topBarLabel.TextYAlignment = Enum.TextYAlignment.Center
-topBarLabel.Parent = topBar
+local topBarText = Instance.new("TextLabel")
+topBarText.Size = UDim2.new(1, -50, 1, 0)
+topBarText.Position = UDim2.new(0, 5, 0, 0)
+topBarText.BackgroundTransparency = 1
+topBarText.Font = Enum.Font.GothamBold
+topBarText.TextSize = 12
+topBarText.TextColor3 = RED_MAIN
+topBarText.TextXAlignment = Enum.TextXAlignment.Left
+topBarText.Text = "Loading..."
+topBarText.Parent = topBar
 
 task.spawn(function()
-    while topBar.Parent do
-        local execName = GetExecutorName()
-        local userName = Players.LocalPlayer.Name
-        local fps = fpsValue
-        local ping = GetPing()
-        topBarLabel.Text = execName .. " | " .. userName .. " | FPS: " .. fps .. " | Ping: " .. ping .. " ms"
+    while topBarText.Parent do
+        topBarText.Text = string.format("%s | %s | FPS: %d | Ping: %d ms",
+            GetExecutorName(), Players.LocalPlayer.Name, fpsValue, GetPing())
         task.wait(1)
     end
+end)
+
+local hideTopBtn = Instance.new("TextButton")
+hideTopBtn.Name = "HideTopBtn"
+hideTopBtn.Size = UDim2.new(0, 45, 1, 0)
+hideTopBtn.Position = UDim2.new(1, -45, 0, 0)
+hideTopBtn.BackgroundColor3 = RED_DARK
+hideTopBtn.TextColor3 = RED_MAIN
+hideTopBtn.Text = "H"
+hideTopBtn.TextScaled = true
+hideTopBtn.Font = Enum.Font.GothamBold
+hideTopBtn.BorderSizePixel = 1
+hideTopBtn.BorderColor3 = RED_MAIN
+hideTopBtn.Parent = topBar
+hideTopBtn.AutoButtonColor = false
+
+local topBarDragging = false
+local topBarDragStart, topBarStartPos
+topBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if input.Position.X >= (topBar.AbsolutePosition.X + topBar.AbsoluteSize.X - 45) then return end
+        topBarDragging = true
+        topBarDragStart = input.Position
+        topBarStartPos = topBar.Position
+    end
+end)
+topBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        topBarDragging = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if topBarDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - topBarDragStart
+        topBar.Position = UDim2.new(topBarStartPos.X.Scale, topBarStartPos.X.Offset + delta.X,
+                                    topBarStartPos.Y.Scale, topBarStartPos.Y.Offset + delta.Y)
+    end
+end)
+
+local function UpdateHideTopBtn()
+    if getgenv().TopBarHidden then
+        hideTopBtn.Text = "S"
+        topBar.BackgroundTransparency = 1
+        topBar.BorderSizePixel = 0
+        topBarText.Visible = false
+    else
+        hideTopBtn.Text = "H"
+        topBar.BackgroundTransparency = 0
+        topBar.BorderSizePixel = 2
+        topBarText.Visible = true
+    end
+end
+UpdateHideTopBtn()
+
+hideTopBtn.MouseButton1Click:Connect(function()
+    getgenv().TopBarHidden = not getgenv().TopBarHidden
+    if getgenv().TopBarHidden then
+        ShowRobloxNotification(_("HideTopBarOn"), 2)
+    else
+        ShowRobloxNotification(_("HideTopBarOff"), 2)
+    end
+    UpdateHideTopBtn()
+end)
+
+-- ========== DOCK ==========
+local dockButton = Instance.new("TextButton")
+dockButton.Name = "DockButton"
+dockButton.Size = UDim2.new(0, 90, 0, 26)
+dockButton.Position = UDim2.new(0.5, -45, 0.05, 42)
+dockButton.BackgroundColor3 = RED_BG
+dockButton.TextColor3 = RED_MAIN
+dockButton.Text = "XyqwHub"
+dockButton.TextScaled = true
+dockButton.Font = Enum.Font.GothamBold
+dockButton.BorderSizePixel = 2
+dockButton.BorderColor3 = RED_MAIN
+dockButton.Parent = screenGui
+dockButton.Visible = false
+dockButton.AutoButtonColor = false
+
+local dockDragging = false
+local dockDragStart, dockStartPos, dockMoved = false, false
+dockButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dockDragging = true
+        dockMoved = false
+        dockDragStart = input.Position
+        dockStartPos = dockButton.Position
+    end
+end)
+dockButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dockDragging = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dockDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dockDragStart
+        if math.abs(delta.X) > 3 or math.abs(delta.Y) > 3 then dockMoved = true end
+        dockButton.Position = UDim2.new(
+            dockStartPos.X.Scale, dockStartPos.X.Offset + delta.X,
+            dockStartPos.Y.Scale, dockStartPos.Y.Offset + delta.Y
+        )
+    end
+end)
+dockButton.MouseButton1Click:Connect(function()
+    if dockMoved then return end
+    mainFrame.Visible = true
+    dockButton.Visible = false
 end)
 
 -- ========== ГЛАВНОЕ ОКНО ==========
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 280, 0, 340)
-mainFrame.Position = UDim2.new(0.5, -140, 0.5, -170)
+mainFrame.Size = UDim2.new(0, 250, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
 mainFrame.BackgroundColor3 = RED_BG
-mainFrame.BorderSizePixel = 2
+mainFrame.BorderSizePixel = 3
 mainFrame.BorderColor3 = RED_MAIN
-mainFrame.Active = true
 mainFrame.ClipsDescendants = false
 mainFrame.Parent = screenGui
 
--- ========== ЗАГОЛОВОК ==========
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 28)
-titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = RED_TITLE
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
--- Лейбл "XyqwHub" — теперь не перекрывается, слева от кнопок
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(1, -220, 1, 0)
-titleLabel.Position = UDim2.new(0, 6, 0, 0)
+titleLabel.Size = UDim2.new(0, 60, 1, 0)
+titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "XyqwHub"
 titleLabel.TextColor3 = RED_MAIN
-titleLabel.TextSize = 14
+titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.TextYAlignment = Enum.TextYAlignment.Center
 titleLabel.Parent = titleBar
 
--- ========== КНОПКИ ЗАГОЛОВКА (справа налево, вплотную к X) ==========
--- Порядок: [Th] [CL] [C] [P] [S] [TB] [EN/RU] [X]
-local function CreateHeaderButton(name, text, xOffset, width, bgColor, txtColor, callback)
+local function CreateTitleBtn(name, text, xOff, w, callback)
     local btn = Instance.new("TextButton")
     btn.Name = name
-    btn.Size = UDim2.new(0, width, 0, 22)
-    btn.Position = UDim2.new(1, xOffset, 0.5, -11)
-    btn.BackgroundColor3 = bgColor
+    btn.Size = UDim2.new(0, w, 0.8, 0)
+    btn.Position = UDim2.new(xOff.isScale and xOff.scale or 0, xOff.isScale and xOff.off or xOff, 0.1, 0)
+    btn.BackgroundColor3 = RED_DARK
+    btn.TextColor3 = RED_MAIN
     btn.Text = text
-    btn.TextColor3 = txtColor
-    btn.TextSize = 10
+    btn.TextScaled = true
     btn.Font = Enum.Font.GothamBold
     btn.BorderSizePixel = 1
     btn.BorderColor3 = RED_MAIN
-    btn.AutoButtonColor = false
     btn.Parent = titleBar
+    btn.AutoButtonColor = false
     btn.MouseButton1Click:Connect(callback)
     return btn
 end
 
-local closeButton = CreateHeaderButton("CloseBtn", "X", -22, 22, RED_MAIN, Color3.fromRGB(0, 0, 0), function() end)
-local langButton = CreateHeaderButton("LangBtn", getgenv().XyqwLanguage or "EN", -52, 28, RED_DARK, RED_MAIN, function() end)
-local topBarBtn = CreateHeaderButton("TopBarBtn", "TB", -76, 22, RED_DARK, RED_MAIN, function() end)
-local serverBtn = CreateHeaderButton("ServerBtn", "S", -98, 22, RED_DARK, RED_MAIN, function() end)
-local playerBtn = CreateHeaderButton("PlayerBtn", "P", -120, 22, RED_DARK, RED_MAIN, function() end)
-local customBtn = CreateHeaderButton("CustomBtn", "C", -142, 22, RED_DARK, RED_MAIN, function() end)
-local changelogButton = CreateHeaderButton("ChLogBtn", "CL", -167, 22, RED_DARK, RED_MAIN, function() end)
-local themeBtn = CreateHeaderButton("ThemeBtn", "Th", -189, 22, RED_DARK, RED_MAIN, function() end)
+local themeBtn = CreateTitleBtn("ThemeBtn", "Th", 68, 32, function() end)
+local changelogButton = CreateTitleBtn("ChLogBtn", "CL", 102, 32, function() end)
+local customBtn = CreateTitleBtn("CustomBtn", "C", 136, 32, function() end)
 
--- ========== ДОК-КНОПКА ==========
-local dockButton = Instance.new("TextButton")
-dockButton.Name = "DockButton"
-dockButton.Size = UDim2.new(0, 110, 0, 34)
-dockButton.Position = UDim2.new(0, 20, 0.5, -17)
-dockButton.BackgroundColor3 = RED_BG
-dockButton.Text = "XyqwHub"
-dockButton.TextColor3 = RED_MAIN
-dockButton.TextSize = 15
-dockButton.Font = Enum.Font.GothamBold
-dockButton.BorderSizePixel = 0
-dockButton.AutoButtonColor = false
-dockButton.Visible = false
-dockButton.Parent = screenGui
+local playerBtn = Instance.new("TextButton")
+playerBtn.Name = "PlayerBtn"
+playerBtn.Size = UDim2.new(0, 24, 0.8, 0)
+playerBtn.Position = UDim2.new(1, -90, 0.1, 0)
+playerBtn.BackgroundColor3 = RED_DARK
+playerBtn.TextColor3 = RED_MAIN
+playerBtn.Text = "P"
+playerBtn.TextScaled = true
+playerBtn.Font = Enum.Font.GothamBold
+playerBtn.BorderSizePixel = 1
+playerBtn.BorderColor3 = RED_MAIN
+playerBtn.Parent = titleBar
+playerBtn.AutoButtonColor = false
 
-local dockCorner = Instance.new("UICorner")
-dockCorner.CornerRadius = UDim.new(1, 0)
-dockCorner.Parent = dockButton
+local serverBtn = Instance.new("TextButton")
+serverBtn.Name = "ServerBtn"
+serverBtn.Size = UDim2.new(0, 24, 0.8, 0)
+serverBtn.Position = UDim2.new(1, -64, 0.1, 0)
+serverBtn.BackgroundColor3 = RED_DARK
+serverBtn.TextColor3 = RED_MAIN
+serverBtn.Text = "S"
+serverBtn.TextScaled = true
+serverBtn.Font = Enum.Font.GothamBold
+serverBtn.BorderSizePixel = 1
+serverBtn.BorderColor3 = RED_MAIN
+serverBtn.Parent = titleBar
+serverBtn.AutoButtonColor = false
 
-local dockStroke = Instance.new("UIStroke")
-dockStroke.Color = RED_MAIN
-dockStroke.Thickness = 2
-dockStroke.Parent = dockButton
+local langButton = Instance.new("TextButton")
+langButton.Name = "LangBtn"
+langButton.Size = UDim2.new(0, 30, 1, 0)
+langButton.Position = UDim2.new(1, -38, 0, 0)
+langButton.BackgroundTransparency = 1
+langButton.Text = getgenv().XyqwLanguage
+langButton.TextColor3 = RED_MAIN
+langButton.TextScaled = true
+langButton.Font = Enum.Font.GothamBold
+langButton.Parent = titleBar
+langButton.AutoButtonColor = false
 
--- ========== ИНДИКАТОР РАЗМЕРА ==========
-local sizeLabel = Instance.new("TextLabel")
-sizeLabel.Name = "SizeLabel"
-sizeLabel.Size = UDim2.new(0, 70, 0, 14)
-sizeLabel.Position = UDim2.new(1, -88, 1, -16)
-sizeLabel.BackgroundTransparency = 1
-sizeLabel.TextColor3 = RED_MAIN
-sizeLabel.Text = "280 x 340"
-sizeLabel.TextSize = 10
-sizeLabel.Font = Enum.Font.Gotham
-sizeLabel.TextXAlignment = Enum.TextXAlignment.Right
-sizeLabel.Parent = mainFrame
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseBtn"
+closeButton.Size = UDim2.new(0, 30, 1, 0)
+closeButton.Position = UDim2.new(1, -30, 0, 0)
+closeButton.BackgroundTransparency = 1
+closeButton.Text = "X"
+closeButton.TextColor3 = RED_MAIN
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.GothamBold
+closeButton.Parent = titleBar
+closeButton.AutoButtonColor = false
 
--- ========== РУЧКА РЕСАЙЗА (поверх всего) ==========
-local resizeHandle = Instance.new("TextButton")
-resizeHandle.Name = "ResizeHandle"
-resizeHandle.Size = UDim2.new(0, 14, 0, 14)
-resizeHandle.Position = UDim2.new(1, -14, 1, -14)
-resizeHandle.BackgroundColor3 = RED_MAIN
-resizeHandle.Text = ""
-resizeHandle.BorderSizePixel = 0
-resizeHandle.ZIndex = 10
-resizeHandle.Parent = mainFrame
-resizeHandle.AutoButtonColor = false
 -- ========== SEARCH ==========
 local searchBar = Instance.new("TextBox")
 searchBar.Name = "SearchBar"
 searchBar.Size = UDim2.new(1, -10, 0, 24)
-searchBar.Position = UDim2.new(0, 5, 0, 32)
+searchBar.Position = UDim2.new(0, 5, 0, 35)
 searchBar.BackgroundColor3 = RED_DARK
 searchBar.PlaceholderText = _("Search")
 searchBar.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
@@ -816,7 +865,7 @@ searchBar.Parent = mainFrame
 local tabBar = Instance.new("Frame")
 tabBar.Name = "TabBar"
 tabBar.Size = UDim2.new(1, -10, 0, 24)
-tabBar.Position = UDim2.new(0, 5, 0, 60)
+tabBar.Position = UDim2.new(0, 5, 0, 64)
 tabBar.BackgroundTransparency = 1
 tabBar.Parent = mainFrame
 
@@ -838,12 +887,12 @@ local function SwitchTab(name)
     if RefreshButtons then RefreshButtons() end
 end
 
-local tabW = 36
+local tabW = 33
 for i, name in ipairs(TAB_LIST) do
     local btn = Instance.new("TextButton")
     btn.Name = "Tab_" .. name
     btn.Size = UDim2.new(0, tabW, 1, 0)
-    btn.Position = UDim2.new(0, (i - 1) * (tabW + 2), 0, 0)
+    btn.Position = UDim2.new(0, (i - 1) * (tabW + 1), 0, 0)
     btn.BackgroundColor3 = RED_DARK
     btn.TextColor3 = RED_MAIN
     btn.Text = name
@@ -860,8 +909,8 @@ end
 -- ========== SCROLL ==========
 local scrollFrame = Instance.new("ScrollingFrame")
 scrollFrame.Name = "ScriptScroll"
-scrollFrame.Size = UDim2.new(1, -10, 1, -94)
-scrollFrame.Position = UDim2.new(0, 5, 0, 88)
+scrollFrame.Size = UDim2.new(1, -10, 1, -170)
+scrollFrame.Position = UDim2.new(0, 5, 0, 93)
 scrollFrame.BackgroundTransparency = 1
 scrollFrame.BorderSizePixel = 0
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -869,27 +918,26 @@ scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = RED_MAIN
 scrollFrame.Parent = mainFrame
 
--- ========== СПИСОК СКРИПТОВ (46 + старые) ==========
+local buttons = {}
+local buttonHeight = 34
+
+-- ========== СПИСОК СКРИПТОВ (46 — как было) ==========
 local SCRIPTS = {
-    -- Blade Ball
     {Name = "Blade Ball", Category = "BB", URL = "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"},
     {Name = "Blade Ball 2", Category = "BB", URL = "https://wings.ac/loader"},
     {Name = "Blade Ball 3", Category = "BB", URL = "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub"},
-    {Name = "Blade Ball AntiKillParts", Category = "BB", URL = "https://raw.githubusercontent.com/sovetskii-shashlik/Anti-kill-parts-updated-/refs/heads/main/Anti%20kill%20parts%20by%20Zephyr"},
-    -- MM2
-    {Name = "RuzHub (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/pruzgar242-rgb/Update/refs/heads/main/out.lua%20(17).txt"},
-    {Name = "Kiti (MM2)", Category = "MM2", URL = "https://pastefy.app/gPuS4n3Q/raw"},
-    {Name = "CandyWare (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/Be1for/Scripts/refs/heads/main/candyware.luau"},
-    -- INK
-    {Name = "UwU hub (INK)", Category = "INK", URL = "https://raw.githubusercontent.com/platinww/UwU/refs/heads/main/INK-GAME"},
-    {Name = "Ringta (INK)", Category = "INK", URL = "https://rawscripts.net/raw/Universal-Script-RINGTA-best-script-for-ink-game-206674"},
-    {Name = "AX Scripts (INK)", Category = "INK", URL = "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua"},
-    -- Misc
+    {Name = "AntiKillParts", Category = "Misc", URL = "https://raw.githubusercontent.com/sovetskii-shashlik/Anti-kill-parts-updated-/refs/heads/main/Anti%20kill%20parts%20by%20Zephyr"},
     {Name = "PulseHub", Category = "Misc", URL = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
     {Name = "RUNAWAYS", Category = "Misc", URL = "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua"},
     {Name = "Universal FE", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-Universal-FE-Free-keyless-FE-script-242513"},
+    {Name = "UwU hub", Category = "INK", URL = "https://raw.githubusercontent.com/platinww/UwU/refs/heads/main/INK-GAME"},
+    {Name = "Ringta (INK)", Category = "INK", URL = "https://rawscripts.net/raw/Universal-Script-RINGTA-best-script-for-ink-game-206674"},
+    {Name = "AX Scripts (INK)", Category = "INK", URL = "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua"},
     {Name = "FakeVR", Category = "Misc", URL = "https://pastefy.app/MvKHpycG/raw"},
     {Name = "WallHop", Category = "Misc", URL = "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script"},
+    {Name = "RuzHub (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/pruzgar242-rgb/Update/refs/heads/main/out.lua%20(17).txt"},
+    {Name = "Kiti (MM2)", Category = "MM2", URL = "https://pastefy.app/gPuS4n3Q/raw"},
+    {Name = "CandyWare (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/Be1for/Scripts/refs/heads/main/candyware.luau"},
     {Name = "RemainsHub V2", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-RemainsHub-V2-50805"},
     {Name = "R6 Emotes", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-r6-emotes-OPEN-SOURCE-69464"},
     {Name = "Jujutsu Sheninagouns", Category = "Misc", URL = "https://raw.githubusercontent.com/peeky-co/scripts/refs/heads/main/tbo"},
@@ -921,19 +969,8 @@ local SCRIPTS = {
     {Name = "bLockman's minesweaper", Category = "Misc", URL = "https://pastefy.app/T5XIfiMo/raw"},
     {Name = "Cheating during test", Category = "Misc", URL = "https://files.catbox.moe/pkulzc.txt"},
     {Name = "Adopt me", Category = "Misc", URL = "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem"},
-    -- Старые скрипты из прошлых версий
-    {Name = "Chillz Hub (BB)", Category = "BB", URL = "https://rawscripts.net/raw/Blade-Ball-Chillz-Hub-Optimized-Keyless-194922"},
-    {Name = "Blade Ball OP", Category = "BB", URL = "https://rawscripts.net/raw/Blade-Ball-OP-SCRIPT-218034"},
-    {Name = "MM2 Admin", Category = "MM2", URL = "https://rawscripts.net/raw/Murder-Mystery-2-MM2-Admin-Script-167842"},
-    {Name = "MM2 GodMode", Category = "MM2", URL = "https://rawscripts.net/raw/Murder-Mystery-2-GodMode-All-Scripts-199221"},
-    {Name = "INK AutoWin", Category = "INK", URL = "https://rawscripts.net/raw/Ink-Game-INK-AutoWin-214038"},
-    {Name = "Universal Hitbox", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-Hitbox-Expander-192903"},
 }
 
-local buttons = {}
-local buttonHeight = 34
-
--- ========== ФУНКЦИЯ СОЗДАНИЯ КНОПКИ СКРИПТА ==========
 local function CreateScriptButton(data)
     local container = Instance.new("Frame")
     container.Name = "Script_" .. data.Name
@@ -946,7 +983,6 @@ local function CreateScriptButton(data)
 
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -26, 1, 0)
-    btn.Position = UDim2.new(0, 0, 0, 0)
     btn.BackgroundTransparency = 1
     btn.TextColor3 = RED_MAIN
     btn.Text = data.Name
@@ -970,18 +1006,16 @@ local function CreateScriptButton(data)
     star.Parent = container
     star.AutoButtonColor = false
 
-    local function UpdateStar()
-        star.Text = getgenv().XyqwFavorites[data.Name] and "★" or "☆"
-    end
-    UpdateStar()
+    if getgenv().XyqwFavorites[data.Name] then star.Text = "★" end
 
     star.MouseButton1Click:Connect(function()
         if getgenv().XyqwFavorites[data.Name] then
             getgenv().XyqwFavorites[data.Name] = nil
+            star.Text = "☆"
         else
             getgenv().XyqwFavorites[data.Name] = true
+            star.Text = "★"
         end
-        UpdateStar()
     end)
 
     btn.MouseEnter:Connect(function() container.BackgroundColor3 = RED_DARK end)
@@ -1026,7 +1060,7 @@ for _, data in ipairs(SCRIPTS) do
     CreateScriptButton(data)
 end
 
--- ========== REMOVE TAGS + DESTROY (внизу списка) ==========
+-- ========== SPECIAL: Remove Tags + Destroy ==========
 local specialContainer = Instance.new("Frame")
 specialContainer.Name = "SpecialContainer"
 specialContainer.Size = UDim2.new(1, -10, 0, 36)
@@ -1108,15 +1142,14 @@ function RefreshButtons()
         end
     end
     specialContainer.Position = UDim2.new(0, 5, 0, visible * buttonHeight + 5)
-    specialContainer.Visible = (currentTab == "All" and search == "") or (currentTab == "Misc")
-    if specialContainer.Visible then
-        visible = visible + 1
-    end
+    specialContainer.Visible = (currentTab == "All" and search == "")
+    if specialContainer.Visible then visible = visible + 1 end
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, visible * buttonHeight + 20)
 end
 
 RefreshButtons()
 searchBar:GetPropertyChangedSignal("Text"):Connect(RefreshButtons)
+
 -- ========== CHANGE LOG ==========
 local function ShowChangeLog()
     local frame = Instance.new("Frame")
@@ -1157,14 +1190,14 @@ local function ShowChangeLog()
     scroll.Position = UDim2.new(0, 5, 0, 35)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 2000)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 3000)
     scroll.ScrollBarThickness = 4
     scroll.ScrollBarImageColor3 = RED_MAIN
     scroll.ZIndex = 51
     scroll.Parent = frame
 
     local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, -10, 0, 1990)
+    text.Size = UDim2.new(1, -10, 0, 2990)
     text.Position = UDim2.new(0, 5, 0, 5)
     text.BackgroundTransparency = 1
     text.TextColor3 = RED_MAIN
@@ -1180,8 +1213,10 @@ local function ShowChangeLog()
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
 end
 
+changelogButton.MouseButton1Click:Connect(ShowChangeLog)
+
 -- ========== СМЕНА ЯЗЫКА ==========
-local function SwitchLanguage()
+langButton.MouseButton1Click:Connect(function()
     if getgenv().XyqwLanguage == "EN" then
         getgenv().XyqwLanguage = "RU"
     else
@@ -1190,12 +1225,11 @@ local function SwitchLanguage()
     langButton.Text = getgenv().XyqwLanguage
     searchBar.PlaceholderText = _("Search")
     ShowRobloxNotification(_("LangChanged"), 2)
-end
+end)
 
 -- ========== PLAYER LIST ==========
 local function ShowPlayerList()
     local frame = Instance.new("Frame")
-    frame.Name = "PlayerListFrame"
     frame.Size = UDim2.new(0, 350, 0, 400)
     frame.Position = UDim2.new(0.5, -175, 0.5, -200)
     frame.BackgroundColor3 = RED_BG
@@ -1261,7 +1295,6 @@ end
 -- ========== SERVER INFO ==========
 local function ShowServerInfo()
     local frame = Instance.new("Frame")
-    frame.Name = "ServerInfoFrame"
     frame.Size = UDim2.new(0, 350, 0, 220)
     frame.Position = UDim2.new(0.5, -175, 0.5, -110)
     frame.BackgroundColor3 = RED_BG
@@ -1334,9 +1367,8 @@ end
 -- ========== CUSTOM SCRIPT ==========
 local function ShowCustomScript()
     local frame = Instance.new("Frame")
-    frame.Name = "CustomScriptFrame"
-    frame.Size = UDim2.new(0, 350, 0, 170)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -85)
+    frame.Size = UDim2.new(0, 350, 0, 175)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -87)
     frame.BackgroundColor3 = RED_BG
     frame.BorderSizePixel = 2
     frame.BorderColor3 = RED_MAIN
@@ -1382,7 +1414,7 @@ local function ShowCustomScript()
     input.Parent = frame
 
     local hint = Instance.new("TextLabel")
-    hint.Size = UDim2.new(1, -20, 0, 16)
+    hint.Size = UDim2.new(1, -20, 0, 14)
     hint.Position = UDim2.new(0, 10, 0, 80)
     hint.BackgroundTransparency = 1
     hint.TextColor3 = Color3.fromRGB(150, 150, 150)
@@ -1440,23 +1472,10 @@ local function ShowCustomScript()
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
 end
 
--- ========== ПРИВЯЗКА КНОПОК ЗАГОЛОВКА ==========
-changelogButton.MouseButton1Click:Connect(ShowChangeLog)
+-- ========== ПРИВЯЗКА ==========
 customBtn.MouseButton1Click:Connect(ShowCustomScript)
 playerBtn.MouseButton1Click:Connect(ShowPlayerList)
 serverBtn.MouseButton1Click:Connect(ShowServerInfo)
-langButton.MouseButton1Click:Connect(SwitchLanguage)
-
--- ========== TOP BAR TOGGLE ==========
-topBarBtn.MouseButton1Click:Connect(function()
-    getgenv().TopBarHidden = not getgenv().TopBarHidden
-    topBar.Visible = not getgenv().TopBarHidden
-    if getgenv().TopBarHidden then
-        ShowRobloxNotification(_("HideTopBarOn"), 2)
-    else
-        ShowRobloxNotification(_("HideTopBarOff"), 2)
-    end
-end)
 
 -- ========== ТЕМЫ ==========
 local themeOrder = {"Red", "Blue", "Green", "Purple", "Rainbow"}
@@ -1473,28 +1492,23 @@ local function ApplyTheme(themeName)
     RED_BG = t.BG
     RED_TITLE = t.TITLE
 
-    -- Заголовок и окно
     mainFrame.BackgroundColor3 = RED_BG
     mainFrame.BorderColor3 = RED_MAIN
     titleBar.BackgroundColor3 = RED_TITLE
     titleLabel.TextColor3 = RED_MAIN
 
-    -- Кнопки заголовка
-    closeButton.BackgroundColor3 = RED_MAIN
-    closeButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-    closeButton.BorderColor3 = RED_MAIN
-    for _, btn in ipairs({langButton, topBarBtn, serverBtn, playerBtn, customBtn, changelogButton, themeBtn}) do
+    closeButton.TextColor3 = RED_MAIN
+    for _, btn in ipairs({langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn}) do
         btn.BackgroundColor3 = RED_DARK
         btn.TextColor3 = RED_MAIN
         btn.BorderColor3 = RED_MAIN
     end
 
-    -- Search
     searchBar.BackgroundColor3 = RED_DARK
     searchBar.TextColor3 = RED_MAIN
     searchBar.BorderColor3 = RED_MAIN
+    scrollFrame.ScrollBarImageColor3 = RED_MAIN
 
-    -- Tabs
     for n, btn in pairs(tabButtons) do
         if n == currentTab then
             btn.BackgroundColor3 = RED_MAIN
@@ -1506,10 +1520,6 @@ local function ApplyTheme(themeName)
         btn.BorderColor3 = RED_MAIN
     end
 
-    -- Scrollbar
-    scrollFrame.ScrollBarImageColor3 = RED_MAIN
-
-    -- Кнопки скриптов
     for _, entry in ipairs(buttons) do
         entry.Container.BackgroundColor3 = RED_BG
         entry.Container.BorderColor3 = RED_MAIN
@@ -1519,24 +1529,21 @@ local function ApplyTheme(themeName)
         entry.Star.BorderColor3 = RED_MAIN
     end
 
-    -- Special container
     specialContainer.BackgroundColor3 = RED_BG
     specialContainer.BorderColor3 = RED_MAIN
     removeTagsBtn.TextColor3 = RED_MAIN
     destroyBtnMain.TextColor3 = RED_MAIN
 
-    -- Док-кнопка
+    topBar.BackgroundColor3 = RED_BG
+    topBar.BorderColor3 = RED_MAIN
+    topBarText.TextColor3 = RED_MAIN
+    hideTopBtn.BackgroundColor3 = RED_DARK
+    hideTopBtn.TextColor3 = RED_MAIN
+    hideTopBtn.BorderColor3 = RED_MAIN
+
     dockButton.BackgroundColor3 = RED_BG
     dockButton.TextColor3 = RED_MAIN
-    dockStroke.Color = RED_MAIN
-
-    -- Size label + resize
-    sizeLabel.TextColor3 = RED_MAIN
-    resizeHandle.BackgroundColor3 = RED_MAIN
-
-    -- Top bar
-    topBar.BackgroundColor3 = RED_TITLE
-    topBarLabel.TextColor3 = RED_MAIN
+    dockButton.BorderColor3 = RED_MAIN
 
     if themeName ~= "Rainbow" then
         ShowRobloxNotification("Theme: " .. themeName, 2)
@@ -1552,7 +1559,6 @@ themeBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ========== RAINBOW LOOP (fixed) ==========
 task.spawn(function()
     local hue = 0
     while screenGui.Parent do
@@ -1560,21 +1566,15 @@ task.spawn(function()
             hue = (hue + 0.008) % 1
             local c = Color3.fromHSV(hue, 1, 1)
             local darkHue = Color3.fromHSV(hue, 1, 0.18)
-
-            -- Главное
             mainFrame.BorderColor3 = c
             titleBar.BackgroundColor3 = Color3.fromHSV(hue, 0.8, 0.08)
             titleLabel.TextColor3 = c
-
-            -- Кнопки заголовка (кроме X — он остаётся цветом темы)
-            closeButton.BackgroundColor3 = c
-            for _, btn in ipairs({langButton, topBarBtn, serverBtn, playerBtn, customBtn, changelogButton, themeBtn}) do
+            closeButton.TextColor3 = c
+            for _, btn in ipairs({langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn}) do
                 btn.BackgroundColor3 = darkHue
                 btn.TextColor3 = c
                 btn.BorderColor3 = c
             end
-
-            -- Search / tabs / scroll
             searchBar.TextColor3 = c
             searchBar.BorderColor3 = c
             searchBar.BackgroundColor3 = darkHue
@@ -1589,8 +1589,6 @@ task.spawn(function()
                     btn.BorderColor3 = c
                 end
             end
-
-            -- Кнопки скриптов
             for _, entry in ipairs(buttons) do
                 entry.Container.BorderColor3 = c
                 entry.Btn.TextColor3 = c
@@ -1598,28 +1596,46 @@ task.spawn(function()
                 entry.Star.BorderColor3 = c
                 entry.Star.BackgroundColor3 = darkHue
             end
-
-            -- Special
             specialContainer.BorderColor3 = c
             removeTagsBtn.TextColor3 = c
             destroyBtnMain.TextColor3 = c
-
-            -- Док
+            topBar.BorderColor3 = c
+            topBarText.TextColor3 = c
+            hideTopBtn.BackgroundColor3 = darkHue
+            hideTopBtn.TextColor3 = c
+            hideTopBtn.BorderColor3 = c
             dockButton.TextColor3 = c
-            dockStroke.Color = c
-
-            -- Size
-            sizeLabel.TextColor3 = c
-            resizeHandle.BackgroundColor3 = c
-
-            -- Top bar
-            topBar.BackgroundColor3 = Color3.fromHSV(hue, 0.8, 0.08)
-            topBarLabel.TextColor3 = c
+            dockButton.BorderColor3 = c
         end
         task.wait(0.05)
     end
 end)
--- ========== RESIZE ==========
+
+-- ========== RESIZE (fixed) ==========
+local resizeHandle = Instance.new("TextButton")
+resizeHandle.Name = "ResizeHandle"
+resizeHandle.Size = UDim2.new(0, 14, 0, 14)
+resizeHandle.Position = UDim2.new(1, -14, 1, -14)
+resizeHandle.BackgroundColor3 = RED_MAIN
+resizeHandle.Text = ""
+resizeHandle.BorderSizePixel = 0
+resizeHandle.ZIndex = 10
+resizeHandle.Parent = mainFrame
+resizeHandle.AutoButtonColor = false
+
+local sizeLabel = Instance.new("TextLabel")
+sizeLabel.Name = "SizeLabel"
+sizeLabel.Size = UDim2.new(0, 70, 0, 14)
+sizeLabel.Position = UDim2.new(1, -88, 1, -16)
+sizeLabel.BackgroundTransparency = 1
+sizeLabel.TextColor3 = RED_MAIN
+sizeLabel.Text = "250 x 300"
+sizeLabel.TextSize = 10
+sizeLabel.Font = Enum.Font.Gotham
+sizeLabel.TextXAlignment = Enum.TextXAlignment.Right
+sizeLabel.ZIndex = 10
+sizeLabel.Parent = mainFrame
+
 local resizing = false
 local resizeStart, resizeStartSize
 
@@ -1631,26 +1647,25 @@ resizeHandle.InputBegan:Connect(function(input)
     end
 end)
 
-resizeHandle.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        resizing = false
+UserInputService.InputChanged:Connect(function(input)
+    if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - resizeStart
+        local newX = math.clamp(resizeStartSize.X.Offset + delta.X, 250, 900)
+        local newY = math.clamp(resizeStartSize.Y.Offset + delta.Y, 300, 1000)
+        mainFrame.Size = UDim2.new(0, newX, 0, newY)
+        sizeLabel.Text = math.floor(newX) .. " x " .. math.floor(newY)
     end
 end)
 
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - resizeStart
-        local newX = math.clamp(resizeStartSize.X.Offset + delta.X, 280, 900)
-        local newY = math.clamp(resizeStartSize.Y.Offset + delta.Y, 340, 1000)
-        mainFrame.Size = UDim2.new(0, newX, 0, newY)
-        sizeLabel.Text = math.floor(newX) .. " x " .. math.floor(newY)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        resizing = false
     end
 end)
 
 -- ========== ПЕРЕТАСКИВАНИЕ ОКНА ==========
 local dragging = false
 local dragStart, startPos
-
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         local mousePos = input.Position
@@ -1663,7 +1678,7 @@ titleBar.InputBegan:Connect(function(input)
         end
         if IsOverButton(changelogButton) or IsOverButton(langButton) or IsOverButton(closeButton)
            or IsOverButton(themeBtn) or IsOverButton(customBtn) or IsOverButton(playerBtn)
-           or IsOverButton(serverBtn) or IsOverButton(topBarBtn) then
+           or IsOverButton(serverBtn) then
             return
         end
         dragging = true
@@ -1671,47 +1686,17 @@ titleBar.InputBegan:Connect(function(input)
         startPos = mainFrame.Position
     end
 end)
-
 titleBar.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = false
     end
 end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
+UserInputService.InputChanged:Connect(function(input)
     if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragStart
         mainFrame.Position = UDim2.new(
             startPos.X.Scale, startPos.X.Offset + delta.X,
             startPos.Y.Scale, startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
--- ========== ПЕРЕТАСКИВАНИЕ ДОК-КНОПКИ ==========
-local dockDragging = false
-local dockDragStart, dockStartPos
-
-dockButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dockDragging = true
-        dockDragStart = input.Position
-        dockStartPos = dockButton.Position
-    end
-end)
-
-dockButton.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dockDragging = false
-    end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if dockDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dockDragStart
-        dockButton.Position = UDim2.new(
-            dockStartPos.X.Scale, dockStartPos.X.Offset + delta.X,
-            dockStartPos.Y.Scale, dockStartPos.Y.Offset + delta.Y
         )
     end
 end)
@@ -1722,14 +1707,7 @@ closeButton.MouseButton1Click:Connect(function()
     dockButton.Visible = true
 end)
 
-dockButton.MouseButton1Click:Connect(function()
-    if not dockDragging then
-        mainFrame.Visible = true
-        dockButton.Visible = false
-    end
-end)
-
--- ========== WELCOME (через task.spawn — не блокирует) ==========
+-- ========== WELCOME ==========
 local function ShowWelcomeMessage()
     local frame = Instance.new("Frame")
     frame.Name = "WelcomeFrame"
@@ -1806,7 +1784,7 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 11
     doc.Font = Enum.Font.Gotham
-    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info\nTB — Hide Top Bar ON/OFF\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons:\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
+    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons:\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
     doc.ZIndex = 101
     doc.Parent = frame
 
@@ -1837,7 +1815,6 @@ task.spawn(function()
     ShowWelcomeMessage()
 end)
 
--- Роли — уведомление с задержкой, чтобы не перекрывалось
 task.spawn(function()
     task.wait(2.5)
     if IsOwner() then
