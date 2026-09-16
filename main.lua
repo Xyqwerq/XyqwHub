@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 3.8 ==========
+-- ========== XyqwHub - Версия 3.9 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
     Text = "XyqwHub Loading...",
@@ -24,7 +24,7 @@ end
 getgenv().XyqwHubRunning = true
 
 -- ========== ВЕРСИЯ ==========
-local VERSION = "3.8"
+local VERSION = "3.9"
 
 -- ========== USER ID (OWNER) ==========
 local OWNER_IDS = {
@@ -32,7 +32,7 @@ local OWNER_IDS = {
     8527910367
 }
 
--- ========== USER ID (BETA TESTERS) ==========
+-- ========== USER ID (TESTERS) ==========
 local BETA_IDS = {
     9686718765,
     3701387385
@@ -74,17 +74,21 @@ local LANG = {
         TagRemoved = "XyqwHub tag has been removed!",
         OwnerWelcome = "Welcome, my father :3",
         BetaWelcome = "Glad you're here, tester ♡",
+        ScriptExecuted = "Script executed!",
         ChangeLogTitle = "ChangeLog",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 3.9
+- Added "Script executed!" notification for all scripts
+- Added Doors v4
+- Added Kiti (MM2)
+- Renamed BETA tag to Tester
+
 Version 3.8
 - Fixed tag not restoring after respawn
-- Tag now uses CharacterAdded + task.wait properly
-- Renamed BETA tag to Tester
 
 Version 3.7
 - Added tester tag (blue gradient)
-- Added tester welcome message
 
 Version 3.6
 - Fixed accidental button clicks in title bar
@@ -197,17 +201,21 @@ Version 1.0
         TagRemoved = "Тег XyqwHub был удалён!",
         OwnerWelcome = "Welcome, my father :3",
         BetaWelcome = "Glad you're here, tester ♡",
+        ScriptExecuted = "Скрипт выполнен!",
         ChangeLogTitle = "Ченджлог",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 3.9
+- Добавлено сообщение "Script executed!" при запуске всех скриптов
+- Добавлен Doors v4
+- Добавлен Kiti (MM2)
+- BETA переименован в Tester
+
 Версия 3.8
 - Исправлено восстановление тега после респавна
-- Тег теперь использует CharacterAdded + task.wait
-- BETA переименован в Tester
 
 Версия 3.7
 - Добавлен тег тестера (синий градиент)
-- Добавлено приветствие для тестеров
 
 Версия 3.6
 - Исправлены случайные нажатия в шапке
@@ -467,26 +475,15 @@ local function CheckAllPlayers()
     end
 end
 
--- ФИКС: функция ожидания персонажа + создания тега
 local function SetupCharacterTag(plr)
     task.spawn(function()
         local char = plr.Character or plr.CharacterAdded:Wait()
-        
-        -- Ждём HumanoidRootPart (макс 5 сек)
         local rootPart = char:WaitForChild("HumanoidRootPart", 5)
-        if not rootPart then
-            print("[XyqwHub Tag] Не дождался HumanoidRootPart для " .. plr.Name)
-            return
-        end
-        
-        -- Удаляем старый тег если есть
+        if not rootPart then return end
         local oldTag = char:FindFirstChild("XyqwTag")
         if oldTag then oldTag:Destroy() end
         activeTags[plr] = nil
-        
-        -- Небольшая задержка для полной загрузки
         task.wait(0.5)
-        
         if GetRole(plr) then
             CreateTagForPlayer(plr)
         end
@@ -776,13 +773,13 @@ local function ShowChangeLog()
     scroll.Size = UDim2.new(1, -20, 1, -50)
     scroll.Position = UDim2.new(0, 10, 0, 40)
     scroll.BackgroundTransparency = 1
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 1600)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 1700)
     scroll.ScrollBarThickness = 4
     scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
     scroll.Parent = changelogFrame
 
     local textLbl = Instance.new("TextLabel")
-    textLbl.Size = UDim2.new(1, -10, 0, 1590)
+    textLbl.Size = UDim2.new(1, -10, 0, 1690)
     textLbl.Position = UDim2.new(0, 5, 0, 5)
     textLbl.BackgroundTransparency = 1
     textLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -858,6 +855,7 @@ local function CreateButton(text, callback)
     return btn
 end
 
+-- НОВАЯ ФУНКЦИЯ: RunScript с сообщением "Script executed!"
 local function RunScript(name, url)
     print("[XyqwHub] " .. name .. " - STARTING...")
     local success, err = pcall(function()
@@ -865,8 +863,10 @@ local function RunScript(name, url)
     end)
     if success then
         print("[XyqwHub] " .. name .. " - " .. _("Loaded") .. "!")
+        ShowRobloxNotification(name .. " - " .. _("ScriptExecuted"), 3)
     else
         print("[XyqwHub] " .. name .. " - " .. _("Error") .. ": " .. tostring(err))
+        ShowRobloxNotification(name .. " - " .. _("Error") .. ": " .. tostring(err), 5)
     end
 end
 
@@ -1086,6 +1086,8 @@ addButton("A dusty trip v2", "https://raw.githubusercontent.com/VoxlarWIP/Src/re
 addButton("bLockman's minesweaper", "https://pastefy.app/T5XIfiMo/raw")
 addButton("Cheating during test", "https://files.catbox.moe/pkulzc.txt")
 addButton("Adopt me", "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem")
+addButton("Doors v4", "https://raw.githubusercontent.com/sillyleo67/Doors/refs/heads/main/Twinkhook.lua")
+addButton("Kiti (MM2)", "https://pastefy.app/gPuS4n3Q/raw")
 
 local removeTagBtn = CreateButton(_("RemoveTagBtn"), function()
     RemoveAllTags()
