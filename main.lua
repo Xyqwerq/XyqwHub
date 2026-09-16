@@ -673,7 +673,7 @@ hideTopBtn.MouseButton1Click:Connect(function()
     end
     UpdateHideTopBtn()
 end)
-
+local mainFrame = nil
 -- ========== DOCK ==========
 local dockButton = Instance.new("TextButton")
 dockButton.Name = "DockButton"
@@ -689,37 +689,50 @@ dockButton.BorderColor3 = RED_MAIN
 dockButton.Parent = screenGui
 dockButton.Visible = false
 dockButton.AutoButtonColor = false
+dockButton.Active = true
+dockButton.ZIndex = 999
 
 local dockDragging = false
-local dockDragStart, dockStartPos, dockMoved = false, false
+local dockDragStart, dockStartPos
+local dockDragMoved = false
+
 dockButton.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dockDragging = true
-        dockMoved = false
+        dockDragMoved = false
         dockDragStart = input.Position
         dockStartPos = dockButton.Position
     end
 end)
-dockButton.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dockDragging = false
-    end
-end)
+
 UserInputService.InputChanged:Connect(function(input)
     if dockDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dockDragStart
-        if math.abs(delta.X) > 3 or math.abs(delta.Y) > 3 then dockMoved = true end
-        dockButton.Position = UDim2.new(dockStartPos.X.Scale, dockStartPos.X.Offset + delta.X, dockStartPos.Y.Scale, dockStartPos.Y.Offset + delta.Y)
+        if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+            dockDragMoved = true
+        end
+        if dockDragMoved then
+            dockButton.Position = UDim2.new(
+                dockStartPos.X.Scale, dockStartPos.X.Offset + delta.X,
+                dockStartPos.Y.Scale, dockStartPos.Y.Offset + delta.Y
+            )
+        end
     end
 end)
-dockButton.MouseButton1Click:Connect(function()
-    dockMoved = false
-    mainFrame.Visible = true
-    dockButton.Visible = false
-end)
 
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if dockDragging and not dockDragMoved then
+            -- Это был КЛИК, а не перетаскивание
+            mainFrame.Visible = true
+            dockButton.Visible = false
+            print("[XyqwHub] Dock clicked - opening window")
+        end
+        dockDragging = false
+    end
+end)
 -- ========== ГЛАВНОЕ ОКНО ==========
-local mainFrame = Instance.new("Frame")
+mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 280, 0, 340)
 mainFrame.Position = UDim2.new(0.5, -140, 0.5, -170)
