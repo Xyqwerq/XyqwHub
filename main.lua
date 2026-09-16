@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 4.2 ==========
+-- ========== XyqwHub - Версия 4.1 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub",
     Text = "XyqwHub Loading...",
@@ -7,9 +7,9 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 print("[XyqwHub] Loading...")
 
 if getgenv().XyqwHubRunning then
-    local msg = "Повторный запуск скрипта был заблокирован!"
-    if getgenv().XyqwLanguage == "EN" then
-        msg = "Script re-launch has been blocked!"
+    local msg = "Script re-launch has been blocked!"
+    if getgenv().XyqwLanguage == "RU" then
+        msg = "Повторный запуск скрипта был заблокирован!"
     end
     game:GetService("StarterGui"):SetCore("SendNotification", {Title = "XyqwHub", Text = msg, Duration = 5})
     print("[XyqwHub] " .. msg)
@@ -50,7 +50,7 @@ local LANG = {
         HideTopBarOff = "Hide Top Bar: OFF",
         ScriptExecuted = "Script executed!",
         OwnerWelcome = "Welcome, my father :3",
-        BetaWelcome = "Glad you're here, tester ♡",
+        BetaWelcome = "Glad you're here, tester <3",
         ChangeLogText = [[XyqwHub ChangeLog
 
 Version 4.1
@@ -87,7 +87,7 @@ Version 1.0
         HideTopBarOff = "Скрыть топ бар: выключено",
         ScriptExecuted = "Скрипт выполнен!",
         OwnerWelcome = "Welcome, my father :3",
-        BetaWelcome = "Glad you're here, tester ♡",
+        BetaWelcome = "Glad you're here, tester <3",
         ChangeLogText = [[XyqwHub Ченджлог
 
 Версия 4.1
@@ -318,10 +318,101 @@ local function GetExecutorName()
     end)
     return ok and name or "Unknown"
 end
--- SEARCH
+
+-- ========== СОЗДАНИЕ GUI ==========
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "XyqwHub"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+pcall(function()
+    screenGui.Parent = game:GetService("CoreGui")
+end)
+if not screenGui.Parent then
+    screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- Главное окно
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 250, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+mainFrame.BackgroundColor3 = RED_BG
+mainFrame.BorderSizePixel = 2
+mainFrame.BorderColor3 = RED_MAIN
+mainFrame.Active = true
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
+
+-- Заголовок
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 28)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = RED_TITLE
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(0, 60, 1, 0)
+titleLabel.Position = UDim2.new(0, 5, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "XyqwHub"
+titleLabel.TextColor3 = RED_MAIN
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+-- Кнопки в заголовке
+local function CreateHeaderButton(text, xOffset, width, bgColor, txtColor, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, width, 0, 22)
+    btn.Position = UDim2.new(1, xOffset, 0.5, -11)
+    btn.BackgroundColor3 = bgColor
+    btn.Text = text
+    btn.TextColor3 = txtColor
+    btn.TextScaled = true
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 1
+    btn.BorderColor3 = RED_MAIN
+    btn.AutoButtonColor = false
+    btn.Parent = titleBar
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+local themeBtn = CreateHeaderButton("Th", -218, 22, RED_DARK, RED_MAIN, function()
+    ShowRobloxNotification("Theme: Red (default)", 2)
+end)
+
+local changelogButton = CreateHeaderButton("CL", -193, 22, RED_DARK, RED_MAIN, function() end)
+local customBtn = CreateHeaderButton("C", -168, 22, RED_DARK, RED_MAIN, function() end)
+local playerBtn = CreateHeaderButton("P", -143, 22, RED_DARK, RED_MAIN, function() end)
+local serverBtn = CreateHeaderButton("S", -118, 22, RED_DARK, RED_MAIN, function() end)
+local langButton = CreateHeaderButton(getgenv().XyqwLanguage or "EN", -93, 28, RED_DARK, RED_MAIN, function() end)
+local closeButton = CreateHeaderButton("X", -60, 22, RED_MAIN, Color3.fromRGB(0, 0, 0), function() end)
+
+-- Док-кнопка (когда окно закрыто)
+local dockButton = Instance.new("TextButton")
+dockButton.Name = "DockButton"
+dockButton.Size = UDim2.new(0, 50, 0, 50)
+dockButton.Position = UDim2.new(0, 20, 0.5, -25)
+dockButton.BackgroundColor3 = RED_BG
+dockButton.Text = "XH"
+dockButton.TextColor3 = RED_MAIN
+dockButton.TextScaled = true
+dockButton.Font = Enum.Font.GothamBold
+dockButton.BorderSizePixel = 2
+dockButton.BorderColor3 = RED_MAIN
+dockButton.AutoButtonColor = false
+dockButton.Visible = false
+dockButton.Parent = screenGui
+-- ========== SEARCH ==========
 local searchBar = Instance.new("TextBox")
+searchBar.Name = "SearchBar"
 searchBar.Size = UDim2.new(1, -10, 0, 24)
-searchBar.Position = UDim2.new(0, 5, 0, 35)
+searchBar.Position = UDim2.new(0, 5, 0, 32)
 searchBar.BackgroundColor3 = RED_DARK
 searchBar.PlaceholderText = _("Search")
 searchBar.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
@@ -335,10 +426,11 @@ searchBar.BorderSizePixel = 1
 searchBar.BorderColor3 = RED_MAIN
 searchBar.Parent = mainFrame
 
--- TABS (в 1 ряд)
+-- ========== TABS ==========
 local tabBar = Instance.new("Frame")
+tabBar.Name = "TabBar"
 tabBar.Size = UDim2.new(1, -10, 0, 24)
-tabBar.Position = UDim2.new(0, 5, 0, 64)
+tabBar.Position = UDim2.new(0, 5, 0, 60)
 tabBar.BackgroundTransparency = 1
 tabBar.Parent = mainFrame
 
@@ -378,17 +470,72 @@ for i, name in ipairs(TAB_LIST) do
     btn.MouseButton1Click:Connect(function() SwitchTab(name) end)
 end
 
--- SCROLL
+-- ========== SCROLL ==========
 local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(1, -10, 1, -170)
-scrollFrame.Position = UDim2.new(0, 5, 0, 93)
+scrollFrame.Name = "ScriptScroll"
+scrollFrame.Size = UDim2.new(1, -10, 1, -94)
+scrollFrame.Position = UDim2.new(0, 5, 0, 88)
 scrollFrame.BackgroundTransparency = 1
+scrollFrame.BorderSizePixel = 0
 scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = RED_MAIN
 scrollFrame.Parent = mainFrame
 
--- КНОПКА
+-- ========== СПИСОК СКРИПТОВ ==========
+local SCRIPTS = {
+    {Name = "Blade Ball", Category = "BB", URL = "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"},
+    {Name = "Blade Ball 2", Category = "BB", URL = "https://wings.ac/loader"},
+    {Name = "Blade Ball 3", Category = "BB", URL = "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub"},
+    {Name = "AntiKillParts", Category = "Misc", URL = "https://raw.githubusercontent.com/sovetskii-shashlik/Anti-kill-parts-updated-/refs/heads/main/Anti%20kill%20parts%20by%20Zephyr"},
+    {Name = "PulseHub", Category = "Misc", URL = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
+    {Name = "RUNAWAYS", Category = "Misc", URL = "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua"},
+    {Name = "Universal FE", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-Universal-FE-Free-keyless-FE-script-242513"},
+    {Name = "UwU hub", Category = "INK", URL = "https://raw.githubusercontent.com/platinww/UwU/refs/heads/main/INK-GAME"},
+    {Name = "Ringta (INK)", Category = "INK", URL = "https://rawscripts.net/raw/Universal-Script-RINGTA-best-script-for-ink-game-206674"},
+    {Name = "AX Scripts (INK)", Category = "INK", URL = "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua"},
+    {Name = "FakeVR", Category = "Misc", URL = "https://pastefy.app/MvKHpycG/raw"},
+    {Name = "WallHop", Category = "Misc", URL = "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script"},
+    {Name = "RuzHub (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/pruzgar242-rgb/Update/refs/heads/main/out.lua%20(17).txt"},
+    {Name = "Kiti (MM2)", Category = "MM2", URL = "https://pastefy.app/gPuS4n3Q/raw"},
+    {Name = "CandyWare (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/Be1for/Scripts/refs/heads/main/candyware.luau"},
+    {Name = "RemainsHub V2", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-RemainsHub-V2-50805"},
+    {Name = "R6 Emotes", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-r6-emotes-OPEN-SOURCE-69464"},
+    {Name = "Jujutsu Sheninagouns", Category = "Misc", URL = "https://raw.githubusercontent.com/peeky-co/scripts/refs/heads/main/tbo"},
+    {Name = "Free Cam", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-Free-cam-script-pc-and-mobile-223089"},
+    {Name = "Doors (Abysall)", Category = "Misc", URL = "https://rawscripts.net/raw/DOORS-Abysall-hub-OP-205906"},
+    {Name = "Doors v4", Category = "Misc", URL = "https://raw.githubusercontent.com/sillyleo67/Doors/refs/heads/main/Twinkhook.lua"},
+    {Name = "Fling Gui", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-fling-gui-99753"},
+    {Name = "Infinite Yield", Category = "Misc", URL = "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
+    {Name = "Walk on walls", Category = "Misc", URL = "https://rawscripts.net/raw/The-patience-obby-Universal-Walk-on-walls-18129"},
+    {Name = "AetherX (Death Penalty)", Category = "Misc", URL = "https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"},
+    {Name = "Voidware", Category = "Misc", URL = "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua"},
+    {Name = "LaLol Hub", Category = "Misc", URL = "https://raw.githubusercontent.com/Miygteet/Hacker101/refs/heads/main/LALOL-Backdoor-Secure.lua"},
+    {Name = "FTAP", Category = "Misc", URL = "https://api.jnkie.com/api/v1/luascripts/public/4078649e4397f0e2cdaddde241d69bfd67b2b7107917891384735129c85cae18/download"},
+    {Name = "MinhNat Hub (TSB)", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-MinhNhat-Tsb-62161"},
+    {Name = "BC9 (UTG)", Category = "Misc", URL = "https://rawscripts.net/raw/untitled-tag-game-BC9-UTG-MENU-116806"},
+    {Name = "FTAP (WITH KEY)", Category = "Misc", URL = "https://raw.githubusercontent.com/BlizTBr/scripts/main/FTAP.lua"},
+    {Name = "RadiumHub (Pressure)", Category = "Misc", URL = "https://rawscripts.net/raw/UPDATE-Pressure-God-Mode-Auto-Loot-ESP-Full-Bright-No-Eyefestation-224409"},
+    {Name = "Steal an egg", Category = "Misc", URL = "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"},
+    {Name = "Universal script", Category = "Misc", URL = "https://raw.githubusercontent.com/fleecelolll/Fleece-s-Utility-Panel/refs/heads/main/Script.lua"},
+    {Name = "Corridor", Category = "Misc", URL = "https://saga2015.b-cdn.net/corridor.luau"},
+    {Name = "BloxStrike", Category = "Misc", URL = "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/BloxStrike.lua"},
+    {Name = "RIVALS", Category = "Misc", URL = "https://raw.githubusercontent.com/imshrak/rivals/refs/heads/main/main"},
+    {Name = "Troll script", Category = "Misc", URL = "https://mois7.xyz/loader"},
+    {Name = "Death Order [SIMON]", Category = "Misc", URL = "https://rawscripts.net/raw/Death-Order:-Simon-Says-BEST-DEATH-ORDER-SCRIPT-226542"},
+    {Name = "DropKick", Category = "Misc", URL = "https://raw.githubusercontent.com/yes-d3v-scripts/drop-kick-fling/refs/heads/main/script"},
+    {Name = "Evade", Category = "Misc", URL = "https://github.com/imc72s/LaztDex/raw/refs/heads/main/EvadeScriptLaztDex"},
+    {Name = "A dusty trip", Category = "Misc", URL = "https://raw.githubusercontent.com/BalintTheDevXBack/Games/refs/heads/main/aDustyTrip"},
+    {Name = "A dusty trip v2", Category = "Misc", URL = "https://raw.githubusercontent.com/VoxlarWIP/Src/refs/heads/main/adustytrip.lua"},
+    {Name = "bLockman's minesweaper", Category = "Misc", URL = "https://pastefy.app/T5XIfiMo/raw"},
+    {Name = "Cheating during test", Category = "Misc", URL = "https://files.catbox.moe/pkulzc.txt"},
+    {Name = "Adopt me", Category = "Misc", URL = "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem"},
+}
+
+local buttons = {}
+local buttonHeight = 34
+
+-- ========== ФУНКЦИЯ СОЗДАНИЯ КНОПКИ (ОДНА!) ==========
 local function CreateScriptButton(data)
     local container = Instance.new("Frame")
     container.Name = "Script_" .. data.Name
@@ -478,144 +625,6 @@ local function CreateScriptButton(data)
         isRunning = false
     end)
 
-    return container, data
-end
-
--- СПИСОК СКРИПТОВ
-local SCRIPTS = {
-    {Name = "Blade Ball", Category = "BB", URL = "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"},
-    {Name = "Blade Ball 2", Category = "BB", URL = "https://wings.ac/loader"},
-    {Name = "Blade Ball 3", Category = "BB", URL = "https://raw.githubusercontent.com/2xrW/return/refs/heads/main/hub"},
-    {Name = "AntiKillParts", Category = "Misc", URL = "https://raw.githubusercontent.com/sovetskii-shashlik/Anti-kill-parts-updated-/refs/heads/main/Anti%20kill%20parts%20by%20Zephyr"},
-    {Name = "PulseHub", Category = "Misc", URL = "https://raw.githubusercontent.com/PulseZax/Loader/refs/heads/main/.lua"},
-    {Name = "RUNAWAYS", Category = "Misc", URL = "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua"},
-    {Name = "Universal FE", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-Universal-FE-Free-keyless-FE-script-242513"},
-    {Name = "UwU hub", Category = "INK", URL = "https://raw.githubusercontent.com/platinww/UwU/refs/heads/main/INK-GAME"},
-    {Name = "Ringta (INK)", Category = "INK", URL = "https://rawscripts.net/raw/Universal-Script-RINGTA-best-script-for-ink-game-206674"},
-    {Name = "AX Scripts (INK)", Category = "INK", URL = "https://officialaxscripts.vercel.app/scripts/AX-Loader.lua"},
-    {Name = "FakeVR", Category = "Misc", URL = "https://pastefy.app/MvKHpycG/raw"},
-    {Name = "WallHop", Category = "Misc", URL = "https://raw.githubusercontent.com/ScpGuest666/Random-Roblox-script/refs/heads/main/Roblox%20WallHop%20script"},
-    {Name = "RuzHub (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/pruzgar242-rgb/Update/refs/heads/main/out.lua%20(17).txt"},
-    {Name = "Kiti (MM2)", Category = "MM2", URL = "https://pastefy.app/gPuS4n3Q/raw"},
-    {Name = "CandyWare (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/Be1for/Scripts/refs/heads/main/candyware.luau"},
-    {Name = "RemainsHub V2", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-RemainsHub-V2-50805"},
-    {Name = "R6 Emotes", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-r6-emotes-OPEN-SOURCE-69464"},
-    {Name = "Jujutsu Sheninagouns", Category = "Misc", URL = "https://raw.githubusercontent.com/peeky-co/scripts/refs/heads/main/tbo"},
-    {Name = "Free Cam", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-Free-cam-script-pc-and-mobile-223089"},
-    {Name = "Doors (Abysall)", Category = "Misc", URL = "https://rawscripts.net/raw/DOORS-Abysall-hub-OP-205906"},
-    {Name = "Doors v4", Category = "Misc", URL = "https://raw.githubusercontent.com/sillyleo67/Doors/refs/heads/main/Twinkhook.lua"},
-    {Name = "Fling Gui", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-fling-gui-99753"},
-    {Name = "Infinite Yield", Category = "Misc", URL = "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
-    {Name = "Walk on walls", Category = "Misc", URL = "https://rawscripts.net/raw/The-patience-obby-Universal-Walk-on-walls-18129"},
-    {Name = "AetherX (Death Penalty)", Category = "Misc", URL = "https://api.luarmor.net/files/v3/loaders/8c08b8f2252eec7dbb77d253d269bb65.lua"},
-    {Name = "Voidware", Category = "Misc", URL = "https://files.vapevoidware.xyz/VapeVoidware/VW-Add/main/loader.lua"},
-    {Name = "LaLol Hub", Category = "Misc", URL = "https://raw.githubusercontent.com/Miygteet/Hacker101/refs/heads/main/LALOL-Backdoor-Secure.lua"},
-    {Name = "FTAP", Category = "Misc", URL = "https://api.jnkie.com/api/v1/luascripts/public/4078649e4397f0e2cdaddde241d69bfd67b2b7107917891384735129c85cae18/download"},
-    {Name = "MinhNat Hub (TSB)", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-MinhNhat-Tsb-62161"},
-    {Name = "BC9 (UTG)", Category = "Misc", URL = "https://rawscripts.net/raw/untitled-tag-game-BC9-UTG-MENU-116806"},
-    {Name = "FTAP (WITH KEY)", Category = "Misc", URL = "https://raw.githubusercontent.com/BlizTBr/scripts/main/FTAP.lua"},
-    {Name = "RadiumHub (Pressure)", Category = "Misc", URL = "https://rawscripts.net/raw/UPDATE-Pressure-God-Mode-Auto-Loot-ESP-Full-Bright-No-Eyefestation-224409"},
-    {Name = "Steal an egg", Category = "Misc", URL = "https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"},
-    {Name = "Universal script", Category = "Misc", URL = "https://raw.githubusercontent.com/fleecelolll/Fleece-s-Utility-Panel/refs/heads/main/Script.lua"},
-    {Name = "Corridor", Category = "Misc", URL = "https://saga2015.b-cdn.net/corridor.luau"},
-    {Name = "BloxStrike", Category = "Misc", URL = "https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/BloxStrike.lua"},
-    {Name = "RIVALS", Category = "Misc", URL = "https://raw.githubusercontent.com/imshrak/rivals/refs/heads/main/main"},
-    {Name = "Troll script", Category = "Misc", URL = "https://mois7.xyz/loader"},
-    {Name = "Death Order [SIMON]", Category = "Misc", URL = "https://rawscripts.net/raw/Death-Order:-Simon-Says-BEST-DEATH-ORDER-SCRIPT-226542"},
-    {Name = "DropKick", Category = "Misc", URL = "https://raw.githubusercontent.com/yes-d3v-scripts/drop-kick-fling/refs/heads/main/script"},
-    {Name = "Evade", Category = "Misc", URL = "https://github.com/imc72s/LaztDex/raw/refs/heads/main/EvadeScriptLaztDex"},
-    {Name = "A dusty trip", Category = "Misc", URL = "https://raw.githubusercontent.com/BalintTheDevXBack/Games/refs/heads/main/aDustyTrip"},
-    {Name = "A dusty trip v2", Category = "Misc", URL = "https://raw.githubusercontent.com/VoxlarWIP/Src/refs/heads/main/adustytrip.lua"},
-    {Name = "bLockman's minesweaper", Category = "Misc", URL = "https://pastefy.app/T5XIfiMo/raw"},
-    {Name = "Cheating during test", Category = "Misc", URL = "https://files.catbox.moe/pkulzc.txt"},
-    {Name = "Adopt me", Category = "Misc", URL = "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem"},
-}
-
-local buttons = {}
-local buttonHeight = 34
-
-local function CreateScriptButton(data)
-    local container = Instance.new("Frame")
-    container.Name = "Script_" .. data.Name
-    container.Size = UDim2.new(1, -10, 0, 32)
-    container.Position = UDim2.new(0, 5, 0, 0)
-    container.BackgroundColor3 = RED_BG
-    container.BorderSizePixel = 2
-    container.BorderColor3 = RED_MAIN
-    container.Parent = scrollFrame
-
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -26, 1, 0)
-    btn.BackgroundTransparency = 1
-    btn.TextColor3 = RED_MAIN
-    btn.Text = data.Name
-    btn.TextScaled = true
-    btn.Font = Enum.Font.GothamBold
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.Parent = container
-    btn.AutoButtonColor = false
-
-    local star = Instance.new("TextButton")
-    star.Name = "Star"
-    star.Size = UDim2.new(0, 26, 1, 0)
-    star.Position = UDim2.new(1, -26, 0, 0)
-    star.BackgroundColor3 = RED_BG
-    star.TextColor3 = RED_MAIN
-    star.Text = "☆"
-    star.TextScaled = true
-    star.Font = Enum.Font.GothamBold
-    star.BorderSizePixel = 1
-    star.BorderColor3 = RED_MAIN
-    star.Parent = container
-    star.AutoButtonColor = false
-
-    if getgenv().XyqwFavorites[data.Name] then star.Text = "★" end
-
-    star.MouseButton1Click:Connect(function()
-        if getgenv().XyqwFavorites[data.Name] then
-            getgenv().XyqwFavorites[data.Name] = nil
-            star.Text = "☆"
-        else
-            getgenv().XyqwFavorites[data.Name] = true
-            star.Text = "★"
-        end
-    end)
-
-    btn.MouseEnter:Connect(function() container.BackgroundColor3 = RED_DARK end)
-    btn.MouseLeave:Connect(function() container.BackgroundColor3 = RED_BG end)
-
-    local isRunning = false
-    local lastRun = 0
-    btn.MouseButton1Click:Connect(function()
-        if isRunning then return end
-        local now = tick()
-        if now - lastRun < 1.5 then return end
-        lastRun = now
-        isRunning = true
-        container.BackgroundColor3 = RED_MAIN
-
-        for i, name in ipairs(getgenv().XyqwRecent) do
-            if name == data.Name then table.remove(getgenv().XyqwRecent, i) break end
-        end
-        table.insert(getgenv().XyqwRecent, 1, data.Name)
-        if #getgenv().XyqwRecent > 15 then table.remove(getgenv().XyqwRecent) end
-
-        print("[XyqwHub] " .. data.Name .. " - STARTING...")
-        local success, err = pcall(function()
-            loadstring(game:HttpGet(data.URL))()
-        end)
-        if success then
-            print("[XyqwHub] " .. data.Name .. " - " .. _("Loaded") .. "!")
-            ShowRobloxNotification(data.Name .. " - " .. _("ScriptExecuted"), 3)
-        else
-            print("[XyqwHub] " .. data.Name .. " - " .. _("Error") .. ": " .. tostring(err))
-            ShowRobloxNotification(data.Name .. " - " .. _("Error"), 5)
-        end
-        task.wait(0.3)
-        container.BackgroundColor3 = RED_BG
-        isRunning = false
-    end)
-
     table.insert(buttons, {Container = container, Btn = btn, Star = star, Data = data})
 end
 
@@ -658,6 +667,7 @@ searchBar:GetPropertyChangedSignal("Text"):Connect(RefreshButtons)
 -- ========== CHANGE LOG ==========
 local function ShowChangeLog()
     local frame = Instance.new("Frame")
+    frame.Name = "ChangeLogFrame"
     frame.Size = UDim2.new(0, 350, 0, 320)
     frame.Position = UDim2.new(0.5, -175, 0.5, -160)
     frame.BackgroundColor3 = RED_BG
@@ -711,10 +721,8 @@ local function ShowChangeLog()
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
 end
 
-changelogButton.MouseButton1Click:Connect(ShowChangeLog)
-
 -- ========== СМЕНА ЯЗЫКА ==========
-langButton.MouseButton1Click:Connect(function()
+local function SwitchLanguage()
     if getgenv().XyqwLanguage == "EN" then
         getgenv().XyqwLanguage = "RU"
     else
@@ -723,11 +731,12 @@ langButton.MouseButton1Click:Connect(function()
     langButton.Text = getgenv().XyqwLanguage
     searchBar.PlaceholderText = _("Search")
     ShowRobloxNotification("Language: " .. getgenv().XyqwLanguage, 2)
-end)
+end
 
 -- ========== PLAYER LIST ==========
 local function ShowPlayerList()
     local frame = Instance.new("Frame")
+    frame.Name = "PlayerListFrame"
     frame.Size = UDim2.new(0, 350, 0, 400)
     frame.Position = UDim2.new(0.5, -175, 0.5, -200)
     frame.BackgroundColor3 = RED_BG
@@ -787,6 +796,7 @@ end
 -- ========== SERVER INFO ==========
 local function ShowServerInfo()
     local frame = Instance.new("Frame")
+    frame.Name = "ServerInfoFrame"
     frame.Size = UDim2.new(0, 350, 0, 220)
     frame.Position = UDim2.new(0.5, -175, 0.5, -110)
     frame.BackgroundColor3 = RED_BG
@@ -854,6 +864,7 @@ end
 -- ========== CUSTOM SCRIPT ==========
 local function ShowCustomScript()
     local frame = Instance.new("Frame")
+    frame.Name = "CustomScriptFrame"
     frame.Size = UDim2.new(0, 350, 0, 160)
     frame.Position = UDim2.new(0.5, -175, 0.5, -80)
     frame.BackgroundColor3 = RED_BG
@@ -926,13 +937,12 @@ local function ShowCustomScript()
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
 end
 
--- Привязка кнопок
-themeBtn.MouseButton1Click:Connect(function()
-    ShowRobloxNotification("Theme: Red (default)", 2)
-end)
+-- ========== ПРИВЯЗКА КНОПОК ЗАГОЛОВКА ==========
+changelogButton.MouseButton1Click:Connect(ShowChangeLog)
 customBtn.MouseButton1Click:Connect(ShowCustomScript)
 playerBtn.MouseButton1Click:Connect(ShowPlayerList)
 serverBtn.MouseButton1Click:Connect(ShowServerInfo)
+langButton.MouseButton1Click:Connect(SwitchLanguage)
 
 -- ========== RESIZE ==========
 local resizeHandle = Instance.new("TextButton")
@@ -979,6 +989,7 @@ titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         local mousePos = input.Position
         local function IsOverButton(btn)
+            if not btn then return false end
             local btnPos = btn.AbsolutePosition
             local btnSize = btn.AbsoluteSize
             return mousePos.X >= btnPos.X and mousePos.X <= btnPos.X + btnSize.X and
@@ -1053,6 +1064,7 @@ end)
 -- ========== WELCOME ==========
 local function ShowWelcomeMessage()
     local frame = Instance.new("Frame")
+    frame.Name = "WelcomeFrame"
     frame.Size = UDim2.new(0, 300, 0, 170)
     frame.Position = UDim2.new(0.5, -150, 0.5, -85)
     frame.BackgroundColor3 = RED_BG
