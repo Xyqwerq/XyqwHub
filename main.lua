@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 4.4 ==========
+-- ========== XyqwHub - Версия 4.5 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
@@ -13,21 +13,44 @@ if getgenv().XyqwHubRunning then
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "4.4"
+local VERSION = "4.5"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
-local CONFIG_FOLDER = "XyqwHub"
-local FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
-local RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
-local FAV_FILE = FAV_FOLDER .. "/favorites.json"
-local RCT_FILE = RCT_FOLDER .. "/recent.json"
+-- ========== ПУТИ (абсолютный Delta workspace) ==========
+local DELTA_WORKSPACE = "/storage/emulated/0/Delta/Workspace"
+local CONFIG_FOLDER, FAV_FOLDER, RCT_FOLDER, FAV_FILE, RCT_FILE
 
+local absWorks = false
 pcall(function()
-    if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
-    if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
-    if not isfolder(RCT_FOLDER) then makefolder(RCT_FOLDER) end
+    if isfolder(DELTA_WORKSPACE) then absWorks = true end
 end)
+
+if absWorks then
+    CONFIG_FOLDER = DELTA_WORKSPACE .. "/XyqwHub"
+    FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
+    RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
+    FAV_FILE = FAV_FOLDER .. "/favorites.json"
+    RCT_FILE = RCT_FOLDER .. "/recent.json"
+    pcall(function()
+        if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
+        if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
+        if not isfolder(RCT_FOLDER) then makefolder(RCT_FOLDER) end
+    end)
+    print("[XyqwHub] Files path: " .. CONFIG_FOLDER)
+else
+    CONFIG_FOLDER = "XyqwHub"
+    FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
+    RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
+    FAV_FILE = FAV_FOLDER .. "/favorites.json"
+    RCT_FILE = RCT_FOLDER .. "/recent.json"
+    pcall(function()
+        if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
+        if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
+        if not isfolder(RCT_FOLDER) then makefolder(RCT_FOLDER) end
+    end)
+    print("[XyqwHub] Delta workspace not found, using virtual path")
+end
 
 local function SaveTable(path, tbl)
     pcall(function()
@@ -78,15 +101,18 @@ local LANG = {
         LangChanged = "Language changed to English",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 4.5
+- Files saved to /storage/emulated/0/Delta/Workspace/XyqwHub
+- Fixed Rainbow theme: no more red flash on tab switch
+- Fixed Rainbow theme: selected tab border now animates
+- Remove Tags and Destroy are separate buttons
+- Fixed Remove Tags not removing tags permanently
+- Server Info: Rejoin, ServerHop, TP to small server
+
 Version 4.4
-- Remove Tags and Destroy are now separate buttons
+- Remove Tags and Destroy are separate buttons
 - Fixed Remove Tags not removing tags permanently
 - Fixed Destroy removing wrong elements
-- Server Info: Rejoin button
-- Server Info: ServerHop button
-- Server Info: TP to small server button
-- Save favorites to file (XyqwHub/FavScripts/favorites.json)
-- Save recent scripts to file (XyqwHub/RctScripts/recent.json, last 5)
 
 Version 4.3
 - Server Info: Rejoin, ServerHop, TP to small server
@@ -103,8 +129,8 @@ Version 4.2
 - Fixed welcome message
 - Fixed "XyqwHub Loaded!" notification
 - Fixed title label visibility
-- Fixed close button (X minimizes to dock)
-- Fixed dock button not opening
+- Fixed close button
+- Fixed dock button
 - Fixed resize stopping outside window
 - Fixed black empty area at bottom
 - Fixed EN/RU button overlapping X
@@ -135,7 +161,7 @@ Version 4.0
 - Anti-AFK
 
 Version 3.9
-- Added "Script executed!" notification for all scripts
+- Added "Script executed!" notification
 - Added Doors v4
 - Added Kiti (MM2)
 - Renamed BETA tag to Tester
@@ -146,32 +172,26 @@ Version 3.8
 Version 3.7
 - Added tester tag (blue gradient)
 - Added tester welcome message
-- Added 2 testers
 
 Version 3.6
 - Fixed accidental button clicks in title bar
-- Added cooldown for ChangeLog and language buttons
 
 Version 3.5
 - Added owner-only welcome message
 
 Version 3.4
 - Darker red color for tag
-- Normal background for Remove/Destroy buttons
 
 Version 3.3
-- Fixed tag size (no longer stretches)
-- Fixed gradient (now works via Rotation)
+- Fixed tag size
+- Fixed gradient
 
 Version 3.2
 - Brought back gradient animation
-- Fixed text size
 - Added UIStroke glow
 
 Version 3.1
 - Completely rewrote tag system
-- Tag is now attached to humanoid root part
-- Added Heartbeat-based positioning
 
 Version 3.0
 - Removed gradient
@@ -180,7 +200,6 @@ Version 3.0
 Version 2.9
 - Added XyqwHub OWNER tag
 - Added "Remove XyqwHub Tag" button
-- Added gradient animation for owner tag
 
 Version 2.8
 - XyqwHub Loaded! now appears immediately
@@ -253,15 +272,18 @@ Version 1.0
         LangChanged = "Язык изменён на Русский",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 4.5
+- Файлы сохраняются в /storage/emulated/0/Delta/Workspace/XyqwHub
+- Пофикшена радужная тема: фон больше не мигает красным
+- Пофикшена радужная тема: обводка выбранной вкладки теперь анимируется
+- Remove Tags и Destroy - отдельные кнопки
+- Пофикшено: Remove Tags не убирал теги навсегда
+- Server Info: Rejoin, ServerHop, TP to small server
+
 Версия 4.4
-- Remove Tags и Destroy теперь отдельные кнопки
+- Remove Tags и Destroy - отдельные кнопки
 - Пофикшено: Remove Tags не убирал теги навсегда
 - Пофикшено: Destroy убирал не те элементы
-- Server Info: кнопка Rejoin
-- Server Info: кнопка ServerHop
-- Server Info: кнопка TP to small server
-- Избранное сохраняется (XyqwHub/FavScripts/favorites.json)
-- Недавние сохраняются (XyqwHub/RctScripts/recent.json, последние 5)
 
 Версия 4.3
 - Server Info: Rejoin, ServerHop, TP to small server
@@ -270,21 +292,10 @@ Version 1.0
 Версия 4.2
 - Топ-бар с кнопкой Hide (H)
 - 5 тем: Red, Blue, Green, Purple, Rainbow
-- Doors V2 (Copy) - копирует скрипт в буфер
+- Doors V2 (Copy)
 - Добавлен Doors V3 (Cheesy)
-- Все 48 скриптов восстановлены
-- Пофикшено перекрытие кнопок заголовка радугой
-- Пофикшен угол ресайза
-- Пофикшено приветствие
-- Пофикшено уведомление "XyqwHub Loaded!"
-- Пофикшена видимость заголовка
-- Пофикшена кнопка закрытия
-- Пофикшена док-кнопка
-- Пофикшен ресайз
-- Пофикшено чёрное поле внизу
-- Пофикшено наложение EN/RU на крестик
-- Пофикшено расположение кнопок P, S
-- Custom Script теперь принимает URL + loadstring
+- Все 48 скриптов
+- Множество фиксов
 
 Версия 4.1
 - Все кнопки квадратные
@@ -292,8 +303,6 @@ Version 1.0
 - Ресайз в правом нижнем углу
 - Маленький стартовый размер (250x300)
 - Все кнопки в 1 ряд
-- Убран GetTheme()
-- Пофикшено наложение кнопок
 
 Версия 4.0
 - Топ-бар (executor, name, FPS, Ping)
@@ -324,14 +333,12 @@ Version 1.0
 
 Версия 3.6
 - Пофикшены случайные клики по кнопкам в заголовке
-- Добавлен кулдаун для ChangeLog
 
 Версия 3.5
 - Добавлено приветствие только для владельца
 
 Версия 3.4
 - Более тёмный красный для тега
-- Нормальный фон для кнопок Remove/Destroy
 
 Версия 3.3
 - Пофикшен размер тега
@@ -339,13 +346,10 @@ Version 1.0
 
 Версия 3.2
 - Возвращена анимация градиента
-- Пофикшен размер текста
 - Добавлено свечение UIStroke
 
 Версия 3.1
 - Полностью переписана система тегов
-- Тег привязан к humanoid root part
-- Позиционирование через Heartbeat
 
 Версия 3.0
 - Убран градиент
@@ -935,15 +939,32 @@ local TAB_LIST = {"All", "BB", "MM2", "INK", "Misc", "Fav", "Rct"}
 local tabButtons = {}
 local currentTab = "All"
 
+-- FIX: SwitchTab теперь учитывает Rainbow
 local function SwitchTab(name)
     currentTab = name
+    local isRainbow = (getgenv().XyqwTheme == "Rainbow")
     for n, btn in pairs(tabButtons) do
-        if n == name then
-            btn.BackgroundColor3 = RED_MAIN
-            btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        if isRainbow then
+            local hue = (tick() * 0.1) % 1
+            local c = Color3.fromHSV(hue, 1, 1)
+            local dark = Color3.fromHSV(hue, 1, 0.18)
+            if n == name then
+                btn.BackgroundColor3 = c
+                btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+            else
+                btn.BackgroundColor3 = dark
+                btn.TextColor3 = c
+            end
+            btn.BorderColor3 = c
         else
-            btn.BackgroundColor3 = RED_DARK
-            btn.TextColor3 = RED_MAIN
+            if n == name then
+                btn.BackgroundColor3 = RED_MAIN
+                btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+            else
+                btn.BackgroundColor3 = RED_DARK
+                btn.TextColor3 = RED_MAIN
+            end
+            btn.BorderColor3 = RED_MAIN
         end
     end
     if RefreshButtons then RefreshButtons() end
@@ -1757,6 +1778,7 @@ task.spawn(function()
                 if n == currentTab then
                     btn.BackgroundColor3 = c
                     btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+                    btn.BorderColor3 = c
                 else
                     btn.BackgroundColor3 = darkHue
                     btn.TextColor3 = c
@@ -1954,7 +1976,7 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 11
     doc.Font = Enum.Font.Gotham
-    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info (Rejoin / ServerHop / TP small)\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons (separate):\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
+    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info (Rejoin / ServerHop / TP small)\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons (separate):\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar\n\nFiles saved to:\nDelta/Workspace/XyqwHub/"
     doc.ZIndex = 101
     doc.Parent = frame
 
