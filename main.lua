@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 5.0 ==========
+-- ========== XyqwHub - Версия 5.2 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
@@ -13,44 +13,138 @@ if getgenv().XyqwHubRunning then
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "5.0"
+local VERSION = "5.2"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
--- ========== ПУТИ ==========
-local DELTA_WORKSPACE = "/storage/emulated/0/Delta/Workspace"
-local CONFIG_FOLDER, FAV_FOLDER, RCT_FOLDER, FAV_FILE, RCT_FILE, CUSTOM_COLOR_FILE
+-- ========== УНИВЕРСАЛЬНЫЙ ПОИСК WORKSPACE ==========
+-- Перебираем все известные пути для разных executor'ов
+local POSSIBLE_WORKSPACES = {
+    -- Delta
+    "/storage/emulated/0/Delta/Workspace",
+    "/storage/emulated/0/Android/data/com.roblox.client/files/Delta/Workspace",
+    "/storage/emulated/0/Documents/Delta/Workspace",
+    -- Solara
+    "/storage/emulated/0/Solara/Workspace",
+    "/storage/emulated/0/Solara/workspace",
+    -- Arceus X
+    "/storage/emulated/0/Arceus X/Workspace",
+    "/storage/emulated/0/ArceusX/Workspace",
+    "/storage/emulated/0/Android/data/com.roblox.client/files/Arceus X/Workspace",
+    -- Codex
+    "/storage/emulated/0/Codex/Workspace",
+    "/storage/emulated/0/Android/data/com.roblox.client/files/Codex/Workspace",
+    -- Xen
+    "/storage/emulated/0/Xen/Workspace",
+    "/storage/emulated/0/Android/data/com.roblox.client/files/Xen/Workspace",
+    -- Fluxus
+    "/storage/emulated/0/Fluxus/Workspace",
+    "/storage/emulated/0/Android/data/com.roblox.client/files/Fluxus/Workspace",
+    -- Hydrogen
+    "/storage/emulated/0/Hydrogen/Workspace",
+    -- Krnl
+    "/storage/emulated/0/Krnl/Workspace",
+    -- Triggers
+    "/storage/emulated/0/Triggers/Workspace",
+    -- Wave
+    "/storage/emulated/0/Wave/Workspace",
+    -- Real
+    "/storage/emulated/0/Real/Workspace",
+    -- Vega X
+    "/storage/emulated/0/VegaX/Workspace",
+    -- Fandango
+    "/storage/emulated/0/Fandango/Workspace",
+    -- Mystic
+    "/storage/emulated/0/Mystic/Workspace",
+    -- Anemo
+    "/storage/emulated/0/Anemo/Workspace",
+    -- Kiwi X
+    "/storage/emulated/0/KiwiX/Workspace",
+    -- Recursive check: общая папка
+    "/storage/emulated/0/Executor/Workspace",
+    "/storage/emulated/0/executor/Workspace",
+    "/storage/emulated/0/Workspace",
+    -- Внутренние (внутри Android/data)
+    "/storage/emulated/0/Android/data/com.roblox.client/files/Workspace",
+}
 
-local absWorks = false
-pcall(function()
-    if isfolder(DELTA_WORKSPACE) then absWorks = true end
-end)
-
-if absWorks then
-    CONFIG_FOLDER = DELTA_WORKSPACE .. "/XyqwHub"
-    FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
-    RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
-    FAV_FILE = FAV_FOLDER .. "/favorites.json"
-    RCT_FILE = RCT_FOLDER .. "/recent.json"
-    CUSTOM_COLOR_FILE = CONFIG_FOLDER .. "/custom_color.json"
+local foundWorkspace = nil
+for _, path in ipairs(POSSIBLE_WORKSPACES) do
     pcall(function()
-        if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
-        if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
-        if not isfolder(RCT_FOLDER) then makefolder(RCT_FOLDER) end
+        if isfolder(path) then
+            foundWorkspace = path
+        end
     end)
+    if foundWorkspace then break end
+end
+
+-- Если ни одна известная папка не найдена — пробуем fallback стратегии
+if not foundWorkspace then
+    -- Попытка 1: определить имя executor'а и построить путь
+    local execName = nil
+    pcall(function()
+        if identifyexecutor then execName = identifyexecutor() end
+    end)
+    
+    if execName then
+        local possibleNames = {
+            "Delta", "Solara", "Arceus X", "ArceusX", "Codex", "Xen",
+            "Fluxus", "Hydrogen", "Krnl", "Triggers", "Wave", "Real",
+            "VegaX", "Fandango", "Mystic", "Anemo", "KiwiX"
+        }
+        -- Пробуем точное имя
+        local tryPaths = {
+            "/storage/emulated/0/" .. execName .. "/Workspace",
+            "/storage/emulated/0/Android/data/com.roblox.client/files/" .. execName .. "/Workspace",
+        }
+        for _, p in ipairs(tryPaths) do
+            pcall(function()
+                if isfolder(p) then foundWorkspace = p end
+            end)
+            if foundWorkspace then break end
+        end
+    end
+    
+    -- Попытка 2: если есть listfiles — искать папки с "Workspace"
+    if not foundWorkspace then
+        pcall(function()
+            if listfiles then
+                local rootDirs = listfiles("/storage/emulated/0")
+                for _, dir in ipairs(rootDirs) do
+                    local ws = dir .. "/Workspace"
+                    if isfolder(ws) then
+                        foundWorkspace = ws
+                        break
+                    end
+                end
+            end
+        end)
+    end
+end
+
+-- Финальный выбор папки
+local CONFIG_FOLDER
+if foundWorkspace then
+    CONFIG_FOLDER = foundWorkspace .. "/XyqwHub"
+    print("[XyqwHub] Workspace found: " .. foundWorkspace)
 else
     CONFIG_FOLDER = "XyqwHub"
-    FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
-    RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
-    FAV_FILE = FAV_FOLDER .. "/favorites.json"
-    RCT_FILE = RCT_FOLDER .. "/recent.json"
-    CUSTOM_COLOR_FILE = CONFIG_FOLDER .. "/custom_color.json"
-    pcall(function()
-        if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
-        if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
-        if not isfolder(RCT_FOLDER) then makefolder(RCT_FOLDER) end
-    end)
+    print("[XyqwHub] Using virtual path (no workspace found)")
 end
+
+local FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
+local RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
+local CUSTOM_COLOR_FOLDER = CONFIG_FOLDER .. "/CustomColor"
+local FAV_FILE = FAV_FOLDER .. "/favorites.json"
+local RCT_FILE = RCT_FOLDER .. "/recent.json"
+local CUSTOM_COLOR_FILE = CUSTOM_COLOR_FOLDER .. "/custom_color.json"
+
+pcall(function()
+    if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
+    if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
+    if not isfolder(RCT_FOLDER) then makefolder(RCT_FOLDER) end
+    if not isfolder(CUSTOM_COLOR_FOLDER) then makefolder(CUSTOM_COLOR_FOLDER) end
+end)
 
 local function SaveTable(path, tbl)
     pcall(function()
@@ -119,31 +213,45 @@ local LANG = {
         OwnerWelcome = "Welcome, my father :3", BetaWelcome = "Glad you're here, tester <3",
         TagRemoved = "Tag removed!", HideTopBarOn = "Hide Top Bar: ON", HideTopBarOff = "Hide Top Bar: OFF",
         LangChanged = "Language changed to English",
+        FavShared = "Favorites shared! Check clipboard",
+        LoadstringCopied = "Loadstring copied, thank you :3",
+        ColorReset = "Custom Color reset to Red",
+        ColorShared = "Color copied to clipboard!",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 5.2
+- Universal workspace support for all executors
+- Delta, Solara, Arceus X, Codex, Xen, Fluxus,
+  Hydrogen, Krnl, Triggers, Wave, Real, etc.
+- Auto-detect workspace folder
+- Fallback to virtual path if not found
+
+Version 5.1
+- Share Fav Scripts button
+- Share XyqwHub button in Welcome
+- Reset button in Custom Color
+- Share Color button in Custom Color
+- Custom Color saved to XyqwHub/CustomColor/
+
 Version 5.0
-- Custom Color now applies immediately on Apply
-- (no need to cycle through themes)
+- Custom Color instant apply
 
 Version 4.9
-- Welcome: smaller + scrollable + close button
-- GUI no longer lets clicks pass through
-- Added 7 new themes (Pink, Orange, Cyan, Yellow, Lime, Magenta, White)
-- Total 13 themes
+- Welcome smaller + scroll + close
+- GUI no longer passes clicks
+- 13 themes
 
 Version 4.8
-- Custom Color: supports rgb(r,g,b)
-- Welcome: full documentation
+- Custom Color rgb() support
 
 Version 4.7
 - Custom Color picker (CC)
-- RGB sliders + HEX + presets
 
 Version 4.6
 - Fixed Rainbow tab flicker
 
 Version 4.5
-- Files to Delta/Workspace/XyqwHub
+- Files to workspace
 
 Version 4.4
 - Remove Tags and Destroy separate
@@ -153,11 +261,9 @@ Version 4.3
 
 Version 4.2
 - Top bar with Hide (H)
-- 5 themes
 
 Version 4.1
 - All buttons squared
-- Bright red instead of yellow
 
 Version 4.0
 - First 4.0 release
@@ -211,31 +317,45 @@ Version 1.0
         OwnerWelcome = "Welcome, my father :3", BetaWelcome = "Glad you're here, tester <3",
         TagRemoved = "Тег убран!", HideTopBarOn = "Скрыть топ бар: включено", HideTopBarOff = "Скрыть топ бар: выключено",
         LangChanged = "Язык изменён на Русский",
+        FavShared = "Избранное скопировано в буфер!",
+        LoadstringCopied = "Loadstring скопирован, спасибо :3",
+        ColorReset = "Custom Color сброшен на Красный",
+        ColorShared = "Цвет скопирован в буфер!",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 5.2
+- Универсальная поддержка workspace для всех executor'ов
+- Delta, Solara, Arceus X, Codex, Xen, Fluxus,
+  Hydrogen, Krnl, Triggers, Wave, Real и др.
+- Автопоиск папки workspace
+- Fallback на virtual path если не найдено
+
+Версия 5.1
+- Кнопка Share Fav Scripts
+- Кнопка Share XyqwHub в Welcome
+- Кнопка Reset в Custom Color
+- Кнопка Share Color в Custom Color
+- Custom Color в XyqwHub/CustomColor/
+
 Версия 5.0
-- Custom Color теперь применяется сразу при Apply
-- (не надо переключать темы)
+- Custom Color мгновенное применение
 
 Версия 4.9
-- Welcome: меньше + скролл + крестик
-- GUI больше не пропускает клики
-- Добавлено 7 новых тем (Pink, Orange, Cyan, Yellow, Lime, Magenta, White)
-- Всего 13 тем
+- Welcome меньше + скролл + крестик
+- GUI не пропускает клики
+- 13 тем
 
 Версия 4.8
-- Custom Color: поддержка rgb(r,g,b)
-- Welcome: полная документация
+- Custom Color поддержка rgb()
 
 Версия 4.7
 - Custom Color picker (CC)
-- RGB ползунки + HEX + пресеты
 
 Версия 4.6
-- Пофикшено мигание вкладок в Rainbow
+- Фикс мигания вкладок Rainbow
 
 Версия 4.5
-- Файлы в Delta/Workspace/XyqwHub
+- Файлы в workspace
 
 Версия 4.4
 - Remove Tags и Destroy отдельно
@@ -245,35 +365,33 @@ Version 1.0
 
 Версия 4.2
 - Топ-бар с Hide (H)
-- 5 тем
 
 Версия 4.1
 - Все кнопки квадратные
-- Ярко-красный вместо жёлтого
 
 Версия 4.0
-- Первый релиз 4.0
+- Первый релиз
 
 Версия 3.9
 - Уведомление о запуске
 
 Версия 3.8
-- Пофикшен тег после респавна
+- Фикс тега после респавна
 
 Версия 3.7
 - Тег тестера
 
 Версия 3.6
-- Пофикшены случайные клики
+- Фикс случайных кликов
 
 Версия 3.5
-- Приветствие только для владельца
+- Приветствие для владельца
 
 Версия 3.4
 - Более тёмный красный для тега
 
 Версия 3.3
-- Пофикшен размер тега
+- Фикс размера тега
 
 Версия 3.2
 - Анимация градиента
@@ -668,7 +786,6 @@ mainFrame.Parent = screenGui
 local clickBlocker = Instance.new("TextButton")
 clickBlocker.Name = "ClickBlocker"
 clickBlocker.Size = UDim2.new(1, 0, 1, 0)
-clickBlocker.Position = UDim2.new(0, 0, 0, 0)
 clickBlocker.BackgroundTransparency = 1
 clickBlocker.Text = ""
 clickBlocker.Active = true
@@ -777,7 +894,9 @@ changelogButton.Font = Enum.Font.GothamBold
 changelogButton.BorderSizePixel = 1
 changelogButton.BorderColor3 = RED_MAIN
 changelogButton.Parent = titleBar
-changelogButton.AutoButtonColor = falselocal themeBtn = Instance.new("TextButton")
+changelogButton.AutoButtonColor = false
+
+local themeBtn = Instance.new("TextButton")
 themeBtn.Name = "ThemeBtn"
 themeBtn.Size = UDim2.new(0, 24, 0.8, 0)
 themeBtn.Position = UDim2.new(1, -178, 0.1, 0)
@@ -1061,6 +1180,48 @@ removeTagsBtn.MouseButton1Click:Connect(function()
     ShowRobloxNotification(_("TagRemoved"), 3)
 end)
 
+local shareFavContainer = Instance.new("Frame")
+shareFavContainer.Name = "ShareFavContainer"
+shareFavContainer.Size = UDim2.new(1, -10, 0, 32)
+shareFavContainer.Position = UDim2.new(0, 5, 0, 0)
+shareFavContainer.BackgroundColor3 = RED_BG
+shareFavContainer.BorderSizePixel = 2
+shareFavContainer.BorderColor3 = RED_MAIN
+shareFavContainer.Parent = scrollFrame
+shareFavContainer.Visible = false
+
+local shareFavBtn = Instance.new("TextButton")
+shareFavBtn.Name = "ShareFavBtn"
+shareFavBtn.Size = UDim2.new(1, 0, 1, 0)
+shareFavBtn.BackgroundTransparency = 1
+shareFavBtn.Text = "Share Fav Scripts"
+shareFavBtn.TextColor3 = RED_MAIN
+shareFavBtn.TextScaled = true
+shareFavBtn.Font = Enum.Font.GothamBold
+shareFavBtn.Parent = shareFavContainer
+shareFavBtn.AutoButtonColor = false
+
+shareFavBtn.MouseEnter:Connect(function() shareFavContainer.BackgroundColor3 = RED_DARK end)
+shareFavBtn.MouseLeave:Connect(function() shareFavContainer.BackgroundColor3 = RED_BG end)
+shareFavBtn.MouseButton1Click:Connect(function()
+    local list = {}
+    for name, _ in pairs(getgenv().XyqwFavorites) do
+        table.insert(list, name)
+    end
+    table.sort(list)
+    local text = "XyqwHub - My Favorite Scripts:\n"
+    if #list == 0 then
+        text = text .. "(empty)"
+    else
+        for i, name in ipairs(list) do
+            text = text .. i .. ". " .. name .. "\n"
+        end
+    end
+    text = text .. "\nGenerated by XyqwHub " .. VERSION
+    pcall(function() setclipboard(text) end)
+    ShowRobloxNotification(_("FavShared"), 3)
+end)
+
 local destroyContainer = Instance.new("Frame")
 destroyContainer.Name = "DestroyContainer"
 destroyContainer.Size = UDim2.new(1, -10, 0, 32)
@@ -1120,9 +1281,12 @@ function RefreshButtons()
     end
     local showSpecial = (currentTab == "All" and search == "")
     removeTagsContainer.Visible = showSpecial
+    shareFavContainer.Visible = showSpecial
     destroyContainer.Visible = showSpecial
     if showSpecial then
         removeTagsContainer.Position = UDim2.new(0, 5, 0, visible * buttonHeight + 5)
+        visible = visible + 1
+        shareFavContainer.Position = UDim2.new(0, 5, 0, visible * buttonHeight + 5)
         visible = visible + 1
         destroyContainer.Position = UDim2.new(0, 5, 0, visible * buttonHeight + 5)
         visible = visible + 1
@@ -1534,8 +1698,8 @@ end
 local function ShowCustomColor()
     local frame = Instance.new("Frame")
     frame.Name = "CustomColorFrame"
-    frame.Size = UDim2.new(0, 320, 0, 430)
-    frame.Position = UDim2.new(0.5, -160, 0.5, -215)
+    frame.Size = UDim2.new(0, 320, 0, 480)
+    frame.Position = UDim2.new(0.5, -160, 0.5, -240)
     frame.BackgroundColor3 = RED_BG
     frame.BorderSizePixel = 2
     frame.BorderColor3 = RED_MAIN
@@ -1783,6 +1947,52 @@ local function ShowCustomColor()
         end)
     end
 
+    local resetBtn = Instance.new("TextButton")
+    resetBtn.Size = UDim2.new(0.5, -13, 0, 30)
+    resetBtn.Position = UDim2.new(0, 10, 0, 326)
+    resetBtn.BackgroundColor3 = RED_DARK
+    resetBtn.TextColor3 = RED_MAIN
+    resetBtn.Text = "Reset"
+    resetBtn.TextScaled = true
+    resetBtn.Font = Enum.Font.GothamBold
+    resetBtn.BorderSizePixel = 1
+    resetBtn.BorderColor3 = RED_MAIN
+    resetBtn.ZIndex = 51
+    resetBtn.Parent = frame
+    resetBtn.AutoButtonColor = false
+    resetBtn.MouseButton1Click:Connect(function()
+        tempColor.r = 255
+        tempColor.g = 0
+        tempColor.b = 0
+        if setSliders then
+            setSliders.R(255)
+            setSliders.G(0)
+            setSliders.B(0)
+        end
+        UpdateAll()
+        ShowRobloxNotification(_("ColorReset"), 3)
+    end)
+
+    local shareColorBtn = Instance.new("TextButton")
+    shareColorBtn.Size = UDim2.new(0.5, -13, 0, 30)
+    shareColorBtn.Position = UDim2.new(0.5, 3, 0, 326)
+    shareColorBtn.BackgroundColor3 = RED_DARK
+    shareColorBtn.TextColor3 = RED_MAIN
+    shareColorBtn.Text = "Share Color"
+    shareColorBtn.TextScaled = true
+    shareColorBtn.Font = Enum.Font.GothamBold
+    shareColorBtn.BorderSizePixel = 1
+    shareColorBtn.BorderColor3 = RED_MAIN
+    shareColorBtn.ZIndex = 51
+    shareColorBtn.Parent = frame
+    shareColorBtn.AutoButtonColor = false
+    shareColorBtn.MouseButton1Click:Connect(function()
+        local hex = string.format("#%02X%02X%02X", tempColor.r, tempColor.g, tempColor.b)
+        local text = "XyqwHub - My Custom Color: " .. hex .. "\nGenerated by XyqwHub " .. VERSION
+        pcall(function() setclipboard(text) end)
+        ShowRobloxNotification(_("ColorShared"), 3)
+    end)
+
     local applyBtn = Instance.new("TextButton")
     applyBtn.Size = UDim2.new(1, -20, 0, 32)
     applyBtn.Position = UDim2.new(0, 10, 1, -42)
@@ -1804,12 +2014,10 @@ local function ShowCustomColor()
             db = math.floor(tempColor.b * 0.15),
         }
         SaveTable(CUSTOM_COLOR_FILE, getgenv().XyqwCustomColor)
-        -- Обновляем THEMES.Custom
         THEMES.Custom.MAIN = Color3.fromRGB(tempColor.r, tempColor.g, tempColor.b)
         THEMES.Custom.DARK = Color3.fromRGB(math.floor(tempColor.r * 0.15), math.floor(tempColor.g * 0.15), math.floor(tempColor.b * 0.15))
         THEMES.Custom.BG = Color3.fromRGB(0, 0, 0)
         THEMES.Custom.TITLE = Color3.fromRGB(math.floor(tempColor.r * 0.08), math.floor(tempColor.g * 0.08), math.floor(tempColor.b * 0.08))
-        -- Применяем сразу через глобальную функцию
         if getgenv().XyqwApplyTheme then
             getgenv().XyqwApplyTheme("Custom")
         end
@@ -1882,9 +2090,12 @@ local function ApplyTheme(themeName)
 
     removeTagsContainer.BackgroundColor3 = RED_BG
     removeTagsContainer.BorderColor3 = RED_MAIN
+    shareFavContainer.BackgroundColor3 = RED_BG
+    shareFavContainer.BorderColor3 = RED_MAIN
     destroyContainer.BackgroundColor3 = RED_BG
     destroyContainer.BorderColor3 = RED_MAIN
     removeTagsBtn.TextColor3 = RED_MAIN
+    shareFavBtn.TextColor3 = RED_MAIN
     destroyBtnMain.TextColor3 = RED_MAIN
 
     topBar.BackgroundColor3 = RED_BG
@@ -1898,10 +2109,14 @@ local function ApplyTheme(themeName)
     dockButton.TextColor3 = RED_MAIN
     dockButton.BorderColor3 = RED_MAIN
 
+    local sl = mainFrame:FindFirstChild("SizeLabel")
+    if sl then sl.TextColor3 = RED_MAIN end
+    local rh = mainFrame:FindFirstChild("ResizeHandle")
+    if rh then rh.BackgroundColor3 = RED_MAIN end
+
     if themeName ~= "Rainbow" then ShowRobloxNotification("Theme: " .. themeName, 2) end
 end
 
--- Делаем ApplyTheme доступной глобально для ShowCustomColor
 getgenv().XyqwApplyTheme = ApplyTheme
 
 themeBtn.MouseButton1Click:Connect(function()
@@ -1949,8 +2164,10 @@ task.spawn(function()
                 entry.Star.BackgroundColor3 = darkHue
             end
             removeTagsContainer.BorderColor3 = c
+            shareFavContainer.BorderColor3 = c
             destroyContainer.BorderColor3 = c
             removeTagsBtn.TextColor3 = c
+            shareFavBtn.TextColor3 = c
             destroyBtnMain.TextColor3 = c
             topBar.BorderColor3 = c
             topBarText.TextColor3 = c
@@ -1959,6 +2176,10 @@ task.spawn(function()
             hideTopBtn.BorderColor3 = c
             dockButton.TextColor3 = c
             dockButton.BorderColor3 = c
+            local sl = mainFrame:FindFirstChild("SizeLabel")
+            if sl then sl.TextColor3 = c end
+            local rh = mainFrame:FindFirstChild("ResizeHandle")
+            if rh then rh.BackgroundColor3 = c end
         end
         task.wait(0.05)
     end
@@ -2060,8 +2281,8 @@ end)
 local function ShowWelcomeMessage()
     local frame = Instance.new("Frame")
     frame.Name = "WelcomeFrame"
-    frame.Size = UDim2.new(0, 340, 0, 340)
-    frame.Position = UDim2.new(0.5, -170, 0.5, -170)
+    frame.Size = UDim2.new(0, 340, 0, 380)
+    frame.Position = UDim2.new(0.5, -170, 0.5, -190)
     frame.BackgroundColor3 = RED_BG
     frame.BorderSizePixel = 2
     frame.BorderColor3 = RED_MAIN
@@ -2102,9 +2323,28 @@ local function ShowWelcomeMessage()
     closeBtn.AutoButtonColor = false
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
 
+    local shareBtn = Instance.new("TextButton")
+    shareBtn.Size = UDim2.new(1, -20, 0, 24)
+    shareBtn.Position = UDim2.new(0, 10, 0, 28)
+    shareBtn.BackgroundColor3 = RED_DARK
+    shareBtn.TextColor3 = RED_MAIN
+    shareBtn.Text = "Share XyqwHub"
+    shareBtn.TextScaled = true
+    shareBtn.Font = Enum.Font.GothamBold
+    shareBtn.BorderSizePixel = 1
+    shareBtn.BorderColor3 = RED_MAIN
+    shareBtn.ZIndex = 101
+    shareBtn.Parent = frame
+    shareBtn.AutoButtonColor = false
+    shareBtn.MouseButton1Click:Connect(function()
+        local ls = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/Xyqwerq/XyqwHub/main/main.lua"))()'
+        pcall(function() setclipboard(ls) end)
+        ShowRobloxNotification(_("LoadstringCopied"), 4)
+    end)
+
     local tiktok = Instance.new("TextLabel")
     tiktok.Size = UDim2.new(1, -10, 0, 16)
-    tiktok.Position = UDim2.new(0, 5, 0, 30)
+    tiktok.Position = UDim2.new(0, 5, 0, 58)
     tiktok.BackgroundTransparency = 1
     tiktok.TextColor3 = Color3.fromRGB(255, 255, 255)
     tiktok.Text = "TikTok: xyqwerq.tvink"
@@ -2115,7 +2355,7 @@ local function ShowWelcomeMessage()
 
     local tg = Instance.new("TextLabel")
     tg.Size = UDim2.new(1, -10, 0, 16)
-    tg.Position = UDim2.new(0, 5, 0, 48)
+    tg.Position = UDim2.new(0, 5, 0, 76)
     tg.BackgroundTransparency = 1
     tg.TextColor3 = Color3.fromRGB(255, 255, 255)
     tg.Text = "Telegram: t.me/xyqwsquad"
@@ -2126,7 +2366,7 @@ local function ShowWelcomeMessage()
 
     local dc = Instance.new("TextLabel")
     dc.Size = UDim2.new(1, -10, 0, 16)
-    dc.Position = UDim2.new(0, 5, 0, 66)
+    dc.Position = UDim2.new(0, 5, 0, 94)
     dc.BackgroundTransparency = 1
     dc.TextColor3 = Color3.fromRGB(255, 255, 255)
     dc.Text = "Discord: xyqwerqyt"
@@ -2136,18 +2376,18 @@ local function ShowWelcomeMessage()
     dc.Parent = frame
 
     local scroll = Instance.new("ScrollingFrame")
-    scroll.Size = UDim2.new(1, -10, 1, -110)
-    scroll.Position = UDim2.new(0, 5, 0, 86)
+    scroll.Size = UDim2.new(1, -10, 1, -150)
+    scroll.Position = UDim2.new(0, 5, 0, 116)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 600)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 620)
     scroll.ScrollBarThickness = 4
     scroll.ScrollBarImageColor3 = RED_MAIN
     scroll.ZIndex = 101
     scroll.Parent = frame
 
     local doc = Instance.new("TextLabel")
-    doc.Size = UDim2.new(1, -10, 0, 590)
+    doc.Size = UDim2.new(1, -10, 0, 610)
     doc.Position = UDim2.new(0, 5, 0, 0)
     doc.BackgroundTransparency = 1
     doc.TextColor3 = RED_MAIN
@@ -2158,39 +2398,40 @@ local function ShowWelcomeMessage()
     doc.Font = Enum.Font.Gotham
     doc.Text = "─── TITLE BAR ───\n" ..
         "Th  — Cycle themes (13 themes + Custom)\n" ..
-        "CC  — Custom Color picker (RGB + HEX + presets)\n" ..
+        "CC  — Custom Color picker\n" ..
         "CL  — ChangeLog\n" ..
-        "C   — Custom Script (URL or loadstring)\n" ..
+        "C   — Custom Script\n" ..
         "P   — Players List\n" ..
         "S   — Server Info + Rejoin / ServerHop / TP small\n" ..
         "EN/RU — Change language\n" ..
         "X   — Close (minimize to dock)\n" ..
         "\n─── BOTTOM BUTTONS ───\n" ..
-        "Remove Tags     — remove OWNER/TESTER tags\n" ..
-        "Destroy XyqwHub — full unload\n" ..
+        "Remove Tags      — remove OWNER/TESTER tags\n" ..
+        "Share Fav Scripts — copies favorites list\n" ..
+        "Destroy XyqwHub  — full unload\n" ..
+        "\n─── CUSTOM COLOR WINDOW ───\n" ..
+        "RGB sliders, HEX input, presets\n" ..
+        "Reset — reset to red\n" ..
+        "Share Color — copy #hex to clipboard\n" ..
+        "Apply — apply + save\n" ..
         "\n─── TOP BAR ───\n" ..
         "Shows: Executor | Username | FPS | Ping\n" ..
-        "H button — Hide/Show top bar\n" ..
+        "H — Hide/Show\n" ..
         "\n─── DOCK ───\n" ..
-        "XyqwHub — click to reopen window\n" ..
-        "Drag anywhere on screen\n" ..
+        "XyqwHub — click to reopen\n" ..
         "\n─── TABS ───\n" ..
         "All, BB, MM2, INK, Misc, Fav, Rct\n" ..
-        "★ — add script to favorites\n" ..
+        "★ — add to favorites\n" ..
         "\n─── RESIZE ───\n" ..
         "Drag bottom-right corner\n" ..
-        "Size shown in corner\n" ..
-        "\n─── THEMES ───\n" ..
-        "Red, Blue, Green, Purple, Pink, Orange,\n" ..
-        "Cyan, Yellow, Lime, Magenta, White, Rainbow, Custom\n" ..
-        "\n─── HEX INPUT ───\n" ..
-        "Supports: #FF0000 / FF0000 / rgb(255,0,0)\n" ..
-        "\n─── FILES SAVED ───\n" ..
-        "Delta/Workspace/XyqwHub/FavScripts/\n" ..
-        "Delta/Workspace/XyqwHub/RctScripts/\n" ..
-        "Delta/Workspace/XyqwHub/custom_color.json\n" ..
-        "\n─── SPECIAL ───\n" ..
-        "Doors V2 (Copy) — copies script to clipboard"
+        "\n─── UNIVERSAL WORKSPACE ───\n" ..
+        "Auto-detects folder for Delta, Solara,\n" ..
+        "Arceus X, Codex, Xen, Fluxus, Hydrogen,\n" ..
+        "Krnl, Triggers, Wave, Real and more\n" ..
+        "\n─── FILES ───\n" ..
+        "XyqwHub/FavScripts/favorites.json\n" ..
+        "XyqwHub/RctScripts/recent.json\n" ..
+        "XyqwHub/CustomColor/custom_color.json"
     doc.ZIndex = 101
     doc.Parent = scroll
 
