@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 4.2 ==========
+-- ========== XyqwHub - Версия 4.3 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
@@ -13,13 +13,46 @@ if getgenv().XyqwHubRunning then
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "4.2"
+local VERSION = "4.3"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
+-- ========== CONFIG SAVE/LOAD ==========
+local CONFIG_FOLDER = "XyqwHub"
+local FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
+local RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
+local FAV_FILE = FAV_FOLDER .. "/favorites.json"
+local RCT_FILE = RCT_FOLDER .. "/recent.json"
+
+pcall(function()
+    if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
+    if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
+    if not isfolder(RCT_FOLDER) then makefolder(RCT_FOLDER) end
+end)
+
+local function SaveTable(path, tbl)
+    pcall(function()
+        if writefile then
+            writefile(path, game:GetService("HttpService"):JSONEncode(tbl))
+        end
+    end)
+end
+
+local function LoadTable(path)
+    local ok, data = pcall(function()
+        if readfile and isfile and isfile(path) then
+            return game:GetService("HttpService"):JSONDecode(readfile(path))
+        end
+        return nil
+    end)
+    if ok and type(data) == "table" then return data end
+    return {}
+end
+
+getgenv().XyqwFavorites = LoadTable(FAV_FILE)
+getgenv().XyqwRecent = LoadTable(RCT_FILE)
+
 if getgenv().XyqwLanguage == nil then getgenv().XyqwLanguage = "EN" end
-if getgenv().XyqwFavorites == nil then getgenv().XyqwFavorites = {} end
-if getgenv().XyqwRecent == nil then getgenv().XyqwRecent = {} end
 if getgenv().XyqwTheme == nil then getgenv().XyqwTheme = "Red" end
 if getgenv().TopBarHidden == nil then getgenv().TopBarHidden = false end
 
@@ -45,6 +78,14 @@ local LANG = {
         TagRemoved = "Tag removed!", HideTopBarOn = "Hide Top Bar: ON", HideTopBarOff = "Hide Top Bar: OFF",
         LangChanged = "Language changed to English",
         ChangeLogText = [[XyqwHub ChangeLog
+
+Version 4.3
+- Server Info: Rejoin button
+- Server Info: ServerHop button
+- Server Info: TP to small server button
+- Save favorites to file (survives restart)
+- Save recent scripts to file (last 5, survives restart)
+- Config folder: XyqwHub/FavScripts + XyqwHub/RctScripts
 
 Version 4.2
 - Top bar with Hide button (H)
@@ -220,6 +261,14 @@ Version 1.0
         TagRemoved = "Тег убран!", HideTopBarOn = "Скрыть топ бар: включено", HideTopBarOff = "Скрыть топ бар: выключено",
         LangChanged = "Язык изменён на Русский",
         ChangeLogText = [[XyqwHub Ченджлог
+
+Версия 4.3
+- Server Info: кнопка Rejoin
+- Server Info: кнопка ServerHop
+- Server Info: кнопка TP to small server
+- Избранное сохраняется в файл (выживает после перезапуска)
+- Недавние скрипты сохраняются в файл (последние 5)
+- Папки: XyqwHub/FavScripts + XyqwHub/RctScripts
 
 Версия 4.2
 - Топ-бар с кнопкой Hide (H)
@@ -406,6 +455,8 @@ end
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
 
 local function IsOwner()
     for _, id in ipairs(OWNER_IDS) do
@@ -673,8 +724,10 @@ hideTopBtn.MouseButton1Click:Connect(function()
     end
     UpdateHideTopBtn()
 end)
-local mainFrame = nil
+
 -- ========== DOCK ==========
+local mainFrame = nil
+
 local dockButton = Instance.new("TextButton")
 dockButton.Name = "DockButton"
 dockButton.Size = UDim2.new(0, 90, 0, 26)
@@ -723,14 +776,16 @@ end)
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         if dockDragging and not dockDragMoved then
-            -- Это был КЛИК, а не перетаскивание
-            mainFrame.Visible = true
-            dockButton.Visible = false
-            print("[XyqwHub] Dock clicked - opening window")
+            if mainFrame then
+                mainFrame.Visible = true
+                dockButton.Visible = false
+                print("[XyqwHub] Dock clicked - opening window")
+            end
         end
         dockDragging = false
     end
 end)
+
 -- ========== ГЛАВНОЕ ОКНО ==========
 mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
@@ -761,8 +816,6 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
--- ========== КНОПКИ ЗАГОЛОВКА (все с обводкой, вплотную справа) ==========
--- Порядок справа налево: [X] [EN/RU] [S] [P] [C] [CL] [Th]
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseBtn"
 closeButton.Size = UDim2.new(0, 22, 0.8, 0)
@@ -939,7 +992,6 @@ scrollFrame.Parent = mainFrame
 local buttons = {}
 local buttonHeight = 34
 
--- ========== СПИСОК СКРИПТОВ (48) ==========
 local SCRIPTS = {
     {Name = "Blade Ball", Category = "BB", URL = "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"},
     {Name = "Blade Ball 2", Category = "BB", URL = "https://wings.ac/loader"},
@@ -1036,6 +1088,7 @@ local function CreateScriptButton(data)
             getgenv().XyqwFavorites[data.Name] = true
             star.Text = "★"
         end
+        SaveTable(FAV_FILE, getgenv().XyqwFavorites)
     end)
 
     btn.MouseEnter:Connect(function() container.BackgroundColor3 = RED_DARK end)
@@ -1055,9 +1108,9 @@ local function CreateScriptButton(data)
             if name == data.Name then table.remove(getgenv().XyqwRecent, i) break end
         end
         table.insert(getgenv().XyqwRecent, 1, data.Name)
-        if #getgenv().XyqwRecent > 15 then table.remove(getgenv().XyqwRecent) end
+        while #getgenv().XyqwRecent > 5 do table.remove(getgenv().XyqwRecent) end
+        SaveTable(RCT_FILE, getgenv().XyqwRecent)
 
-        -- СПЕЦИАЛЬНАЯ ОБРАБОТКА
         if data.URL == "SPECIAL_COPY_DOORS_V2" then
             local scriptText = 'getgenv().SCRIPT_KEY = "KEYLESS"\nloadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()'
             pcall(function() setclipboard(scriptText) end)
@@ -1087,7 +1140,7 @@ end
 
 for _, data in ipairs(SCRIPTS) do CreateScriptButton(data) end
 
--- ========== SPECIAL (Remove Tags + Destroy) ==========
+-- ========== SPECIAL ==========
 local specialContainer = Instance.new("Frame")
 specialContainer.Name = "SpecialContainer"
 specialContainer.Size = UDim2.new(1, -10, 0, 36)
@@ -1139,7 +1192,6 @@ destroyBtnMain.MouseEnter:Connect(function() specialContainer.BackgroundColor3 =
 removeTagsBtn.MouseLeave:Connect(function() specialContainer.BackgroundColor3 = RED_BG end)
 destroyBtnMain.MouseLeave:Connect(function() specialContainer.BackgroundColor3 = RED_BG end)
 
--- ========== REFRESH ==========
 function RefreshButtons()
     local search = string.lower(searchBar.Text)
     local visible = 0
@@ -1317,8 +1369,9 @@ end
 -- ========== SERVER INFO ==========
 local function ShowServerInfo()
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 350, 0, 220)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -110)
+    frame.Name = "ServerInfoFrame"
+    frame.Size = UDim2.new(0, 350, 0, 320)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -160)
     frame.BackgroundColor3 = RED_BG
     frame.BorderSizePixel = 2
     frame.BorderColor3 = RED_MAIN
@@ -1349,7 +1402,7 @@ local function ShowServerInfo()
     closeBtn.AutoButtonColor = false
 
     local info = Instance.new("TextLabel")
-    info.Size = UDim2.new(1, -20, 0, 130)
+    info.Size = UDim2.new(1, -20, 0, 110)
     info.Position = UDim2.new(0, 10, 0, 40)
     info.BackgroundTransparency = 1
     info.TextColor3 = RED_MAIN
@@ -1358,13 +1411,119 @@ local function ShowServerInfo()
     info.TextYAlignment = Enum.TextYAlignment.Top
     info.TextSize = 13
     info.Font = Enum.Font.Gotham
-    info.Text = "PlaceId: " .. game.PlaceId .. "\nJobId: " .. game.JobId .. "\nPlayers: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers .. "\nCreator: " .. game.CreatorId
+    info.Text = "PlaceId: " .. game.PlaceId .. "\n" ..
+                 "JobId: " .. game.JobId .. "\n" ..
+                 "Players: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers .. "\n" ..
+                 "Creator: " .. game.CreatorId
     info.ZIndex = 51
     info.Parent = frame
 
+    local function GetServers()
+        local servers = {}
+        local ok, result = pcall(function()
+            return HttpService:JSONDecode(game:HttpGet(
+                "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+            ))
+        end)
+        if ok and result and result.data then
+            for _, srv in ipairs(result.data) do
+                if srv.playing and srv.playing < srv.maxPlayers and srv.id ~= game.JobId then
+                    table.insert(servers, srv)
+                end
+            end
+        end
+        return servers
+    end
+
+    local function Rejoin()
+        ShowRobloxNotification("Rejoining...", 2)
+        task.wait(0.5)
+        pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
+        end)
+    end
+
+    local function ServerHop()
+        ShowRobloxNotification("Searching for server...", 3)
+        local servers = GetServers()
+        if #servers == 0 then
+            ShowRobloxNotification("No servers found!", 3)
+            return
+        end
+        local target = servers[math.random(1, #servers)]
+        ShowRobloxNotification("Hopping...", 2)
+        task.wait(0.5)
+        pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, target.id, Players.LocalPlayer)
+        end)
+    end
+
+    local function TPToSmallServer()
+        ShowRobloxNotification("Searching for small server...", 3)
+        local servers = GetServers()
+        if #servers == 0 then
+            ShowRobloxNotification("No servers found!", 3)
+            return
+        end
+        local best = servers[1]
+        for _, srv in ipairs(servers) do
+            if srv.playing < best.playing then best = srv end
+        end
+        ShowRobloxNotification("Teleporting to " .. best.playing .. " player server...", 3)
+        task.wait(0.5)
+        pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, best.id, Players.LocalPlayer)
+        end)
+    end
+
+    local rejoinBtn = Instance.new("TextButton")
+    rejoinBtn.Size = UDim2.new(1, -20, 0, 30)
+    rejoinBtn.Position = UDim2.new(0, 10, 0, 158)
+    rejoinBtn.BackgroundColor3 = RED_DARK
+    rejoinBtn.TextColor3 = RED_MAIN
+    rejoinBtn.Text = "Rejoin"
+    rejoinBtn.TextScaled = true
+    rejoinBtn.Font = Enum.Font.GothamBold
+    rejoinBtn.BorderSizePixel = 1
+    rejoinBtn.BorderColor3 = RED_MAIN
+    rejoinBtn.ZIndex = 51
+    rejoinBtn.Parent = frame
+    rejoinBtn.AutoButtonColor = false
+    rejoinBtn.MouseButton1Click:Connect(Rejoin)
+
+    local hopBtn = Instance.new("TextButton")
+    hopBtn.Size = UDim2.new(0.5, -13, 0, 30)
+    hopBtn.Position = UDim2.new(0, 10, 0, 194)
+    hopBtn.BackgroundColor3 = RED_DARK
+    hopBtn.TextColor3 = RED_MAIN
+    hopBtn.Text = "ServerHop"
+    hopBtn.TextScaled = true
+    hopBtn.Font = Enum.Font.GothamBold
+    hopBtn.BorderSizePixel = 1
+    hopBtn.BorderColor3 = RED_MAIN
+    hopBtn.ZIndex = 51
+    hopBtn.Parent = frame
+    hopBtn.AutoButtonColor = false
+    hopBtn.MouseButton1Click:Connect(ServerHop)
+
+    local smallBtn = Instance.new("TextButton")
+    smallBtn.Size = UDim2.new(0.5, -13, 0, 30)
+    smallBtn.Position = UDim2.new(0.5, 3, 0, 194)
+    smallBtn.BackgroundColor3 = RED_DARK
+    smallBtn.TextColor3 = RED_MAIN
+    smallBtn.Text = "TP to small"
+    smallBtn.TextScaled = true
+    smallBtn.Font = Enum.Font.GothamBold
+    smallBtn.BorderSizePixel = 1
+    smallBtn.BorderColor3 = RED_MAIN
+    smallBtn.ZIndex = 51
+    smallBtn.Parent = frame
+    smallBtn.AutoButtonColor = false
+    smallBtn.MouseButton1Click:Connect(TPToSmallServer)
+
     local copyBtn = Instance.new("TextButton")
-    copyBtn.Size = UDim2.new(1, -20, 0, 28)
-    copyBtn.Position = UDim2.new(0, 10, 1, -38)
+    copyBtn.Size = UDim2.new(1, -20, 0, 30)
+    copyBtn.Position = UDim2.new(0, 10, 0, 232)
     copyBtn.BackgroundColor3 = RED_MAIN
     copyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
     copyBtn.Text = "Copy JobId"
@@ -1702,7 +1861,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ========== ЗАКРЫТИЕ / ОТКРЫТИЕ ==========
+-- ========== ЗАКРЫТИЕ ==========
 closeButton.MouseButton1Click:Connect(function()
     mainFrame.Visible = false
     dockButton.Visible = true
@@ -1785,7 +1944,7 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 11
     doc.Font = Enum.Font.Gotham
-    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons:\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
+    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info (Rejoin / ServerHop / TP small)\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons:\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
     doc.ZIndex = 101
     doc.Parent = frame
 
