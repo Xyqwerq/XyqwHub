@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 4.5 ==========
+-- ========== XyqwHub - Версия 4.6 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
@@ -13,11 +13,11 @@ if getgenv().XyqwHubRunning then
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "4.5"
+local VERSION = "4.6"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
--- ========== ПУТИ (абсолютный Delta workspace) ==========
+-- ========== ПУТИ ==========
 local DELTA_WORKSPACE = "/storage/emulated/0/Delta/Workspace"
 local CONFIG_FOLDER, FAV_FOLDER, RCT_FOLDER, FAV_FILE, RCT_FILE
 
@@ -101,161 +101,128 @@ local LANG = {
         LangChanged = "Language changed to English",
         ChangeLogText = [[XyqwHub ChangeLog
 
-Version 4.5
+Version 4.6
+- Fixed Rainbow tab flicker (SwitchTab no longer sets colors in Rainbow)
+- Fixed Rainbow active tab border animation
 - Files saved to /storage/emulated/0/Delta/Workspace/XyqwHub
-- Fixed Rainbow theme: no more red flash on tab switch
-- Fixed Rainbow theme: selected tab border now animates
 - Remove Tags and Destroy are separate buttons
-- Fixed Remove Tags not removing tags permanently
 - Server Info: Rejoin, ServerHop, TP to small server
 
+Version 4.5
+- Files to Delta/Workspace/XyqwHub
+- Fixed Rainbow red flash
+- Fixed Rainbow tab border
+
 Version 4.4
-- Remove Tags and Destroy are separate buttons
-- Fixed Remove Tags not removing tags permanently
-- Fixed Destroy removing wrong elements
+- Remove Tags and Destroy separate
+- Fixed Remove Tags not removing permanently
 
 Version 4.3
 - Server Info: Rejoin, ServerHop, TP to small server
 - Save favorites + recent to files
 
 Version 4.2
-- Top bar with Hide button (H)
-- 5 themes: Red, Blue, Green, Purple, Rainbow
-- Doors V2 (Copy) - copies script to clipboard
-- Doors V3 (Cheesy) added
-- All 48 scripts restored
-- Fixed Rainbow covering header buttons
-- Fixed resize corner
-- Fixed welcome message
-- Fixed "XyqwHub Loaded!" notification
-- Fixed title label visibility
-- Fixed close button
-- Fixed dock button
-- Fixed resize stopping outside window
-- Fixed black empty area at bottom
-- Fixed EN/RU button overlapping X
-- Fixed P, S buttons spacing
-- Custom Script now accepts URL + loadstring
+- Top bar with Hide (H)
+- 5 themes
+- Doors V2 (Copy), Doors V3 (Cheesy)
+- All 48 scripts
 
 Version 4.1
-- All buttons squared (no rounding)
+- All buttons squared
 - Bright red instead of yellow
-- Resize in bottom right corner
 - Small start size (250x300)
-- All buttons in 1 row
-- Removed GetTheme()
-- Fixed button overlap
 
 Version 4.0
-- Top bar (executor, name, FPS, Ping)
-- Search bar
-- Tabs (All, BB, MM2, INK, Misc, Fav, Rct)
-- Favorites system
-- Recently used
-- Script history
-- Theme switcher
-- Custom script runner
-- Player list
-- Server info
-- Copy JobId
-- Anti-AFK
+- Top bar, search, tabs, favorites, recent
+- Theme switcher, custom runner
+- Player list, server info
 
 Version 3.9
-- Added "Script executed!" notification
-- Added Doors v4
-- Added Kiti (MM2)
-- Renamed BETA tag to Tester
+- Added Doors v4, Kiti (MM2)
+- Renamed BETA to Tester
 
 Version 3.8
-- Fixed tag not restoring after respawn
+- Fixed tag after respawn
 
 Version 3.7
-- Added tester tag (blue gradient)
-- Added tester welcome message
+- Tester tag (blue gradient)
 
 Version 3.6
-- Fixed accidental button clicks in title bar
+- Fixed accidental title clicks
 
 Version 3.5
-- Added owner-only welcome message
+- Owner-only welcome
 
 Version 3.4
-- Darker red color for tag
+- Darker red for tag
 
 Version 3.3
-- Fixed tag size
-- Fixed gradient
+- Fixed tag size + gradient
 
 Version 3.2
-- Brought back gradient animation
-- Added UIStroke glow
+- Gradient animation + UIStroke
 
 Version 3.1
-- Completely rewrote tag system
+- Rewrote tag system
 
 Version 3.0
 - Removed gradient
-- Added debug prints
 
 Version 2.9
-- Added XyqwHub OWNER tag
-- Added "Remove XyqwHub Tag" button
+- XyqwHub OWNER tag
 
 Version 2.8
-- XyqwHub Loaded! now appears immediately
-- ChangeLog translated to EN/RU
+- XyqwHub Loaded! immediately
 
 Version 2.7
-- Roblox notifications (bottom right)
-- ChangeLog button added
+- Roblox notifications + ChangeLog
 
 Version 2.6
-- Notifications moved to bottom right
+- Notifications moved
 
 Version 2.5
-- All messages translated to EN/RU
+- EN/RU translations
 - Re-launch protection
 
 Version 2.4
-- Re-launch protection added
-- DESTROY button resets the flag
+- Re-launch protection
+- DESTROY resets flag
 
 Version 2.3
 - Added Adopt me
 
 Version 2.2
-- Added bLockman's minesweaper and Cheating during test
+- bLockman's minesweaper + Cheating during test
 
 Version 2.1
-- Added DropKick, Evade, A Dusty Trip, A Dusty Trip v2
+- DropKick, Evade, A Dusty Trip
 
 Version 2.0
-- Removed Auto Execute
 - All buttons in one list
 
 Version 1.9
-- Added key for Doors V3 (Cheesy)
+- Key for Doors V3 (Cheesy)
 
 Version 1.8
-- Added Death Order [SIMON] and CandyWare (MM2)
+- Death Order [SIMON] + CandyWare
 
 Version 1.7
-- Added Troll script
+- Troll script
 
 Version 1.6
-- Added Steal an egg, Universal script, Corridor, BloxStrike, RIVALS
+- Steal an egg, Universal script, Corridor, BloxStrike, RIVALS
 
 Version 1.5
-- EN/RU hint at top and bottom of welcome
+- EN/RU hint
 
 Version 1.4
-- EN/RU hint in welcome
+- EN/RU in welcome
 
 Version 1.3
-- Hint how to change language after welcome
+- Hint for language
 
 Version 1.2
-- Fixed language change button
+- Fixed language button
 
 Version 1.1
 - Added language change
@@ -272,148 +239,128 @@ Version 1.0
         LangChanged = "Язык изменён на Русский",
         ChangeLogText = [[XyqwHub Ченджлог
 
-Версия 4.5
+Версия 4.6
+- Пофикшено мигание вкладок в радужной теме (SwitchTab не трогает цвета в Rainbow)
+- Пофикшена анимация обводки активной вкладки в Rainbow
 - Файлы сохраняются в /storage/emulated/0/Delta/Workspace/XyqwHub
-- Пофикшена радужная тема: фон больше не мигает красным
-- Пофикшена радужная тема: обводка выбранной вкладки теперь анимируется
 - Remove Tags и Destroy - отдельные кнопки
-- Пофикшено: Remove Tags не убирал теги навсегда
 - Server Info: Rejoin, ServerHop, TP to small server
+
+Версия 4.5
+- Файлы в Delta/Workspace/XyqwHub
+- Пофикшено красное мигание в Rainbow
+- Пофикшена обводка вкладок
 
 Версия 4.4
-- Remove Tags и Destroy - отдельные кнопки
-- Пофикшено: Remove Tags не убирал теги навсегда
-- Пофикшено: Destroy убирал не те элементы
+- Remove Tags и Destroy отдельно
+- Пофикшено: Remove Tags не убирал навсегда
 
 Версия 4.3
-- Server Info: Rejoin, ServerHop, TP to small server
-- Сохранение избранного + недавних в файлы
+- Server Info: Rejoin, ServerHop, TP to small
+- Сохранение избранного + недавних
 
 Версия 4.2
 - Топ-бар с кнопкой Hide (H)
-- 5 тем: Red, Blue, Green, Purple, Rainbow
-- Doors V2 (Copy)
-- Добавлен Doors V3 (Cheesy)
+- 5 тем
+- Doors V2 (Copy), Doors V3 (Cheesy)
 - Все 48 скриптов
-- Множество фиксов
 
 Версия 4.1
 - Все кнопки квадратные
 - Ярко-красный вместо жёлтого
-- Ресайз в правом нижнем углу
 - Маленький стартовый размер (250x300)
-- Все кнопки в 1 ряд
 
 Версия 4.0
-- Топ-бар (executor, name, FPS, Ping)
-- Строка поиска
-- Вкладки (All, BB, MM2, INK, Misc, Fav, Rct)
-- Система избранного
-- Недавние
-- История скриптов
-- Переключатель тем
-- Запуск кастомных скриптов
-- Список игроков
-- Инфо о сервере
-- Копирование JobId
-- Анти-АФК
+- Топ-бар, поиск, вкладки, избранное, недавние
+- Переключатель тем, кастомный запуск
+- Список игроков, инфо о сервере
 
 Версия 3.9
-- Добавлено уведомление "Скрипт выполнен!"
-- Добавлен Doors v4
-- Добавлен Kiti (MM2)
-- Тег BETA переименован в Tester
+- Doors v4, Kiti (MM2)
+- BETA переименован в Tester
 
 Версия 3.8
-- Пофикшено восстановление тега после респавна
+- Пофикшен тег после респавна
 
 Версия 3.7
-- Добавлен тег тестера (синий градиент)
-- Добавлено приветствие тестера
+- Тег тестера (синий градиент)
 
 Версия 3.6
-- Пофикшены случайные клики по кнопкам в заголовке
+- Пофикшены случайные клики в заголовке
 
 Версия 3.5
-- Добавлено приветствие только для владельца
+- Приветствие только для владельца
 
 Версия 3.4
 - Более тёмный красный для тега
 
 Версия 3.3
-- Пофикшен размер тега
-- Пофикшен градиент
+- Пофикшен размер тега + градиент
 
 Версия 3.2
-- Возвращена анимация градиента
-- Добавлено свечение UIStroke
+- Анимация градиента + UIStroke
 
 Версия 3.1
-- Полностью переписана система тегов
+- Переписана система тегов
 
 Версия 3.0
 - Убран градиент
-- Добавлены debug-принты
 
 Версия 2.9
-- Добавлен тег XyqwHub OWNER
-- Добавлена кнопка "Убрать тег XyqwHub"
+- Тег XyqwHub OWNER
 
 Версия 2.8
-- XyqwHub Loaded! теперь появляется сразу
-- ChangeLog переведён на EN/RU
+- XyqwHub Loaded! сразу
 
 Версия 2.7
-- Roblox уведомления (снизу справа)
-- Добавлена кнопка ChangeLog
+- Roblox уведомления + ChangeLog
 
 Версия 2.6
-- Уведомления перенесены вниз справа
+- Уведомления перенесены
 
 Версия 2.5
-- Все сообщения переведены на EN/RU
+- EN/RU переводы
 - Защита от повторного запуска
 
 Версия 2.4
-- Добавлена защита от повторного запуска
-- Кнопка DESTROY сбрасывает флаг
+- Защита от повторного запуска
+- DESTROY сбрасывает флаг
 
 Версия 2.3
-- Добавлен Adopt me
+- Adopt me
 
 Версия 2.2
-- Добавлены bLockman's minesweaper и Cheating during test
+- bLockman's minesweaper + Cheating during test
 
 Версия 2.1
-- Добавлены DropKick, Evade, A Dusty Trip, A Dusty Trip v2
+- DropKick, Evade, A Dusty Trip
 
 Версия 2.0
-- Убран Auto Execute
 - Все кнопки в одном списке
 
 Версия 1.9
-- Добавлен ключ для Doors V3 (Cheesy)
+- Ключ для Doors V3 (Cheesy)
 
 Версия 1.8
-- Добавлены Death Order [SIMON] и CandyWare (MM2)
+- Death Order [SIMON] + CandyWare
 
 Версия 1.7
-- Добавлен Troll script
+- Troll script
 
 Версия 1.6
-- Добавлены Steal an egg, Universal script, Corridor, BloxStrike, RIVALS
+- Steal an egg, Universal script, Corridor, BloxStrike, RIVALS
 
 Версия 1.5
-- Подсказка EN/RU сверху и снизу приветствия
+- Подсказка EN/RU
 
 Версия 1.4
-- Подсказка EN/RU в приветствии
+- EN/RU в приветствии
 
 Версия 1.3
-- Подсказка как сменить язык после приветствия
+- Подсказка для языка
 
 Версия 1.2
-- Пофикшена кнопка смены языка
+- Пофикшена кнопка языка
 
 Версия 1.1
 - Добавлена смена языка
@@ -774,7 +721,6 @@ UserInputService.InputEnded:Connect(function(input)
             if mainFrame then
                 mainFrame.Visible = true
                 dockButton.Visible = false
-                print("[XyqwHub] Dock clicked - opening window")
             end
         end
         dockDragging = false
@@ -939,33 +885,22 @@ local TAB_LIST = {"All", "BB", "MM2", "INK", "Misc", "Fav", "Rct"}
 local tabButtons = {}
 local currentTab = "All"
 
--- FIX: SwitchTab теперь учитывает Rainbow
+-- FIX: SwitchTab НЕ трогает цвета в Rainbow (чтобы не мигало)
 local function SwitchTab(name)
     currentTab = name
-    local isRainbow = (getgenv().XyqwTheme == "Rainbow")
+    if getgenv().XyqwTheme == "Rainbow" then
+        if RefreshButtons then RefreshButtons() end
+        return
+    end
     for n, btn in pairs(tabButtons) do
-        if isRainbow then
-            local hue = (tick() * 0.1) % 1
-            local c = Color3.fromHSV(hue, 1, 1)
-            local dark = Color3.fromHSV(hue, 1, 0.18)
-            if n == name then
-                btn.BackgroundColor3 = c
-                btn.TextColor3 = Color3.fromRGB(0, 0, 0)
-            else
-                btn.BackgroundColor3 = dark
-                btn.TextColor3 = c
-            end
-            btn.BorderColor3 = c
+        if n == name then
+            btn.BackgroundColor3 = RED_MAIN
+            btn.TextColor3 = Color3.fromRGB(0, 0, 0)
         else
-            if n == name then
-                btn.BackgroundColor3 = RED_MAIN
-                btn.TextColor3 = Color3.fromRGB(0, 0, 0)
-            else
-                btn.BackgroundColor3 = RED_DARK
-                btn.TextColor3 = RED_MAIN
-            end
-            btn.BorderColor3 = RED_MAIN
+            btn.BackgroundColor3 = RED_DARK
+            btn.TextColor3 = RED_MAIN
         end
+        btn.BorderColor3 = RED_MAIN
     end
     if RefreshButtons then RefreshButtons() end
 end
@@ -1976,7 +1911,7 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 11
     doc.Font = Enum.Font.Gotham
-    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info (Rejoin / ServerHop / TP small)\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons (separate):\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar\n\nFiles saved to:\nDelta/Workspace/XyqwHub/"
+    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info (Rejoin / ServerHop / TP small)\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons (separate):\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar\n\nFiles: Delta/Workspace/XyqwHub/"
     doc.ZIndex = 101
     doc.Parent = frame
 
