@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 4.9 ==========
+-- ========== XyqwHub - Версия 5.0 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
@@ -13,7 +13,7 @@ if getgenv().XyqwHubRunning then
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "4.9"
+local VERSION = "5.0"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
@@ -121,6 +121,10 @@ local LANG = {
         LangChanged = "Language changed to English",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 5.0
+- Custom Color now applies immediately on Apply
+- (no need to cycle through themes)
+
 Version 4.9
 - Welcome: smaller + scrollable + close button
 - GUI no longer lets clicks pass through
@@ -209,6 +213,10 @@ Version 1.0
         LangChanged = "Язык изменён на Русский",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 5.0
+- Custom Color теперь применяется сразу при Apply
+- (не надо переключать темы)
+
 Версия 4.9
 - Welcome: меньше + скролл + крестик
 - GUI больше не пропускает клики
@@ -247,13 +255,13 @@ Version 1.0
 - Первый релиз 4.0
 
 Версия 3.9
-- Уведомление о запуске скрипта
+- Уведомление о запуске
 
 Версия 3.8
 - Пофикшен тег после респавна
 
 Версия 3.7
-- Тег тестера (синий градиент)
+- Тег тестера
 
 Версия 3.6
 - Пофикшены случайные клики
@@ -657,7 +665,6 @@ mainFrame.ClipsDescendants = false
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
--- Блокировщик кликов (не пропускает клики сквозь окно)
 local clickBlocker = Instance.new("TextButton")
 clickBlocker.Name = "ClickBlocker"
 clickBlocker.Size = UDim2.new(1, 0, 1, 0)
@@ -770,9 +777,7 @@ changelogButton.Font = Enum.Font.GothamBold
 changelogButton.BorderSizePixel = 1
 changelogButton.BorderColor3 = RED_MAIN
 changelogButton.Parent = titleBar
-changelogButton.AutoButtonColor = false
-
-local themeBtn = Instance.new("TextButton")
+changelogButton.AutoButtonColor = falselocal themeBtn = Instance.new("TextButton")
 themeBtn.Name = "ThemeBtn"
 themeBtn.Size = UDim2.new(0, 24, 0.8, 0)
 themeBtn.Position = UDim2.new(1, -178, 0.1, 0)
@@ -1027,7 +1032,7 @@ end
 
 for _, data in ipairs(SCRIPTS) do CreateScriptButton(data) end
 
--- ========== SPECIAL: Remove Tags ==========
+-- ========== SPECIAL ==========
 local removeTagsContainer = Instance.new("Frame")
 removeTagsContainer.Name = "RemoveTagsContainer"
 removeTagsContainer.Size = UDim2.new(1, -10, 0, 32)
@@ -1051,13 +1056,11 @@ removeTagsBtn.AutoButtonColor = false
 
 removeTagsBtn.MouseEnter:Connect(function() removeTagsContainer.BackgroundColor3 = RED_DARK end)
 removeTagsBtn.MouseLeave:Connect(function() removeTagsContainer.BackgroundColor3 = RED_BG end)
-
 removeTagsBtn.MouseButton1Click:Connect(function()
     RemoveAllTags()
     ShowRobloxNotification(_("TagRemoved"), 3)
 end)
 
--- ========== SPECIAL: Destroy ==========
 local destroyContainer = Instance.new("Frame")
 destroyContainer.Name = "DestroyContainer"
 destroyContainer.Size = UDim2.new(1, -10, 0, 32)
@@ -1081,7 +1084,6 @@ destroyBtnMain.AutoButtonColor = false
 
 destroyBtnMain.MouseEnter:Connect(function() destroyContainer.BackgroundColor3 = RED_DARK end)
 destroyBtnMain.MouseLeave:Connect(function() destroyContainer.BackgroundColor3 = RED_BG end)
-
 destroyBtnMain.MouseButton1Click:Connect(function()
     ShowRobloxNotification("XyqwHub Destroyed!", 2)
     getgenv().XyqwHubRunning = nil
@@ -1490,21 +1492,9 @@ local function ShowCustomScript()
     input.ZIndex = 51
     input.Parent = frame
 
-    local hint = Instance.new("TextLabel")
-    hint.Size = UDim2.new(1, -20, 0, 14)
-    hint.Position = UDim2.new(0, 10, 0, 80)
-    hint.BackgroundTransparency = 1
-    hint.TextColor3 = Color3.fromRGB(150, 150, 150)
-    hint.Text = "URL or loadstring(...) — both work"
-    hint.TextScaled = true
-    hint.Font = Enum.Font.Gotham
-    hint.TextXAlignment = Enum.TextXAlignment.Left
-    hint.ZIndex = 51
-    hint.Parent = frame
-
     local runBtn = Instance.new("TextButton")
     runBtn.Size = UDim2.new(1, -20, 0, 36)
-    runBtn.Position = UDim2.new(0, 10, 0, 102)
+    runBtn.Position = UDim2.new(0, 10, 0, 100)
     runBtn.BackgroundColor3 = RED_MAIN
     runBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
     runBtn.Text = _("RunCustom")
@@ -1814,7 +1804,15 @@ local function ShowCustomColor()
             db = math.floor(tempColor.b * 0.15),
         }
         SaveTable(CUSTOM_COLOR_FILE, getgenv().XyqwCustomColor)
-        ApplyTheme("Custom")
+        -- Обновляем THEMES.Custom
+        THEMES.Custom.MAIN = Color3.fromRGB(tempColor.r, tempColor.g, tempColor.b)
+        THEMES.Custom.DARK = Color3.fromRGB(math.floor(tempColor.r * 0.15), math.floor(tempColor.g * 0.15), math.floor(tempColor.b * 0.15))
+        THEMES.Custom.BG = Color3.fromRGB(0, 0, 0)
+        THEMES.Custom.TITLE = Color3.fromRGB(math.floor(tempColor.r * 0.08), math.floor(tempColor.g * 0.08), math.floor(tempColor.b * 0.08))
+        -- Применяем сразу через глобальную функцию
+        if getgenv().XyqwApplyTheme then
+            getgenv().XyqwApplyTheme("Custom")
+        end
         ShowRobloxNotification("Custom Color applied!", 3)
         frame:Destroy()
     end)
@@ -1902,6 +1900,9 @@ local function ApplyTheme(themeName)
 
     if themeName ~= "Rainbow" then ShowRobloxNotification("Theme: " .. themeName, 2) end
 end
+
+-- Делаем ApplyTheme доступной глобально для ShowCustomColor
+getgenv().XyqwApplyTheme = ApplyTheme
 
 themeBtn.MouseButton1Click:Connect(function()
     themeIndex = themeIndex + 1
