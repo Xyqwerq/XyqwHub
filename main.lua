@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 4.6 ==========
+-- ========== XyqwHub - Версия 4.8 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
@@ -13,13 +13,13 @@ if getgenv().XyqwHubRunning then
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "4.6"
+local VERSION = "4.8"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
 -- ========== ПУТИ ==========
 local DELTA_WORKSPACE = "/storage/emulated/0/Delta/Workspace"
-local CONFIG_FOLDER, FAV_FOLDER, RCT_FOLDER, FAV_FILE, RCT_FILE
+local CONFIG_FOLDER, FAV_FOLDER, RCT_FOLDER, FAV_FILE, RCT_FILE, CUSTOM_COLOR_FILE
 
 local absWorks = false
 pcall(function()
@@ -32,6 +32,7 @@ if absWorks then
     RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
     FAV_FILE = FAV_FOLDER .. "/favorites.json"
     RCT_FILE = RCT_FOLDER .. "/recent.json"
+    CUSTOM_COLOR_FILE = CONFIG_FOLDER .. "/custom_color.json"
     pcall(function()
         if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
         if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
@@ -44,6 +45,7 @@ else
     RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
     FAV_FILE = FAV_FOLDER .. "/favorites.json"
     RCT_FILE = RCT_FOLDER .. "/recent.json"
+    CUSTOM_COLOR_FILE = CONFIG_FOLDER .. "/custom_color.json"
     pcall(function()
         if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
         if not isfolder(FAV_FOLDER) then makefolder(FAV_FOLDER) end
@@ -74,6 +76,20 @@ end
 getgenv().XyqwFavorites = LoadTable(FAV_FILE)
 getgenv().XyqwRecent = LoadTable(RCT_FILE)
 
+if getgenv().XyqwCustomColor == nil then
+    local saved = LoadTable(CUSTOM_COLOR_FILE)
+    if saved.r and saved.g and saved.b then
+        getgenv().XyqwCustomColor = {
+            r = saved.r, g = saved.g, b = saved.b,
+            dr = saved.dr or math.floor(saved.r * 0.15),
+            dg = saved.dg or math.floor(saved.g * 0.15),
+            db = saved.db or math.floor(saved.b * 0.15),
+        }
+    else
+        getgenv().XyqwCustomColor = {r = 255, g = 0, b = 0, dr = 40, dg = 0, db = 0}
+    end
+end
+
 if getgenv().XyqwLanguage == nil then getgenv().XyqwLanguage = "EN" end
 if getgenv().XyqwTheme == nil then getgenv().XyqwTheme = "Red" end
 if getgenv().TopBarHidden == nil then getgenv().TopBarHidden = false end
@@ -84,6 +100,7 @@ local THEMES = {
     Green = {MAIN = Color3.fromRGB(0, 220, 90), DARK = Color3.fromRGB(0, 40, 15), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(0, 20, 8)},
     Purple = {MAIN = Color3.fromRGB(180, 0, 255), DARK = Color3.fromRGB(30, 0, 45), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(15, 0, 22)},
     Rainbow = {MAIN = Color3.fromRGB(255, 0, 0), DARK = Color3.fromRGB(40, 0, 40), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(20, 0, 20)},
+    Custom = {MAIN = Color3.fromRGB(255, 0, 0), DARK = Color3.fromRGB(40, 0, 0), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(20, 0, 0)},
 }
 
 local RED_MAIN = THEMES[getgenv().XyqwTheme].MAIN
@@ -101,21 +118,26 @@ local LANG = {
         LangChanged = "Language changed to English",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 4.8
+- Custom Color: supports rgb(r,g,b) format too
+- Welcome: full button documentation
+- Fixed Rainbow tab flicker
+
+Version 4.7
+- Custom Color picker (CC button)
+- Custom Color: RGB sliders + HEX input + presets
+- Custom Color saved to file
+- 6 themes: Red, Blue, Green, Purple, Rainbow, Custom
+
 Version 4.6
-- Fixed Rainbow tab flicker (SwitchTab no longer sets colors in Rainbow)
-- Fixed Rainbow active tab border animation
-- Files saved to /storage/emulated/0/Delta/Workspace/XyqwHub
-- Remove Tags and Destroy are separate buttons
-- Server Info: Rejoin, ServerHop, TP to small server
+- Fixed Rainbow tab flicker
 
 Version 4.5
 - Files to Delta/Workspace/XyqwHub
 - Fixed Rainbow red flash
-- Fixed Rainbow tab border
 
 Version 4.4
 - Remove Tags and Destroy separate
-- Fixed Remove Tags not removing permanently
 
 Version 4.3
 - Server Info: Rejoin, ServerHop, TP to small server
@@ -133,13 +155,14 @@ Version 4.1
 - Small start size (250x300)
 
 Version 4.0
-- Top bar, search, tabs, favorites, recent
+- Top bar, search, tabs, favorites
 - Theme switcher, custom runner
 - Player list, server info
+- Anti-AFK
 
 Version 3.9
-- Added Doors v4, Kiti (MM2)
-- Renamed BETA to Tester
+- Script executed notification
+- Doors v4, Kiti (MM2)
 
 Version 3.8
 - Fixed tag after respawn
@@ -182,14 +205,12 @@ Version 2.6
 
 Version 2.5
 - EN/RU translations
-- Re-launch protection
 
 Version 2.4
 - Re-launch protection
-- DESTROY resets flag
 
 Version 2.3
-- Added Adopt me
+- Adopt me
 
 Version 2.2
 - bLockman's minesweaper + Cheating during test
@@ -239,28 +260,33 @@ Version 1.0
         LangChanged = "Язык изменён на Русский",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 4.8
+- Custom Color: поддержка формата rgb(r,g,b)
+- Welcome: полная документация кнопок
+- Пофикшено мигание вкладок в Rainbow
+
+Версия 4.7
+- Custom Color picker (кнопка CC)
+- Custom Color: RGB ползунки + HEX + пресеты
+- Custom Color сохраняется в файл
+- 6 тем: Red, Blue, Green, Purple, Rainbow, Custom
+
 Версия 4.6
-- Пофикшено мигание вкладок в радужной теме (SwitchTab не трогает цвета в Rainbow)
-- Пофикшена анимация обводки активной вкладки в Rainbow
-- Файлы сохраняются в /storage/emulated/0/Delta/Workspace/XyqwHub
-- Remove Tags и Destroy - отдельные кнопки
-- Server Info: Rejoin, ServerHop, TP to small server
+- Пофикшено мигание вкладок в Rainbow
 
 Версия 4.5
 - Файлы в Delta/Workspace/XyqwHub
 - Пофикшено красное мигание в Rainbow
-- Пофикшена обводка вкладок
 
 Версия 4.4
 - Remove Tags и Destroy отдельно
-- Пофикшено: Remove Tags не убирал навсегда
 
 Версия 4.3
 - Server Info: Rejoin, ServerHop, TP to small
 - Сохранение избранного + недавних
 
 Версия 4.2
-- Топ-бар с кнопкой Hide (H)
+- Топ-бар с Hide (H)
 - 5 тем
 - Doors V2 (Copy), Doors V3 (Cheesy)
 - Все 48 скриптов
@@ -268,16 +294,17 @@ Version 1.0
 Версия 4.1
 - Все кнопки квадратные
 - Ярко-красный вместо жёлтого
-- Маленький стартовый размер (250x300)
+- Маленький стартовый размер
 
 Версия 4.0
-- Топ-бар, поиск, вкладки, избранное, недавние
+- Топ-бар, поиск, вкладки, избранное
 - Переключатель тем, кастомный запуск
 - Список игроков, инфо о сервере
+- Анти-АФК
 
 Версия 3.9
+- Уведомление о запуске скрипта
 - Doors v4, Kiti (MM2)
-- BETA переименован в Tester
 
 Версия 3.8
 - Пофикшен тег после респавна
@@ -286,7 +313,7 @@ Version 1.0
 - Тег тестера (синий градиент)
 
 Версия 3.6
-- Пофикшены случайные клики в заголовке
+- Пофикшены случайные клики
 
 Версия 3.5
 - Приветствие только для владельца
@@ -295,7 +322,7 @@ Version 1.0
 - Более тёмный красный для тега
 
 Версия 3.3
-- Пофикшен размер тега + градиент
+- Пофикшен размер + градиент тега
 
 Версия 3.2
 - Анимация градиента + UIStroke
@@ -320,11 +347,9 @@ Version 1.0
 
 Версия 2.5
 - EN/RU переводы
-- Защита от повторного запуска
 
 Версия 2.4
 - Защита от повторного запуска
-- DESTROY сбрасывает флаг
 
 Версия 2.3
 - Adopt me
@@ -747,7 +772,7 @@ titleBar.Parent = mainFrame
 
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(0, 80, 1, 0)
+titleLabel.Size = UDim2.new(0, 70, 1, 0)
 titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "XyqwHub"
@@ -855,6 +880,20 @@ themeBtn.BorderColor3 = RED_MAIN
 themeBtn.Parent = titleBar
 themeBtn.AutoButtonColor = false
 
+local colorBtn = Instance.new("TextButton")
+colorBtn.Name = "ColorBtn"
+colorBtn.Size = UDim2.new(0, 24, 0.8, 0)
+colorBtn.Position = UDim2.new(1, -204, 0.1, 0)
+colorBtn.BackgroundColor3 = RED_DARK
+colorBtn.TextColor3 = RED_MAIN
+colorBtn.Text = "CC"
+colorBtn.TextScaled = true
+colorBtn.Font = Enum.Font.GothamBold
+colorBtn.BorderSizePixel = 1
+colorBtn.BorderColor3 = RED_MAIN
+colorBtn.Parent = titleBar
+colorBtn.AutoButtonColor = false
+
 -- ========== SEARCH ==========
 local searchBar = Instance.new("TextBox")
 searchBar.Name = "SearchBar"
@@ -885,7 +924,6 @@ local TAB_LIST = {"All", "BB", "MM2", "INK", "Misc", "Fav", "Rct"}
 local tabButtons = {}
 local currentTab = "All"
 
--- FIX: SwitchTab НЕ трогает цвета в Rainbow (чтобы не мигало)
 local function SwitchTab(name)
     currentTab = name
     if getgenv().XyqwTheme == "Rainbow" then
@@ -1117,7 +1155,7 @@ removeTagsBtn.MouseButton1Click:Connect(function()
     ShowRobloxNotification(_("TagRemoved"), 3)
 end)
 
--- ========== SPECIAL: Destroy XyqwHub ==========
+-- ========== SPECIAL: Destroy ==========
 local destroyContainer = Instance.new("Frame")
 destroyContainer.Name = "DestroyContainer"
 destroyContainer.Size = UDim2.new(1, -10, 0, 32)
@@ -1610,12 +1648,295 @@ local function ShowCustomScript()
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
 end
 
+-- ========== CUSTOM COLOR ==========
+local function ShowCustomColor()
+    local frame = Instance.new("Frame")
+    frame.Name = "CustomColorFrame"
+    frame.Size = UDim2.new(0, 320, 0, 430)
+    frame.Position = UDim2.new(0.5, -160, 0.5, -215)
+    frame.BackgroundColor3 = RED_BG
+    frame.BorderSizePixel = 2
+    frame.BorderColor3 = RED_MAIN
+    frame.ZIndex = 50
+    frame.Parent = screenGui
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -40, 0, 28)
+    title.Position = UDim2.new(0, 5, 0, 5)
+    title.BackgroundTransparency = 1
+    title.TextColor3 = RED_MAIN
+    title.Text = "Custom Color"
+    title.TextScaled = true
+    title.Font = Enum.Font.GothamBold
+    title.ZIndex = 51
+    title.Parent = frame
+
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 30, 0, 28)
+    closeBtn.Position = UDim2.new(1, -35, 0, 2)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = RED_MAIN
+    closeBtn.TextScaled = true
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.ZIndex = 51
+    closeBtn.Parent = frame
+    closeBtn.AutoButtonColor = false
+
+    local preview = Instance.new("Frame")
+    preview.Size = UDim2.new(1, -20, 0, 50)
+    preview.Position = UDim2.new(0, 10, 0, 38)
+    preview.BackgroundColor3 = Color3.fromRGB(getgenv().XyqwCustomColor.r, getgenv().XyqwCustomColor.g, getgenv().XyqwCustomColor.b)
+    preview.BorderSizePixel = 2
+    preview.BorderColor3 = RED_MAIN
+    preview.ZIndex = 51
+    preview.Parent = frame
+
+    local tempColor = {
+        r = getgenv().XyqwCustomColor.r,
+        g = getgenv().XyqwCustomColor.g,
+        b = getgenv().XyqwCustomColor.b,
+    }
+
+    local hexInput, setSliders
+
+    local function UpdateAll()
+        local c = Color3.fromRGB(tempColor.r, tempColor.g, tempColor.b)
+        preview.BackgroundColor3 = c
+        if hexInput then
+            hexInput.Text = string.format("#%02X%02X%02X", tempColor.r, tempColor.g, tempColor.b)
+        end
+    end
+
+    local function MakeSlider(label, yPos, channel)
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(0, 20, 0, 20)
+        lbl.Position = UDim2.new(0, 10, 0, yPos)
+        lbl.BackgroundTransparency = 1
+        lbl.TextColor3 = RED_MAIN
+        lbl.Text = label
+        lbl.TextScaled = true
+        lbl.Font = Enum.Font.GothamBold
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.ZIndex = 51
+        lbl.Parent = frame
+
+        local valLbl = Instance.new("TextLabel")
+        valLbl.Size = UDim2.new(0, 40, 0, 20)
+        valLbl.Position = UDim2.new(1, -50, 0, yPos)
+        valLbl.BackgroundTransparency = 1
+        valLbl.TextColor3 = RED_MAIN
+        valLbl.Text = tostring(tempColor[channel])
+        valLbl.TextScaled = true
+        valLbl.Font = Enum.Font.Gotham
+        valLbl.TextXAlignment = Enum.TextXAlignment.Right
+        valLbl.ZIndex = 51
+        valLbl.Parent = frame
+
+        local slider = Instance.new("Frame")
+        slider.Size = UDim2.new(1, -100, 0, 14)
+        slider.Position = UDim2.new(0, 35, 0, yPos + 3)
+        slider.BackgroundColor3 = RED_DARK
+        slider.BorderSizePixel = 1
+        slider.BorderColor3 = RED_MAIN
+        slider.ZIndex = 51
+        slider.Parent = frame
+
+        local fill = Instance.new("Frame")
+        fill.Size = UDim2.new(tempColor[channel] / 255, 0, 1, 0)
+        fill.BackgroundColor3 = RED_MAIN
+        fill.BorderSizePixel = 0
+        fill.ZIndex = 52
+        fill.Parent = slider
+
+        local drag = false
+        local function UpdateFromX(mouseX)
+            local rel = math.clamp((mouseX - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+            local v = math.floor(rel * 255)
+            tempColor[channel] = v
+            fill.Size = UDim2.new(rel, 0, 1, 0)
+            valLbl.Text = tostring(v)
+            UpdateAll()
+        end
+
+        slider.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                drag = true
+                UpdateFromX(input.Position.X)
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if drag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                UpdateFromX(input.Position.X)
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                drag = false
+            end
+        end)
+
+        return function(v)
+            tempColor[channel] = v
+            fill.Size = UDim2.new(v / 255, 0, 1, 0)
+            valLbl.Text = tostring(v)
+        end
+    end
+
+    setSliders = {
+        R = MakeSlider("R", 98, "r"),
+        G = MakeSlider("G", 126, "g"),
+        B = MakeSlider("B", 154, "b"),
+    }
+
+    local hexLbl = Instance.new("TextLabel")
+    hexLbl.Size = UDim2.new(0, 45, 0, 20)
+    hexLbl.Position = UDim2.new(0, 10, 0, 186)
+    hexLbl.BackgroundTransparency = 1
+    hexLbl.TextColor3 = RED_MAIN
+    hexLbl.Text = "HEX:"
+    hexLbl.TextScaled = true
+    hexLbl.Font = Enum.Font.GothamBold
+    hexLbl.TextXAlignment = Enum.TextXAlignment.Left
+    hexLbl.ZIndex = 51
+    hexLbl.Parent = frame
+
+    hexInput = Instance.new("TextBox")
+    hexInput.Size = UDim2.new(1, -70, 0, 26)
+    hexInput.Position = UDim2.new(0, 60, 0, 183)
+    hexInput.BackgroundColor3 = RED_DARK
+    hexInput.TextColor3 = RED_MAIN
+    hexInput.PlaceholderText = "#FF0000 или rgb(255,0,0)"
+    hexInput.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    hexInput.Text = string.format("#%02X%02X%02X", tempColor.r, tempColor.g, tempColor.b)
+    hexInput.TextSize = 14
+    hexInput.Font = Enum.Font.Gotham
+    hexInput.ClearTextOnFocus = false
+    hexInput.BorderSizePixel = 1
+    hexInput.BorderColor3 = RED_MAIN
+    hexInput.ZIndex = 51
+    hexInput.Parent = frame
+
+    local function ParseColor(text)
+        if not text then return nil end
+        text = text:gsub("^%s+", ""):gsub("%s+$", "")
+        local r, g, b = text:match("^[Rr][Gg][Bb]%s*%(%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*%)$")
+        if r and g and b then
+            return math.clamp(tonumber(r), 0, 255), math.clamp(tonumber(g), 0, 255), math.clamp(tonumber(b), 0, 255)
+        end
+        local hex = text:gsub("#", ""):gsub("%s", "")
+        if #hex == 6 then
+            local hr = tonumber(hex:sub(1, 2), 16)
+            local hg = tonumber(hex:sub(3, 4), 16)
+            local hb = tonumber(hex:sub(5, 6), 16)
+            if hr and hg and hb then return hr, hg, hb end
+        end
+        return nil
+    end
+
+    hexInput.FocusLost:Connect(function()
+        local r, g, b = ParseColor(hexInput.Text)
+        if r and g and b then
+            tempColor.r = r
+            tempColor.g = g
+            tempColor.b = b
+            if setSliders then
+                setSliders.R(r)
+                setSliders.G(g)
+                setSliders.B(b)
+            end
+        end
+        UpdateAll()
+    end)
+
+    local presetLbl = Instance.new("TextLabel")
+    presetLbl.Size = UDim2.new(1, -20, 0, 16)
+    presetLbl.Position = UDim2.new(0, 10, 0, 218)
+    presetLbl.BackgroundTransparency = 1
+    presetLbl.TextColor3 = RED_MAIN
+    presetLbl.Text = "Presets:"
+    presetLbl.TextScaled = true
+    presetLbl.Font = Enum.Font.GothamBold
+    presetLbl.TextXAlignment = Enum.TextXAlignment.Left
+    presetLbl.ZIndex = 51
+    presetLbl.Parent = frame
+
+    local presets = {
+        {name = "Cyan", r = 0, g = 255, b = 255},
+        {name = "Pink", r = 255, g = 20, b = 147},
+        {name = "Orange", r = 255, g = 140, b = 0},
+        {name = "Lime", r = 50, g = 255, b = 50},
+        {name = "Gold", r = 255, g = 215, b = 0},
+        {name = "White", r = 255, g = 255, b = 255},
+    }
+
+    local presetY = 238
+    local presetW = 90
+    for i, preset in ipairs(presets) do
+        local col = (i - 1) % 2
+        local row = math.floor((i - 1) / 2)
+        local pBtn = Instance.new("TextButton")
+        pBtn.Size = UDim2.new(0, presetW, 0, 24)
+        pBtn.Position = UDim2.new(0, 10 + col * (presetW + 5), 0, presetY + row * 28)
+        pBtn.BackgroundColor3 = Color3.fromRGB(preset.r, preset.g, preset.b)
+        pBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        pBtn.Text = preset.name
+        pBtn.TextScaled = true
+        pBtn.Font = Enum.Font.GothamBold
+        pBtn.BorderSizePixel = 1
+        pBtn.BorderColor3 = RED_MAIN
+        pBtn.ZIndex = 51
+        pBtn.Parent = frame
+        pBtn.AutoButtonColor = false
+        pBtn.MouseButton1Click:Connect(function()
+            tempColor.r = preset.r
+            tempColor.g = preset.g
+            tempColor.b = preset.b
+            if setSliders then
+                setSliders.R(preset.r)
+                setSliders.G(preset.g)
+                setSliders.B(preset.b)
+            end
+            UpdateAll()
+        end)
+    end
+
+    local applyBtn = Instance.new("TextButton")
+    applyBtn.Size = UDim2.new(1, -20, 0, 32)
+    applyBtn.Position = UDim2.new(0, 10, 1, -42)
+    applyBtn.BackgroundColor3 = RED_MAIN
+    applyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    applyBtn.Text = "Apply"
+    applyBtn.TextScaled = true
+    applyBtn.Font = Enum.Font.GothamBold
+    applyBtn.BorderSizePixel = 0
+    applyBtn.ZIndex = 51
+    applyBtn.Parent = frame
+    applyBtn.AutoButtonColor = false
+
+    applyBtn.MouseButton1Click:Connect(function()
+        getgenv().XyqwCustomColor = {
+            r = tempColor.r, g = tempColor.g, b = tempColor.b,
+            dr = math.floor(tempColor.r * 0.15),
+            dg = math.floor(tempColor.g * 0.15),
+            db = math.floor(tempColor.b * 0.15),
+        }
+        SaveTable(CUSTOM_COLOR_FILE, getgenv().XyqwCustomColor)
+        ApplyTheme("Custom")
+        ShowRobloxNotification("Custom Color applied!", 3)
+        frame:Destroy()
+    end)
+
+    closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
+end
+
 customBtn.MouseButton1Click:Connect(ShowCustomScript)
 playerBtn.MouseButton1Click:Connect(ShowPlayerList)
 serverBtn.MouseButton1Click:Connect(ShowServerInfo)
+colorBtn.MouseButton1Click:Connect(ShowCustomColor)
 
 -- ========== ТЕМЫ ==========
-local themeOrder = {"Red", "Blue", "Green", "Purple", "Rainbow"}
+local themeOrder = {"Red", "Blue", "Green", "Purple", "Rainbow", "Custom"}
 local themeIndex = 1
 for i, name in ipairs(themeOrder) do
     if name == getgenv().XyqwTheme then themeIndex = i break end
@@ -1623,6 +1944,17 @@ end
 
 local function ApplyTheme(themeName)
     getgenv().XyqwTheme = themeName
+    if themeName == "Custom" then
+        local cc = getgenv().XyqwCustomColor
+        THEMES.Custom.MAIN = Color3.fromRGB(cc.r, cc.g, cc.b)
+        THEMES.Custom.DARK = Color3.fromRGB(cc.dr, cc.dg, cc.db)
+        THEMES.Custom.BG = Color3.fromRGB(0, 0, 0)
+        THEMES.Custom.TITLE = Color3.fromRGB(
+            math.floor(cc.r * 0.08),
+            math.floor(cc.g * 0.08),
+            math.floor(cc.b * 0.08)
+        )
+    end
     local t = THEMES[themeName]
     RED_MAIN = t.MAIN RED_DARK = t.DARK RED_BG = t.BG RED_TITLE = t.TITLE
 
@@ -1631,7 +1963,7 @@ local function ApplyTheme(themeName)
     titleBar.BackgroundColor3 = RED_TITLE
     titleLabel.TextColor3 = RED_MAIN
 
-    for _, btn in ipairs({closeButton, langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn}) do
+    for _, btn in ipairs({closeButton, langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn, colorBtn}) do
         btn.BackgroundColor3 = RED_DARK
         btn.TextColor3 = RED_MAIN
         btn.BorderColor3 = RED_MAIN
@@ -1700,7 +2032,7 @@ task.spawn(function()
             mainFrame.BorderColor3 = c
             titleBar.BackgroundColor3 = Color3.fromHSV(hue, 0.8, 0.08)
             titleLabel.TextColor3 = c
-            for _, btn in ipairs({closeButton, langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn}) do
+            for _, btn in ipairs({closeButton, langButton, playerBtn, serverBtn, customBtn, changelogButton, themeBtn, colorBtn}) do
                 btn.BackgroundColor3 = darkHue
                 btn.TextColor3 = c
                 btn.BorderColor3 = c
@@ -1808,7 +2140,8 @@ titleBar.InputBegan:Connect(function(input)
             return mousePos.X >= p.X and mousePos.X <= p.X + s.X and mousePos.Y >= p.Y and mousePos.Y <= p.Y + s.Y
         end
         if IsOverButton(changelogButton) or IsOverButton(langButton) or IsOverButton(closeButton)
-           or IsOverButton(themeBtn) or IsOverButton(customBtn) or IsOverButton(playerBtn) or IsOverButton(serverBtn) then
+           or IsOverButton(themeBtn) or IsOverButton(customBtn) or IsOverButton(playerBtn) or IsOverButton(serverBtn)
+           or IsOverButton(colorBtn) then
             return
         end
         dragging = true
@@ -1838,8 +2171,8 @@ end)
 local function ShowWelcomeMessage()
     local frame = Instance.new("Frame")
     frame.Name = "WelcomeFrame"
-    frame.Size = UDim2.new(0, 340, 0, 380)
-    frame.Position = UDim2.new(0.5, -170, 0.5, -190)
+    frame.Size = UDim2.new(0, 380, 0, 520)
+    frame.Position = UDim2.new(0.5, -190, 0.5, -260)
     frame.BackgroundColor3 = RED_BG
     frame.BorderSizePixel = 2
     frame.BorderColor3 = RED_MAIN
@@ -1858,8 +2191,8 @@ local function ShowWelcomeMessage()
     title.Parent = frame
 
     local tiktok = Instance.new("TextLabel")
-    tiktok.Size = UDim2.new(1, -10, 0, 20)
-    tiktok.Position = UDim2.new(0, 5, 0, 38)
+    tiktok.Size = UDim2.new(1, -10, 0, 18)
+    tiktok.Position = UDim2.new(0, 5, 0, 36)
     tiktok.BackgroundTransparency = 1
     tiktok.TextColor3 = Color3.fromRGB(255, 255, 255)
     tiktok.Text = "TikTok: xyqwerq.tvink"
@@ -1869,8 +2202,8 @@ local function ShowWelcomeMessage()
     tiktok.Parent = frame
 
     local tg = Instance.new("TextLabel")
-    tg.Size = UDim2.new(1, -10, 0, 20)
-    tg.Position = UDim2.new(0, 5, 0, 60)
+    tg.Size = UDim2.new(1, -10, 0, 18)
+    tg.Position = UDim2.new(0, 5, 0, 56)
     tg.BackgroundTransparency = 1
     tg.TextColor3 = Color3.fromRGB(255, 255, 255)
     tg.Text = "Telegram: t.me/xyqwsquad"
@@ -1880,8 +2213,8 @@ local function ShowWelcomeMessage()
     tg.Parent = frame
 
     local dc = Instance.new("TextLabel")
-    dc.Size = UDim2.new(1, -10, 0, 20)
-    dc.Position = UDim2.new(0, 5, 0, 82)
+    dc.Size = UDim2.new(1, -10, 0, 18)
+    dc.Position = UDim2.new(0, 5, 0, 76)
     dc.BackgroundTransparency = 1
     dc.TextColor3 = Color3.fromRGB(255, 255, 255)
     dc.Text = "Discord: xyqwerqyt"
@@ -1890,28 +2223,47 @@ local function ShowWelcomeMessage()
     dc.ZIndex = 101
     dc.Parent = frame
 
-    local docTitle = Instance.new("TextLabel")
-    docTitle.Size = UDim2.new(1, -10, 0, 18)
-    docTitle.Position = UDim2.new(0, 5, 0, 110)
-    docTitle.BackgroundTransparency = 1
-    docTitle.TextColor3 = RED_MAIN
-    docTitle.Text = "— Buttons —"
-    docTitle.TextScaled = true
-    docTitle.Font = Enum.Font.GothamBold
-    docTitle.ZIndex = 101
-    docTitle.Parent = frame
-
     local doc = Instance.new("TextLabel")
-    doc.Size = UDim2.new(1, -10, 0, 220)
-    doc.Position = UDim2.new(0, 5, 0, 130)
+    doc.Size = UDim2.new(1, -10, 0, 400)
+    doc.Position = UDim2.new(0, 5, 0, 100)
     doc.BackgroundTransparency = 1
     doc.TextColor3 = RED_MAIN
     doc.TextWrapped = true
     doc.TextXAlignment = Enum.TextXAlignment.Left
     doc.TextYAlignment = Enum.TextYAlignment.Top
-    doc.TextSize = 11
+    doc.TextSize = 10
     doc.Font = Enum.Font.Gotham
-    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info (Rejoin / ServerHop / TP small)\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons (separate):\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar\n\nFiles: Delta/Workspace/XyqwHub/"
+    doc.Text = "─── TITLE BAR ───\n" ..
+        "Th  — Cycle themes (Red→Blue→Green→Purple→Rainbow→Custom)\n" ..
+        "CC  — Custom Color picker (RGB sliders + HEX + presets)\n" ..
+        "CL  — ChangeLog (full version history)\n" ..
+        "C   — Custom Script (paste URL or loadstring)\n" ..
+        "P   — Players List (name + UserId)\n" ..
+        "S   — Server Info + Rejoin / ServerHop / TP small\n" ..
+        "EN/RU — Change language (English/Russian)\n" ..
+        "X   — Close window (minimize to dock)\n" ..
+        "\n─── BOTTOM BUTTONS ───\n" ..
+        "Remove Tags     — remove OWNER/TESTER tags permanently\n" ..
+        "Destroy XyqwHub — full unload (resets launch flag)\n" ..
+        "\n─── TOP BAR (top of screen) ───\n" ..
+        "Shows: Executor | Username | FPS | Ping\n" ..
+        "H button — Hide/Show top bar\n" ..
+        "\n─── DOCK BUTTON ───\n" ..
+        "XyqwHub — click to reopen window after X\n" ..
+        "Drag it anywhere on screen\n" ..
+        "\n─── TABS ───\n" ..
+        "All, BB, MM2, INK, Misc, Fav, Rct\n" ..
+        "★ star on each script — add to favorites\n" ..
+        "\n─── RESIZE ───\n" ..
+        "Drag bottom-right corner to change window size\n" ..
+        "Size shown as '280 x 340' (width x height)\n" ..
+        "\n─── FILES SAVED ───\n" ..
+        "Delta/Workspace/XyqwHub/FavScripts/favorites.json\n" ..
+        "Delta/Workspace/XyqwHub/RctScripts/recent.json\n" ..
+        "Delta/Workspace/XyqwHub/custom_color.json\n" ..
+        "\n─── SPECIAL SCRIPTS ───\n" ..
+        "Doors V2 (Copy) — copies script to clipboard\n" ..
+        "   (cannot be run via hub, paste in executor manually)"
     doc.ZIndex = 101
     doc.Parent = frame
 
@@ -1926,7 +2278,7 @@ local function ShowWelcomeMessage()
     ver.ZIndex = 101
     ver.Parent = frame
 
-    task.wait(7)
+    task.wait(12)
     if frame.Parent then frame:Destroy() end
 end
 
