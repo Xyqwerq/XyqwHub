@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 4.3 ==========
+-- ========== XyqwHub - Версия 4.4 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
@@ -13,11 +13,10 @@ if getgenv().XyqwHubRunning then
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "4.3"
+local VERSION = "4.4"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
--- ========== CONFIG SAVE/LOAD ==========
 local CONFIG_FOLDER = "XyqwHub"
 local FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
 local RCT_FOLDER = CONFIG_FOLDER .. "/RctScripts"
@@ -79,24 +78,29 @@ local LANG = {
         LangChanged = "Language changed to English",
         ChangeLogText = [[XyqwHub ChangeLog
 
-Version 4.3
+Version 4.4
+- Remove Tags and Destroy are now separate buttons
+- Fixed Remove Tags not removing tags permanently
+- Fixed Destroy removing wrong elements
 - Server Info: Rejoin button
 - Server Info: ServerHop button
 - Server Info: TP to small server button
-- Save favorites to file (survives restart)
-- Save recent scripts to file (last 5, survives restart)
-- Config folder: XyqwHub/FavScripts + XyqwHub/RctScripts
+- Save favorites to file (XyqwHub/FavScripts/favorites.json)
+- Save recent scripts to file (XyqwHub/RctScripts/recent.json, last 5)
+
+Version 4.3
+- Server Info: Rejoin, ServerHop, TP to small server
+- Save favorites + recent to files
 
 Version 4.2
 - Top bar with Hide button (H)
 - 5 themes: Red, Blue, Green, Purple, Rainbow
-- Remove Tags button
 - Doors V2 (Copy) - copies script to clipboard
 - Doors V3 (Cheesy) added
 - All 48 scripts restored
 - Fixed Rainbow covering header buttons
-- Fixed resize corner (was hidden)
-- Fixed welcome message (was blocked)
+- Fixed resize corner
+- Fixed welcome message
 - Fixed "XyqwHub Loaded!" notification
 - Fixed title label visibility
 - Fixed close button (X minimizes to dock)
@@ -128,8 +132,6 @@ Version 4.0
 - Player list
 - Server info
 - Copy JobId
-- Animations
-- Keybinds
 - Anti-AFK
 
 Version 3.9
@@ -140,7 +142,6 @@ Version 3.9
 
 Version 3.8
 - Fixed tag not restoring after respawn
-- Tag now uses CharacterAdded + task.wait
 
 Version 3.7
 - Added tester tag (blue gradient)
@@ -150,7 +151,6 @@ Version 3.7
 Version 3.6
 - Fixed accidental button clicks in title bar
 - Added cooldown for ChangeLog and language buttons
-- Added Active property to title buttons
 
 Version 3.5
 - Added owner-only welcome message
@@ -158,29 +158,24 @@ Version 3.5
 Version 3.4
 - Darker red color for tag
 - Normal background for Remove/Destroy buttons
-- Normal border for Remove/Destroy buttons
 
 Version 3.3
 - Fixed tag size (no longer stretches)
 - Fixed gradient (now works via Rotation)
-- Gradient visible for everyone
-- Fixed text position
 
 Version 3.2
 - Brought back gradient animation
-- Fixed text size (smaller, not stretched)
+- Fixed text size
 - Added UIStroke glow
 
 Version 3.1
 - Completely rewrote tag system
 - Tag is now attached to humanoid root part
 - Added Heartbeat-based positioning
-- Fixed scanning logic
 
 Version 3.0
 - Removed gradient
 - Added debug prints
-- Simplified tag logic
 
 Version 2.9
 - Added XyqwHub OWNER tag
@@ -194,7 +189,6 @@ Version 2.8
 Version 2.7
 - Roblox notifications (bottom right)
 - ChangeLog button added
-- Loading / Loaded notifications
 
 Version 2.6
 - Notifications moved to bottom right
@@ -202,12 +196,10 @@ Version 2.6
 Version 2.5
 - All messages translated to EN/RU
 - Re-launch protection
-- Fixed language change button
 
 Version 2.4
 - Re-launch protection added
 - DESTROY button resets the flag
-- Owner-only welcome message
 
 Version 2.3
 - Added Adopt me
@@ -221,7 +213,6 @@ Version 2.1
 Version 2.0
 - Removed Auto Execute
 - All buttons in one list
-- Version 2.0 stable
 
 Version 1.9
 - Added key for Doors V3 (Cheesy)
@@ -262,36 +253,41 @@ Version 1.0
         LangChanged = "Язык изменён на Русский",
         ChangeLogText = [[XyqwHub Ченджлог
 
-Версия 4.3
+Версия 4.4
+- Remove Tags и Destroy теперь отдельные кнопки
+- Пофикшено: Remove Tags не убирал теги навсегда
+- Пофикшено: Destroy убирал не те элементы
 - Server Info: кнопка Rejoin
 - Server Info: кнопка ServerHop
 - Server Info: кнопка TP to small server
-- Избранное сохраняется в файл (выживает после перезапуска)
-- Недавние скрипты сохраняются в файл (последние 5)
-- Папки: XyqwHub/FavScripts + XyqwHub/RctScripts
+- Избранное сохраняется (XyqwHub/FavScripts/favorites.json)
+- Недавние сохраняются (XyqwHub/RctScripts/recent.json, последние 5)
+
+Версия 4.3
+- Server Info: Rejoin, ServerHop, TP to small server
+- Сохранение избранного + недавних в файлы
 
 Версия 4.2
 - Топ-бар с кнопкой Hide (H)
 - 5 тем: Red, Blue, Green, Purple, Rainbow
-- Кнопка Remove Tags
 - Doors V2 (Copy) - копирует скрипт в буфер
 - Добавлен Doors V3 (Cheesy)
 - Все 48 скриптов восстановлены
 - Пофикшено перекрытие кнопок заголовка радугой
-- Пофикшен угол ресайза (был невидим)
-- Пофикшено приветствие (было заблокировано)
+- Пофикшен угол ресайза
+- Пофикшено приветствие
 - Пофикшено уведомление "XyqwHub Loaded!"
 - Пофикшена видимость заголовка
-- Пофикшена кнопка закрытия (X сворачивает в док)
-- Пофикшена док-кнопка (не открывала окно)
-- Пофикшен ресайз (обрывался за пределами окна)
+- Пофикшена кнопка закрытия
+- Пофикшена док-кнопка
+- Пофикшен ресайз
 - Пофикшено чёрное поле внизу
 - Пофикшено наложение EN/RU на крестик
 - Пофикшено расположение кнопок P, S
 - Custom Script теперь принимает URL + loadstring
 
 Версия 4.1
-- Все кнопки квадратные (без закруглений)
+- Все кнопки квадратные
 - Ярко-красный вместо жёлтого
 - Ресайз в правом нижнем углу
 - Маленький стартовый размер (250x300)
@@ -311,29 +307,24 @@ Version 1.0
 - Список игроков
 - Инфо о сервере
 - Копирование JobId
-- Анимации
-- Кейбинды
 - Анти-АФК
 
 Версия 3.9
-- Добавлено уведомление "Скрипт выполнен!" для всех скриптов
+- Добавлено уведомление "Скрипт выполнен!"
 - Добавлен Doors v4
 - Добавлен Kiti (MM2)
 - Тег BETA переименован в Tester
 
 Версия 3.8
 - Пофикшено восстановление тега после респавна
-- Тег теперь использует CharacterAdded + task.wait
 
 Версия 3.7
 - Добавлен тег тестера (синий градиент)
 - Добавлено приветствие тестера
-- Добавлено 2 тестера
 
 Версия 3.6
 - Пофикшены случайные клики по кнопкам в заголовке
-- Добавлен кулдаун для ChangeLog и кнопки языка
-- Добавлено свойство Active для кнопок заголовка
+- Добавлен кулдаун для ChangeLog
 
 Версия 3.5
 - Добавлено приветствие только для владельца
@@ -341,34 +332,28 @@ Version 1.0
 Версия 3.4
 - Более тёмный красный для тега
 - Нормальный фон для кнопок Remove/Destroy
-- Нормальная граница для кнопок Remove/Destroy
 
 Версия 3.3
-- Пофикшен размер тега (больше не растягивается)
-- Пофикшен градиент (теперь работает через Rotation)
-- Градиент виден всем
-- Пофикшена позиция текста
+- Пофикшен размер тега
+- Пофикшен градиент
 
 Версия 3.2
 - Возвращена анимация градиента
-- Пофикшен размер текста (меньше, не растянут)
+- Пофикшен размер текста
 - Добавлено свечение UIStroke
 
 Версия 3.1
 - Полностью переписана система тегов
-- Тег теперь привязан к humanoid root part
-- Добавлено позиционирование через Heartbeat
-- Пофикшена логика сканирования
+- Тег привязан к humanoid root part
+- Позиционирование через Heartbeat
 
 Версия 3.0
 - Убран градиент
 - Добавлены debug-принты
-- Упрощена логика тегов
 
 Версия 2.9
 - Добавлен тег XyqwHub OWNER
 - Добавлена кнопка "Убрать тег XyqwHub"
-- Добавлена анимация градиента для тега владельца
 
 Версия 2.8
 - XyqwHub Loaded! теперь появляется сразу
@@ -377,7 +362,6 @@ Version 1.0
 Версия 2.7
 - Roblox уведомления (снизу справа)
 - Добавлена кнопка ChangeLog
-- Уведомления Loading / Loaded
 
 Версия 2.6
 - Уведомления перенесены вниз справа
@@ -385,12 +369,10 @@ Version 1.0
 Версия 2.5
 - Все сообщения переведены на EN/RU
 - Защита от повторного запуска
-- Пофикшена кнопка смены языка
 
 Версия 2.4
 - Добавлена защита от повторного запуска
 - Кнопка DESTROY сбрасывает флаг
-- Приветствие только для владельца
 
 Версия 2.3
 - Добавлен Adopt me
@@ -404,7 +386,6 @@ Version 1.0
 Версия 2.0
 - Убран Auto Execute
 - Все кнопки в одном списке
-- Версия 2.0 стабильная
 
 Версия 1.9
 - Добавлен ключ для Doors V3 (Cheesy)
@@ -555,8 +536,18 @@ end
 
 local function RemoveAllTags()
     tagsEnabled = false
-    for _, tag in pairs(activeTags) do if tag then tag:Destroy() end end
+    for plr, tag in pairs(activeTags) do
+        if tag and tag.Parent then tag:Destroy() end
+    end
     activeTags = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        local char = plr.Character
+        if char then
+            local oldTag = char:FindFirstChild("XyqwTag")
+            if oldTag then oldTag:Destroy() end
+        end
+    end
+    print("[XyqwHub] All tags removed permanently")
 end
 
 local function CheckAllPlayers()
@@ -577,7 +568,7 @@ local function SetupCharacterTag(plr)
         if oldTag then oldTag:Destroy() end
         activeTags[plr] = nil
         task.wait(0.5)
-        if GetRole(plr) then CreateTagForPlayer(plr) end
+        if GetRole(plr) and tagsEnabled then CreateTagForPlayer(plr) end
     end)
 end
 
@@ -1140,46 +1131,60 @@ end
 
 for _, data in ipairs(SCRIPTS) do CreateScriptButton(data) end
 
--- ========== SPECIAL ==========
-local specialContainer = Instance.new("Frame")
-specialContainer.Name = "SpecialContainer"
-specialContainer.Size = UDim2.new(1, -10, 0, 36)
-specialContainer.Position = UDim2.new(0, 5, 0, 0)
-specialContainer.BackgroundColor3 = RED_BG
-specialContainer.BorderSizePixel = 2
-specialContainer.BorderColor3 = RED_MAIN
-specialContainer.Parent = scrollFrame
-specialContainer.Visible = false
+-- ========== SPECIAL: Remove Tags ==========
+local removeTagsContainer = Instance.new("Frame")
+removeTagsContainer.Name = "RemoveTagsContainer"
+removeTagsContainer.Size = UDim2.new(1, -10, 0, 32)
+removeTagsContainer.Position = UDim2.new(0, 5, 0, 0)
+removeTagsContainer.BackgroundColor3 = RED_BG
+removeTagsContainer.BorderSizePixel = 2
+removeTagsContainer.BorderColor3 = RED_MAIN
+removeTagsContainer.Parent = scrollFrame
+removeTagsContainer.Visible = false
 
 local removeTagsBtn = Instance.new("TextButton")
 removeTagsBtn.Name = "RemoveTagsBtn"
-removeTagsBtn.Size = UDim2.new(0.5, -2, 1, 0)
+removeTagsBtn.Size = UDim2.new(1, 0, 1, 0)
 removeTagsBtn.BackgroundTransparency = 1
 removeTagsBtn.Text = "Remove Tags"
 removeTagsBtn.TextColor3 = RED_MAIN
 removeTagsBtn.TextScaled = true
 removeTagsBtn.Font = Enum.Font.GothamBold
-removeTagsBtn.Parent = specialContainer
+removeTagsBtn.Parent = removeTagsContainer
 removeTagsBtn.AutoButtonColor = false
+
+removeTagsBtn.MouseEnter:Connect(function() removeTagsContainer.BackgroundColor3 = RED_DARK end)
+removeTagsBtn.MouseLeave:Connect(function() removeTagsContainer.BackgroundColor3 = RED_BG end)
+
+removeTagsBtn.MouseButton1Click:Connect(function()
+    RemoveAllTags()
+    ShowRobloxNotification(_("TagRemoved"), 3)
+end)
+
+-- ========== SPECIAL: Destroy XyqwHub ==========
+local destroyContainer = Instance.new("Frame")
+destroyContainer.Name = "DestroyContainer"
+destroyContainer.Size = UDim2.new(1, -10, 0, 32)
+destroyContainer.Position = UDim2.new(0, 5, 0, 0)
+destroyContainer.BackgroundColor3 = RED_BG
+destroyContainer.BorderSizePixel = 2
+destroyContainer.BorderColor3 = RED_MAIN
+destroyContainer.Parent = scrollFrame
+destroyContainer.Visible = false
 
 local destroyBtnMain = Instance.new("TextButton")
 destroyBtnMain.Name = "DestroyBtn"
-destroyBtnMain.Size = UDim2.new(0.5, -2, 1, 0)
-destroyBtnMain.Position = UDim2.new(0.5, 2, 0, 0)
+destroyBtnMain.Size = UDim2.new(1, 0, 1, 0)
 destroyBtnMain.BackgroundTransparency = 1
 destroyBtnMain.Text = "Destroy XyqwHub"
 destroyBtnMain.TextColor3 = RED_MAIN
 destroyBtnMain.TextScaled = true
 destroyBtnMain.Font = Enum.Font.GothamBold
-destroyBtnMain.Parent = specialContainer
+destroyBtnMain.Parent = destroyContainer
 destroyBtnMain.AutoButtonColor = false
 
-removeTagsBtn.MouseButton1Click:Connect(function()
-    RemoveAllTags()
-    tagsEnabled = false
-    ShowRobloxNotification(_("TagRemoved"), 2)
-    print("[XyqwHub] Tags removed")
-end)
+destroyBtnMain.MouseEnter:Connect(function() destroyContainer.BackgroundColor3 = RED_DARK end)
+destroyBtnMain.MouseLeave:Connect(function() destroyContainer.BackgroundColor3 = RED_BG end)
 
 destroyBtnMain.MouseButton1Click:Connect(function()
     ShowRobloxNotification("XyqwHub Destroyed!", 2)
@@ -1187,11 +1192,7 @@ destroyBtnMain.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
-removeTagsBtn.MouseEnter:Connect(function() specialContainer.BackgroundColor3 = RED_DARK end)
-destroyBtnMain.MouseEnter:Connect(function() specialContainer.BackgroundColor3 = RED_DARK end)
-removeTagsBtn.MouseLeave:Connect(function() specialContainer.BackgroundColor3 = RED_BG end)
-destroyBtnMain.MouseLeave:Connect(function() specialContainer.BackgroundColor3 = RED_BG end)
-
+-- ========== REFRESH ==========
 function RefreshButtons()
     local search = string.lower(searchBar.Text)
     local visible = 0
@@ -1219,9 +1220,15 @@ function RefreshButtons()
             entry.Container.Visible = false
         end
     end
-    specialContainer.Position = UDim2.new(0, 5, 0, visible * buttonHeight + 5)
-    specialContainer.Visible = (currentTab == "All" and search == "")
-    if specialContainer.Visible then visible = visible + 1 end
+    local showSpecial = (currentTab == "All" and search == "")
+    removeTagsContainer.Visible = showSpecial
+    destroyContainer.Visible = showSpecial
+    if showSpecial then
+        removeTagsContainer.Position = UDim2.new(0, 5, 0, visible * buttonHeight + 5)
+        visible = visible + 1
+        destroyContainer.Position = UDim2.new(0, 5, 0, visible * buttonHeight + 5)
+        visible = visible + 1
+    end
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, visible * buttonHeight + 20)
 end
 
@@ -1699,8 +1706,10 @@ local function ApplyTheme(themeName)
         entry.Star.BorderColor3 = RED_MAIN
     end
 
-    specialContainer.BackgroundColor3 = RED_BG
-    specialContainer.BorderColor3 = RED_MAIN
+    removeTagsContainer.BackgroundColor3 = RED_BG
+    removeTagsContainer.BorderColor3 = RED_MAIN
+    destroyContainer.BackgroundColor3 = RED_BG
+    destroyContainer.BorderColor3 = RED_MAIN
     removeTagsBtn.TextColor3 = RED_MAIN
     destroyBtnMain.TextColor3 = RED_MAIN
 
@@ -1761,7 +1770,8 @@ task.spawn(function()
                 entry.Star.BorderColor3 = c
                 entry.Star.BackgroundColor3 = darkHue
             end
-            specialContainer.BorderColor3 = c
+            removeTagsContainer.BorderColor3 = c
+            destroyContainer.BorderColor3 = c
             removeTagsBtn.TextColor3 = c
             destroyBtnMain.TextColor3 = c
             topBar.BorderColor3 = c
@@ -1944,7 +1954,7 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 11
     doc.Font = Enum.Font.Gotham
-    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info (Rejoin / ServerHop / TP small)\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons:\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
+    doc.Text = "Th — Theme (Red/Blue/Green/Purple/Rainbow)\nCL — Changelog\nC — Custom Script (URL or loadstring)\nP — Players List\nS — Server Info (Rejoin / ServerHop / TP small)\nH — Hide/Show Top Bar\nEN/RU — Language\nX — Close (minimize to dock)\n\nDock button: XyqwHub (click to open)\n\nBottom buttons (separate):\nRemove Tags — remove OWNER/TESTER tags\nDestroy XyqwHub — full unload\n\nSpecial:\nDoors V2 (Copy) — copies script to clipboard\n\nResize — drag bottom-right corner\nWindow — drag by title bar"
     doc.ZIndex = 101
     doc.Parent = frame
 
