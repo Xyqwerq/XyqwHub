@@ -1,4 +1,4 @@
--- ========== XyqwHub - Версия 5.2 ==========
+-- ========== XyqwHub - Версия 5.3 ==========
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
 })
@@ -13,123 +13,101 @@ if getgenv().XyqwHubRunning then
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "5.2"
+local VERSION = "5.3"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
 -- ========== УНИВЕРСАЛЬНЫЙ ПОИСК WORKSPACE ==========
--- Перебираем все известные пути для разных executor'ов
 local POSSIBLE_WORKSPACES = {
-    -- Delta
+    -- Delta (все возможные пути)
+    "/sdcard/Delta/Workspace",
+    "/sdcard/Delta",
     "/storage/emulated/0/Delta/Workspace",
+    "/storage/emulated/0/Delta",
     "/storage/emulated/0/Android/data/com.roblox.client/files/Delta/Workspace",
+    "/storage/emulated/0/Android/data/com.roblox.client/files/Delta",
+    "/data/user/0/com.roblox.client/files/Delta/Workspace",
+    "/data/data/com.roblox.client/files/Delta/Workspace",
     "/storage/emulated/0/Documents/Delta/Workspace",
     -- Solara
+    "/sdcard/Solara/Workspace",
     "/storage/emulated/0/Solara/Workspace",
     "/storage/emulated/0/Solara/workspace",
     -- Arceus X
+    "/sdcard/Arceus X/Workspace",
+    "/sdcard/ArceusX/Workspace",
     "/storage/emulated/0/Arceus X/Workspace",
     "/storage/emulated/0/ArceusX/Workspace",
     "/storage/emulated/0/Android/data/com.roblox.client/files/Arceus X/Workspace",
     -- Codex
+    "/sdcard/Codex/Workspace",
     "/storage/emulated/0/Codex/Workspace",
-    "/storage/emulated/0/Android/data/com.roblox.client/files/Codex/Workspace",
     -- Xen
+    "/sdcard/Xen/Workspace",
     "/storage/emulated/0/Xen/Workspace",
-    "/storage/emulated/0/Android/data/com.roblox.client/files/Xen/Workspace",
     -- Fluxus
+    "/sdcard/Fluxus/Workspace",
     "/storage/emulated/0/Fluxus/Workspace",
-    "/storage/emulated/0/Android/data/com.roblox.client/files/Fluxus/Workspace",
     -- Hydrogen
+    "/sdcard/Hydrogen/Workspace",
     "/storage/emulated/0/Hydrogen/Workspace",
     -- Krnl
-    "/storage/emulated/0/Krnl/Workspace",
+    "/sdcard/Krnl/Workspace",
     -- Triggers
-    "/storage/emulated/0/Triggers/Workspace",
+    "/sdcard/Triggers/Workspace",
     -- Wave
-    "/storage/emulated/0/Wave/Workspace",
+    "/sdcard/Wave/Workspace",
     -- Real
-    "/storage/emulated/0/Real/Workspace",
+    "/sdcard/Real/Workspace",
     -- Vega X
-    "/storage/emulated/0/VegaX/Workspace",
+    "/sdcard/VegaX/Workspace",
     -- Fandango
-    "/storage/emulated/0/Fandango/Workspace",
+    "/sdcard/Fandango/Workspace",
     -- Mystic
-    "/storage/emulated/0/Mystic/Workspace",
+    "/sdcard/Mystic/Workspace",
     -- Anemo
-    "/storage/emulated/0/Anemo/Workspace",
+    "/sdcard/Anemo/Workspace",
     -- Kiwi X
-    "/storage/emulated/0/KiwiX/Workspace",
-    -- Recursive check: общая папка
+    "/sdcard/KiwiX/Workspace",
+    -- Общие
+    "/sdcard/Workspace",
     "/storage/emulated/0/Executor/Workspace",
-    "/storage/emulated/0/executor/Workspace",
     "/storage/emulated/0/Workspace",
-    -- Внутренние (внутри Android/data)
-    "/storage/emulated/0/Android/data/com.roblox.client/files/Workspace",
 }
 
 local foundWorkspace = nil
 for _, path in ipairs(POSSIBLE_WORKSPACES) do
     pcall(function()
-        if isfolder(path) then
-            foundWorkspace = path
-        end
+        if isfolder(path) then foundWorkspace = path end
     end)
     if foundWorkspace then break end
 end
 
--- Если ни одна известная папка не найдена — пробуем fallback стратегии
+-- Fallback: если ничего не найдено — пробуем виртуальный путь
+-- и проверяем что writefile реально работает
 if not foundWorkspace then
-    -- Попытка 1: определить имя executor'а и построить путь
-    local execName = nil
     pcall(function()
-        if identifyexecutor then execName = identifyexecutor() end
-    end)
-    
-    if execName then
-        local possibleNames = {
-            "Delta", "Solara", "Arceus X", "ArceusX", "Codex", "Xen",
-            "Fluxus", "Hydrogen", "Krnl", "Triggers", "Wave", "Real",
-            "VegaX", "Fandango", "Mystic", "Anemo", "KiwiX"
-        }
-        -- Пробуем точное имя
-        local tryPaths = {
-            "/storage/emulated/0/" .. execName .. "/Workspace",
-            "/storage/emulated/0/Android/data/com.roblox.client/files/" .. execName .. "/Workspace",
-        }
-        for _, p in ipairs(tryPaths) do
-            pcall(function()
-                if isfolder(p) then foundWorkspace = p end
-            end)
-            if foundWorkspace then break end
-        end
-    end
-    
-    -- Попытка 2: если есть listfiles — искать папки с "Workspace"
-    if not foundWorkspace then
-        pcall(function()
-            if listfiles then
-                local rootDirs = listfiles("/storage/emulated/0")
-                for _, dir in ipairs(rootDirs) do
-                    local ws = dir .. "/Workspace"
-                    if isfolder(ws) then
-                        foundWorkspace = ws
-                        break
-                    end
-                end
+        if writefile then
+            writefile("XyqwHub_test.txt", "test")
+            if isfile("XyqwHub_test.txt") then
+                foundWorkspace = "VIRTUAL"
+                delfile("XyqwHub_test.txt")
             end
-        end)
-    end
+        end
+    end)
 end
 
--- Финальный выбор папки
 local CONFIG_FOLDER
-if foundWorkspace then
-    CONFIG_FOLDER = foundWorkspace .. "/XyqwHub"
-    print("[XyqwHub] Workspace found: " .. foundWorkspace)
-else
+if foundWorkspace == "VIRTUAL" then
     CONFIG_FOLDER = "XyqwHub"
-    print("[XyqwHub] Using virtual path (no workspace found)")
+    print("[XyqwHub] Using virtual path")
+elseif foundWorkspace then
+    CONFIG_FOLDER = foundWorkspace .. "/XyqwHub"
+    print("[XyqwHub] Workspace: " .. foundWorkspace)
+else
+    -- Совсем fallback — пробуем относительный
+    CONFIG_FOLDER = "XyqwHub"
+    print("[XyqwHub] Fallback to virtual path")
 end
 
 local FAV_FOLDER = CONFIG_FOLDER .. "/FavScripts"
@@ -219,25 +197,25 @@ local LANG = {
         ColorShared = "Color copied to clipboard!",
         ChangeLogText = [[XyqwHub ChangeLog
 
+Version 5.3
+- Custom Color: smaller (280x380) + resize handle
+- Custom Color: fixed finger drag while scrolling
+- Fixed workspace detection for Delta
+- Added /sdcard/ paths for all executors
+
 Version 5.2
 - Universal workspace support for all executors
-- Delta, Solara, Arceus X, Codex, Xen, Fluxus,
-  Hydrogen, Krnl, Triggers, Wave, Real, etc.
-- Auto-detect workspace folder
-- Fallback to virtual path if not found
 
 Version 5.1
 - Share Fav Scripts button
 - Share XyqwHub button in Welcome
-- Reset button in Custom Color
-- Share Color button in Custom Color
-- Custom Color saved to XyqwHub/CustomColor/
+- Reset + Share Color buttons
 
 Version 5.0
 - Custom Color instant apply
 
 Version 4.9
-- Welcome smaller + scroll + close
+- Welcome smaller + scroll
 - GUI no longer passes clicks
 - 13 themes
 
@@ -317,42 +295,42 @@ Version 1.0
         OwnerWelcome = "Welcome, my father :3", BetaWelcome = "Glad you're here, tester <3",
         TagRemoved = "Тег убран!", HideTopBarOn = "Скрыть топ бар: включено", HideTopBarOff = "Скрыть топ бар: выключено",
         LangChanged = "Язык изменён на Русский",
-        FavShared = "Избранное скопировано в буфер!",
+        FavShared = "Избранное скопировано!",
         LoadstringCopied = "Loadstring скопирован, спасибо :3",
         ColorReset = "Custom Color сброшен на Красный",
         ColorShared = "Цвет скопирован в буфер!",
         ChangeLogText = [[XyqwHub Ченджлог
 
+Версия 5.3
+- Custom Color: меньше (280x380) + ресайз
+- Custom Color: фикс телепорта за пальцем
+- Фикс поиска workspace для Delta
+- Добавлены /sdcard/ пути
+
 Версия 5.2
-- Универсальная поддержка workspace для всех executor'ов
-- Delta, Solara, Arceus X, Codex, Xen, Fluxus,
-  Hydrogen, Krnl, Triggers, Wave, Real и др.
-- Автопоиск папки workspace
-- Fallback на virtual path если не найдено
+- Универсальный workspace для всех executor'ов
 
 Версия 5.1
-- Кнопка Share Fav Scripts
-- Кнопка Share XyqwHub в Welcome
-- Кнопка Reset в Custom Color
-- Кнопка Share Color в Custom Color
-- Custom Color в XyqwHub/CustomColor/
+- Share Fav Scripts
+- Share XyqwHub в Welcome
+- Reset + Share Color
 
 Версия 5.0
-- Custom Color мгновенное применение
+- Custom Color мгновенно
 
 Версия 4.9
-- Welcome меньше + скролл + крестик
+- Welcome меньше + скролл
 - GUI не пропускает клики
 - 13 тем
 
 Версия 4.8
-- Custom Color поддержка rgb()
+- Custom Color rgb()
 
 Версия 4.7
 - Custom Color picker (CC)
 
 Версия 4.6
-- Фикс мигания вкладок Rainbow
+- Фикс мигания Rainbow
 
 Версия 4.5
 - Файлы в workspace
@@ -388,7 +366,7 @@ Version 1.0
 - Приветствие для владельца
 
 Версия 3.4
-- Более тёмный красный для тега
+- Тёмный красный для тега
 
 Версия 3.3
 - Фикс размера тега
@@ -1698,17 +1676,27 @@ end
 local function ShowCustomColor()
     local frame = Instance.new("Frame")
     frame.Name = "CustomColorFrame"
-    frame.Size = UDim2.new(0, 320, 0, 480)
-    frame.Position = UDim2.new(0.5, -160, 0.5, -240)
+    frame.Size = UDim2.new(0, 280, 0, 380)
+    frame.Position = UDim2.new(0.5, -140, 0.5, -190)
     frame.BackgroundColor3 = RED_BG
     frame.BorderSizePixel = 2
     frame.BorderColor3 = RED_MAIN
     frame.ZIndex = 50
     frame.Active = true
+    frame.ClipsDescendants = true
     frame.Parent = screenGui
 
+    local blocker = Instance.new("TextButton")
+    blocker.Size = UDim2.new(1, 0, 1, 0)
+    blocker.BackgroundTransparency = 1
+    blocker.Text = ""
+    blocker.Active = true
+    blocker.AutoButtonColor = false
+    blocker.ZIndex = 50
+    blocker.Parent = frame
+
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -40, 0, 28)
+    title.Size = UDim2.new(1, -60, 0, 22)
     title.Position = UDim2.new(0, 5, 0, 5)
     title.BackgroundTransparency = 1
     title.TextColor3 = RED_MAIN
@@ -1719,8 +1707,8 @@ local function ShowCustomColor()
     title.Parent = frame
 
     local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(0, 30, 0, 28)
-    closeBtn.Position = UDim2.new(1, -35, 0, 2)
+    closeBtn.Size = UDim2.new(0, 24, 0, 22)
+    closeBtn.Position = UDim2.new(1, -28, 0, 4)
     closeBtn.BackgroundTransparency = 1
     closeBtn.Text = "X"
     closeBtn.TextColor3 = RED_MAIN
@@ -1731,8 +1719,8 @@ local function ShowCustomColor()
     closeBtn.AutoButtonColor = false
 
     local preview = Instance.new("Frame")
-    preview.Size = UDim2.new(1, -20, 0, 50)
-    preview.Position = UDim2.new(0, 10, 0, 38)
+    preview.Size = UDim2.new(1, -20, 0, 36)
+    preview.Position = UDim2.new(0, 10, 0, 32)
     preview.BackgroundColor3 = Color3.fromRGB(getgenv().XyqwCustomColor.r, getgenv().XyqwCustomColor.g, getgenv().XyqwCustomColor.b)
     preview.BorderSizePixel = 2
     preview.BorderColor3 = RED_MAIN
@@ -1756,7 +1744,7 @@ local function ShowCustomColor()
 
     local function MakeSlider(label, yPos, channel)
         local lbl = Instance.new("TextLabel")
-        lbl.Size = UDim2.new(0, 20, 0, 20)
+        lbl.Size = UDim2.new(0, 20, 0, 18)
         lbl.Position = UDim2.new(0, 10, 0, yPos)
         lbl.BackgroundTransparency = 1
         lbl.TextColor3 = RED_MAIN
@@ -1768,7 +1756,7 @@ local function ShowCustomColor()
         lbl.Parent = frame
 
         local valLbl = Instance.new("TextLabel")
-        valLbl.Size = UDim2.new(0, 40, 0, 20)
+        valLbl.Size = UDim2.new(0, 40, 0, 18)
         valLbl.Position = UDim2.new(1, -50, 0, yPos)
         valLbl.BackgroundTransparency = 1
         valLbl.TextColor3 = RED_MAIN
@@ -1780,7 +1768,7 @@ local function ShowCustomColor()
         valLbl.Parent = frame
 
         local slider = Instance.new("Frame")
-        slider.Size = UDim2.new(1, -100, 0, 14)
+        slider.Size = UDim2.new(1, -100, 0, 12)
         slider.Position = UDim2.new(0, 35, 0, yPos + 3)
         slider.BackgroundColor3 = RED_DARK
         slider.BorderSizePixel = 1
@@ -1830,14 +1818,14 @@ local function ShowCustomColor()
     end
 
     setSliders = {
-        R = MakeSlider("R", 98, "r"),
-        G = MakeSlider("G", 126, "g"),
-        B = MakeSlider("B", 154, "b"),
+        R = MakeSlider("R", 76, "r"),
+        G = MakeSlider("G", 100, "g"),
+        B = MakeSlider("B", 124, "b"),
     }
 
     local hexLbl = Instance.new("TextLabel")
-    hexLbl.Size = UDim2.new(0, 45, 0, 20)
-    hexLbl.Position = UDim2.new(0, 10, 0, 186)
+    hexLbl.Size = UDim2.new(0, 40, 0, 18)
+    hexLbl.Position = UDim2.new(0, 10, 0, 150)
     hexLbl.BackgroundTransparency = 1
     hexLbl.TextColor3 = RED_MAIN
     hexLbl.Text = "HEX:"
@@ -1848,14 +1836,14 @@ local function ShowCustomColor()
     hexLbl.Parent = frame
 
     hexInput = Instance.new("TextBox")
-    hexInput.Size = UDim2.new(1, -70, 0, 26)
-    hexInput.Position = UDim2.new(0, 60, 0, 183)
+    hexInput.Size = UDim2.new(1, -60, 0, 22)
+    hexInput.Position = UDim2.new(0, 50, 0, 148)
     hexInput.BackgroundColor3 = RED_DARK
     hexInput.TextColor3 = RED_MAIN
-    hexInput.PlaceholderText = "#FF0000 or rgb(255,0,0)"
+    hexInput.PlaceholderText = "#FF0000"
     hexInput.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
     hexInput.Text = string.format("#%02X%02X%02X", tempColor.r, tempColor.g, tempColor.b)
-    hexInput.TextSize = 14
+    hexInput.TextSize = 12
     hexInput.Font = Enum.Font.Gotham
     hexInput.ClearTextOnFocus = false
     hexInput.BorderSizePixel = 1
@@ -1896,8 +1884,8 @@ local function ShowCustomColor()
     end)
 
     local presetLbl = Instance.new("TextLabel")
-    presetLbl.Size = UDim2.new(1, -20, 0, 16)
-    presetLbl.Position = UDim2.new(0, 10, 0, 218)
+    presetLbl.Size = UDim2.new(1, -20, 0, 14)
+    presetLbl.Position = UDim2.new(0, 10, 0, 178)
     presetLbl.BackgroundTransparency = 1
     presetLbl.TextColor3 = RED_MAIN
     presetLbl.Text = "Presets:"
@@ -1916,14 +1904,14 @@ local function ShowCustomColor()
         {name = "White", r = 255, g = 255, b = 255},
     }
 
-    local presetY = 238
-    local presetW = 90
+    local presetY = 196
+    local presetW = 80
     for i, preset in ipairs(presets) do
         local col = (i - 1) % 2
         local row = math.floor((i - 1) / 2)
         local pBtn = Instance.new("TextButton")
-        pBtn.Size = UDim2.new(0, presetW, 0, 24)
-        pBtn.Position = UDim2.new(0, 10 + col * (presetW + 5), 0, presetY + row * 28)
+        pBtn.Size = UDim2.new(0, presetW, 0, 22)
+        pBtn.Position = UDim2.new(0, 10 + col * (presetW + 5), 0, presetY + row * 26)
         pBtn.BackgroundColor3 = Color3.fromRGB(preset.r, preset.g, preset.b)
         pBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
         pBtn.Text = preset.name
@@ -1948,8 +1936,8 @@ local function ShowCustomColor()
     end
 
     local resetBtn = Instance.new("TextButton")
-    resetBtn.Size = UDim2.new(0.5, -13, 0, 30)
-    resetBtn.Position = UDim2.new(0, 10, 0, 326)
+    resetBtn.Size = UDim2.new(0.5, -13, 0, 24)
+    resetBtn.Position = UDim2.new(0, 10, 0, 278)
     resetBtn.BackgroundColor3 = RED_DARK
     resetBtn.TextColor3 = RED_MAIN
     resetBtn.Text = "Reset"
@@ -1974,8 +1962,8 @@ local function ShowCustomColor()
     end)
 
     local shareColorBtn = Instance.new("TextButton")
-    shareColorBtn.Size = UDim2.new(0.5, -13, 0, 30)
-    shareColorBtn.Position = UDim2.new(0.5, 3, 0, 326)
+    shareColorBtn.Size = UDim2.new(0.5, -13, 0, 24)
+    shareColorBtn.Position = UDim2.new(0.5, 3, 0, 278)
     shareColorBtn.BackgroundColor3 = RED_DARK
     shareColorBtn.TextColor3 = RED_MAIN
     shareColorBtn.Text = "Share Color"
@@ -1994,8 +1982,8 @@ local function ShowCustomColor()
     end)
 
     local applyBtn = Instance.new("TextButton")
-    applyBtn.Size = UDim2.new(1, -20, 0, 32)
-    applyBtn.Position = UDim2.new(0, 10, 1, -42)
+    applyBtn.Size = UDim2.new(1, -20, 0, 28)
+    applyBtn.Position = UDim2.new(0, 10, 0, 308)
     applyBtn.BackgroundColor3 = RED_MAIN
     applyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
     applyBtn.Text = "Apply"
@@ -2023,6 +2011,41 @@ local function ShowCustomColor()
         end
         ShowRobloxNotification("Custom Color applied!", 3)
         frame:Destroy()
+    end)
+
+    -- Resize handle
+    local resizeHandle = Instance.new("TextButton")
+    resizeHandle.Name = "ColorResizeHandle"
+    resizeHandle.Size = UDim2.new(0, 14, 0, 14)
+    resizeHandle.Position = UDim2.new(1, -14, 1, -14)
+    resizeHandle.BackgroundColor3 = RED_MAIN
+    resizeHandle.Text = ""
+    resizeHandle.BorderSizePixel = 0
+    resizeHandle.ZIndex = 52
+    resizeHandle.Parent = frame
+    resizeHandle.AutoButtonColor = false
+
+    local cResize = false
+    local cStart, cStartSize
+    resizeHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            cResize = true
+            cStart = input.Position
+            cStartSize = frame.Size
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if cResize and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - cStart
+            local newX = math.clamp(cStartSize.X.Offset + delta.X, 240, 500)
+            local newY = math.clamp(cStartSize.Y.Offset + delta.Y, 340, 600)
+            frame.Size = UDim2.new(0, newX, 0, newY)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            cResize = false
+        end
     end)
 
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
@@ -2410,6 +2433,7 @@ local function ShowWelcomeMessage()
         "Share Fav Scripts — copies favorites list\n" ..
         "Destroy XyqwHub  — full unload\n" ..
         "\n─── CUSTOM COLOR WINDOW ───\n" ..
+        "Resize handle in bottom-right corner\n" ..
         "RGB sliders, HEX input, presets\n" ..
         "Reset — reset to red\n" ..
         "Share Color — copy #hex to clipboard\n" ..
@@ -2417,17 +2441,10 @@ local function ShowWelcomeMessage()
         "\n─── TOP BAR ───\n" ..
         "Shows: Executor | Username | FPS | Ping\n" ..
         "H — Hide/Show\n" ..
-        "\n─── DOCK ───\n" ..
-        "XyqwHub — click to reopen\n" ..
-        "\n─── TABS ───\n" ..
-        "All, BB, MM2, INK, Misc, Fav, Rct\n" ..
-        "★ — add to favorites\n" ..
-        "\n─── RESIZE ───\n" ..
-        "Drag bottom-right corner\n" ..
         "\n─── UNIVERSAL WORKSPACE ───\n" ..
-        "Auto-detects folder for Delta, Solara,\n" ..
-        "Arceus X, Codex, Xen, Fluxus, Hydrogen,\n" ..
-        "Krnl, Triggers, Wave, Real and more\n" ..
+        "Auto-detects folder for all executors\n" ..
+        "Delta, Solara, Arceus X, Codex, Xen,\n" ..
+        "Fluxus, Hydrogen, Krnl, Triggers, Wave, Real\n" ..
         "\n─── FILES ───\n" ..
         "XyqwHub/FavScripts/favorites.json\n" ..
         "XyqwHub/RctScripts/recent.json\n" ..
