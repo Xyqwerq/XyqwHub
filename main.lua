@@ -800,6 +800,8 @@ local SCRIPTS = {
     {Name = "bLockman's minesweaper", Category = "Misc", URL = "https://pastefy.app/T5XIfiMo/raw"},
     {Name = "Cheating during test", Category = "Misc", URL = "https://files.catbox.moe/pkulzc.txt"},
     {Name = "Adopt me", Category = "Misc", URL = "https://raw.githubusercontent.com/JaxRol/ZeroPoint/refs/heads/main/KeySystem"},
+    {Name = "Piggy Item Grabber", Category = "Misc", URL = "https://rawscripts.net/raw/Piggy-Item-grabber-246165"},
+    {Name = "Piggy Bots Control", Category = "Misc", URL = "https://robloxscripts.com/raw/control-piggy-bots"},
 }
 
 task.spawn(function()
