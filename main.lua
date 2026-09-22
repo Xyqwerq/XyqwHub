@@ -657,6 +657,11 @@ local function QueueReinject()
     end
 end
 
+local heartbeatTasks = {}
+local renderTasks = {}
+local heartbeatConnection = nil
+local renderConnection = nil
+
 local function AddHeartbeatTask(fn)
     table.insert(heartbeatTasks, fn)
     if not heartbeatConnection then
@@ -667,11 +672,6 @@ local function AddHeartbeatTask(fn)
         end)
     end
 end
-
-local heartbeatTasks = {}
-local renderTasks = {}
-local heartbeatConnection = nil
-local renderConnection = nil
 
 local function AddRenderTask(fn)
     table.insert(renderTasks, fn)
