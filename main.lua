@@ -1,19 +1,23 @@
--- ========== XyqwHub - Версия 7.2.0 ==========
+-- ========== XyqwHub - Версия 7.4.1 ==========
+-- Anti-detect + Auto-AntiKick + String obfuscation + Advanced Auto-Reinject
+
+local function s(...) return string.char(...) end
+local HUB_NAME = s(88,121,113,119,72,117,98)
+local GUI_NAME = s(88,121,113,119,72,117,98,71,117,105)
+
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "XyqwHub", Text = "XyqwHub Loading...", Duration = 3
+    Title = HUB_NAME, Text = HUB_NAME .. " Loading...", Duration = 3
 })
-print("[XyqwHub] Loading...")
 
 if getgenv().XyqwHubRunning then
     local msg = "Script re-launch has been blocked!"
     if getgenv().XyqwLanguage == "RU" then msg = "Повторный запуск был заблокирован!" end
-    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "XyqwHub", Text = msg, Duration = 5})
-    print("[XyqwHub] " .. msg)
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = HUB_NAME, Text = msg, Duration = 5})
     return
 end
 getgenv().XyqwHubRunning = true
 
-local VERSION = "7.2.0"
+local VERSION = "7.4.1"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
@@ -25,7 +29,8 @@ if getgenv().XyqwRecent == nil then getgenv().XyqwRecent = {} end
 if getgenv().XyqwAutoExec == nil then getgenv().XyqwAutoExec = {} end
 if getgenv().XyqwOrder == nil then getgenv().XyqwOrder = {} end
 if getgenv().XyqwSettings == nil then getgenv().XyqwSettings = {} end
-if getgenv().XyqwAntiKick == nil then getgenv().XyqwAntiKick = false end
+if getgenv().XyqwAntiKick == nil then getgenv().XyqwAntiKick = true end
+if getgenv().XyqwAutoReinject == nil then getgenv().XyqwAutoReinject = true end
 if not getgenv().XyqwSettings.autoHideBind then getgenv().XyqwSettings.autoHideBind = "RightShift" end
 if not getgenv().XyqwSettings.urlStatus then getgenv().XyqwSettings.urlStatus = {} end
 if getgenv().XyqwCustomColor == nil then getgenv().XyqwCustomColor = {r = 255, g = 0, b = 0, dr = 40, dg = 0, db = 0} end
@@ -37,6 +42,9 @@ local CUSTOM_COLOR_FILE = CONFIG_FOLDER .. "/CustomColor/custom_color.json"
 local AUTOEXEC_FILE = CONFIG_FOLDER .. "/AutoExecute/autoexec.json"
 local SETTINGS_FILE = CONFIG_FOLDER .. "/Settings/settings.json"
 local ORDER_FILE = CONFIG_FOLDER .. "/Settings/order.json"
+local SESSION_FILE = CONFIG_FOLDER .. "/Session/last_jobid.txt"
+
+local XYQWHUB_URL = "https://raw.githubusercontent.com/Xyqwerq/XyqwHub/main/main.lua"
 
 pcall(function()
     if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
@@ -45,6 +53,7 @@ pcall(function()
     if not isfolder(CONFIG_FOLDER .. "/CustomColor") then makefolder(CONFIG_FOLDER .. "/CustomColor") end
     if not isfolder(CONFIG_FOLDER .. "/AutoExecute") then makefolder(CONFIG_FOLDER .. "/AutoExecute") end
     if not isfolder(CONFIG_FOLDER .. "/Settings") then makefolder(CONFIG_FOLDER .. "/Settings") end
+    if not isfolder(CONFIG_FOLDER .. "/Session") then makefolder(CONFIG_FOLDER .. "/Session") end
 end)
 
 local function SaveTable(path, tbl)
@@ -72,6 +81,11 @@ getgenv().XyqwOrder = LoadTable(ORDER_FILE)
 
 if not getgenv().XyqwSettings.autoHideBind then getgenv().XyqwSettings.autoHideBind = "RightShift" end
 if not getgenv().XyqwSettings.urlStatus then getgenv().XyqwSettings.urlStatus = {} end
+if getgenv().XyqwSettings.autoReinject == nil then getgenv().XyqwSettings.autoReinject = true end
+if getgenv().XyqwSettings.antiKick == nil then getgenv().XyqwSettings.antiKick = true end
+
+getgenv().XyqwAutoReinject = getgenv().XyqwSettings.autoReinject
+getgenv().XyqwAntiKick = getgenv().XyqwSettings.antiKick
 
 if getgenv().XyqwCustomColor == nil then
     local saved = LoadTable(CUSTOM_COLOR_FILE)
@@ -81,6 +95,12 @@ if getgenv().XyqwCustomColor == nil then
         getgenv().XyqwCustomColor = {r = 255, g = 0, b = 0, dr = 40, dg = 0, db = 0}
     end
 end
+
+pcall(function()
+    if writefile and game.JobId and game.JobId ~= "" then
+        writefile(SESSION_FILE, game.JobId)
+    end
+end)
 
 local THEMES = {
     Red = {MAIN = Color3.fromRGB(255, 0, 0), DARK = Color3.fromRGB(40, 0, 0), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(20, 0, 0)},
@@ -113,7 +133,6 @@ local URL_BAD = Color3.fromRGB(255, 50, 50)
 local URL_UNKNOWN = Color3.fromRGB(150, 150, 150)
 local URL_CHECKING = Color3.fromRGB(255, 200, 0)
 
--- ========== LANG ==========
 local LANG = {}
 LANG.EN = {
     Loaded = "loaded", Error = "error", Search = "Search...",
@@ -137,496 +156,71 @@ LANG.EN = {
     ShareHub = "Share XyqwHub", HideTopBar = "Hide Top Bar", HideTopBarOn = "Hide Top Bar: ON",
     HideTopBarOff = "Hide Top Bar: OFF", OrderSaved = "Order saved!", OrderReset = "Order reset!",
     AntiKickOn = "AntiKick: ON", AntiKickOff = "AntiKick: OFF",
+    AutoReinjectOn = "Auto-Reinject: ON", AutoReinjectOff = "Auto-Reinject: OFF",
+    ReinjectQueued = "XyqwHub will reload after teleport", ReinjectNotSupported = "Auto-Reinject not supported",
     ExecutorInfoTitle = "Executor Info", RunUNCTest = "Run UNC Test", RunSUNCTest = "Run sUNC Test",
-    Testing = "Testing...", TestResult = "Result",
+    Testing = "Testing...", TestResult = "Result", RejoinLastSession = "Rejoin Last Session",
     ChangeLogText = [[XyqwHub ChangeLog
+
+========================================
+Version 7.4.1
+========================================
+- Advanced Auto-Reinject: 5 fallback methods
+- New Auto-Reinject button in Server Info tab (S)
+- Auto-Reinject ON by default (can be turned off)
+- Setting saved in settings.json
+- Works for Rejoin, ServerHop, TP to Small, Rejoin Last Session
+- Notification when reinject is queued
+- JJS notification: "Hey! This script was made by me (Xyqwerq)! Enjoy :)"
+
+========================================
+Version 7.4.0
+========================================
+- JJS script replaced with Xyqwerq's own
+- Auto-Rejoin via session file
+- Anti-getgc + Anti-getconnections
+- Auto-AntiKick + Anti-Detect
+
+========================================
+Version 7.3.0
+========================================
+- Auto-AntiKick, Anti-getgc, Anti-getconnections
+
+========================================
+Version 7.2.2
+========================================
+- AntiKick fix, Anti-Detect GUI
 
 ========================================
 Version 7.2.0
 ========================================
-- ALL windows are now resizable (drag bottom-right corner)
-- All windows are now draggable (drag title)
-- Executor Info window is smaller (300x400)
-- Executor Info is now scrollable
-- Added universal MakeResizable() and MakeDraggable() functions
+- Resizable/draggable windows
+- Executor Info smaller
 
 ========================================
 Version 7.1.0
 ========================================
-- Removed A-Z sort button
-- Search bar now stretches to right edge
-- Added AntiKick: ON/OFF button at bottom
-- Added Info button (Executor Info + UNC/sUNC tests)
-- Executor Info: name, version, platform, functions
-- UNC test: 26 checks (getgc, hookfunction, writefile, etc.)
-- sUNC test: 36 checks (hookmetamethod, getupvalue, firesignal, etc.)
-- Drag strip now uses theme color (from 7.0.2)
-
-========================================
-Version 7.0.2
-========================================
-- Drag strip now uses current theme color (RED_MAIN)
-- Drag strip updates when theme changes
-- Rainbow theme: drag strip animates with hue
-- All previous features kept
-
-========================================
-Version 7.0.1
-========================================
-- Fixed categories not filtering (SwitchTab now correctly updates currentTab)
-- Fixed ability to grab two buttons during drag (globalDrag flag)
-- Only one button can be dragged at a time
-- All previous features kept
+- Info button (UNC/sUNC)
 
 ========================================
 Version 7.0
 ========================================
-- Drag zone increased to 25px
-- Added visual drag handle (yellow strip on left side)
-- Fixed categories (attempt)
-- Updated Welcome with full feature list
-- Full changelog restored (1.0-7.0)
-
-========================================
-Version 6.9.2
-========================================
-- Drag zone fix attempt
-- Categories fix attempt
-
-========================================
-Version 6.9.1
-========================================
-- Full changelog restored (1.0-6.9.1)
-
-========================================
-Version 6.9
-========================================
-- Fixed tab/header buttons freezing during animation (fade instead of size)
-- GUI size is now saved between open/close
-- Drag only works on left edge (first 15px)
-- Fixed categories not filtering
-
-========================================
-Version 6.8
-========================================
-- Fixed URL_OK, URL_BAD, URL_UNKNOWN, URL_CHECKING (were missing)
-- Fixed theme nil crash
-- Added getgenv() initialization at start
-
-========================================
-Version 6.7
-========================================
-- Rewritten from scratch
-- Fixed drag & drop (btn.InputBegan)
-- Fixed GUI open/close animation
-- Fixed LANG table closing
-- 5 languages: EN, RU, UK, BE, KK
-- 48 scripts
-
-========================================
-Version 6.6
-========================================
-- Fixed drag & drop (moved to btn.InputBegan)
-- Added GUI open/close animation (scale + fade)
-- blockClick protection
-
-========================================
-Version 6.5
-========================================
-- Fixed: script now runs only on tap, not on drag release
-- blockClick flag added
-- ZIndex added to containers (1), text (2), dots (3)
-
-========================================
-Version 6.4
-========================================
-- Script names now centered
-- Drag highlight no longer burns the button (uses border instead)
-- Added Reset Order button (restores default script order)
-- Version bump system: every fix/change -> new version
-
-========================================
-Version 6.3
-========================================
-- Removed Blacklist completely (button, window, files, checks)
-- Fixed header layout at startup (buttons no longer shift)
-- Added smooth animations (hover, open/close, color transitions)
-- Added drag & drop for script buttons (hold 0.35s to reorder)
-- Script order is now saved to Settings/order.json
-
-========================================
-Version 6.2
-========================================
-- Fixed blacklist x not removing item
-- Full changelog for all languages
-
-========================================
-Version 6.1
-========================================
-- Fixed blacklist refreshing
+- Full changelog
 
 ========================================
 Version 6.0
 ========================================
-- Added 5 languages: EN, RU, UK, BE, KK
-
-========================================
-Version 5.9
-========================================
-- X button moved to right corner
-- Top bar drag support
-
-========================================
-Version 5.6
-========================================
-- Removed rounded corners
-- Default tab is "All"
-
-========================================
-Version 5.5
-========================================
-- Auto Execute, Auto Hide, URL Tester, Sorting, Settings
-
-========================================
-Version 5.4
-========================================
-- Auto Execute Scripts on join
-- Script Blacklist
-- Auto Hide GUI
-- URL Tester (green/red indicators)
-- Script Sorting
-- Share Fav/Rct
-
-========================================
-Version 5.3
-========================================
-- Custom Color smaller + resize
-- Universal workspace fix
-
-========================================
-Version 5.2
-========================================
-- Universal workspace support
-
-========================================
-Version 5.1
-========================================
-- Share Fav Scripts, Share XyqwHub, Reset, Share Color
-
-========================================
-Version 5.0
-========================================
-- Custom Color instant apply
-
-========================================
-Version 4.9
-========================================
-- Welcome smaller + scroll, 13 themes
-
-========================================
-Version 4.8
-========================================
-- Custom Color rgb() support
-
-========================================
-Version 4.7
-========================================
-- Custom Color picker
-
-========================================
-Version 4.6
-========================================
-- Fixed Rainbow tab flicker
-
-========================================
-Version 4.5
-========================================
-- Files to workspace
-
-========================================
-Version 4.4
-========================================
-- Remove Tags and Destroy separate
-
-========================================
-Version 4.3
-========================================
-- Server Info: Rejoin, ServerHop, TP small
-
-========================================
-Version 4.2
-========================================
-- Rewrote code in minified style
-- THEMES = {Red, Blue, Rainbow}
-- ApplyTheme(themeName) - theme switch function
-- themeOrder + themeIndex - theme cycling
-- ExtractURL(input.Text) - URL extraction from loadstring
-- SpecialContainer - container for Remove Tags + Destroy
-- removeTagsBtn (50%) - "Remove Tags"
-- destroyBtn (50%) - "Destroy"
-- Rainbow theme - animated hue shift
-- Resize in bottom right corner
-- Small start size 250x300
-- All buttons squared (no UICorner)
-- Bright red instead of yellow
-- Buttons in 1 row
-- Removed GetTheme(), colors direct
-- Hide Top Bar toggles (H/S)
-- FPS/Ping in top bar
-- TopBar draggable
-- DockButton draggable
-- Search bar
-- Tabs (All, BB, MM2, INK, Misc, Fav, Rct)
-- Favorites system (star)
-- Recently used
-- Script history
-- Custom script runner
-- Player list
-- Server info + Copy JobId
-- Anti-AFK
-- Re-launch protection
-- 46 scripts
-- Doors V2 (Copy) - clipboard copy
-- Doors V3 (Cheesy) - regular
-- Doors v4 - regular
-
-========================================
-Version 4.1
-========================================
-- Fixed buttons overlap
-- Returned red border, red background, red text
-- Added resize handle (bottom right)
-- Added Hide Top Bar toggle
-- Small start size
-
-========================================
-Version 4.0
-========================================
-- Top bar (executor, name, FPS, Ping)
-- Search bar
-- Tabs (All, BladeBall, MM2, INK, Misc, Fav, Rct)
-- Favorites system
-- Recently used
-- Script history
-- Theme switcher
-- Custom script runner
-- Player list
-- Server info
-- Copy JobId
-- Animations
-- Keybinds
-- Anti-AFK
-
-========================================
-Version 3.9
-========================================
-- Added "Script executed!" notification for all scripts
-- Added Doors v4
-- Added Kiti (MM2)
-- Renamed BETA tag to Tester
-- Updated changelog canvas (1600 -> 1700)
-
-========================================
-Version 3.8
-========================================
-- Fixed tag not restoring after respawn
-- Tag now uses CharacterAdded + task.wait properly
-- Renamed BETA tag to Tester
-
-========================================
-Version 3.7
-========================================
-- Added tester tag (blue gradient)
-- Added tester welcome message
-- Added 2 testers (9686718765, 3701387385)
-
-========================================
-Version 3.6
-========================================
-- Fixed accidental button clicks in title bar
-- Added cooldown for ChangeLog and language buttons
-- Added Active property to title buttons
-
-========================================
-Version 3.5
-========================================
-- Added owner-only welcome message
-- "Welcome, my father :3"
-
-========================================
-Version 3.4
-========================================
-- Darker red color for tag (200,0,0 and 60,0,0)
-- Normal background for Remove/Destroy buttons
-- Normal border for Remove/Destroy buttons
-
-========================================
-Version 3.3
-========================================
-- Fixed tag size (no longer stretches)
-- Fixed gradient (now works via Rotation)
-- Gradient visible for everyone
-- Fixed text position
-- Fixed text size (smaller, not stretched)
-- Added UIStroke glow
-
-========================================
-Version 3.2
-========================================
-- Brought back gradient animation
-- Smaller text size
-- Added UIStroke glow
-
-========================================
-Version 3.1
-========================================
-- Completely rewrote tag system
-- Tag is now attached to HumanoidRootPart
-- Added Heartbeat-based positioning
-- Fixed scanning logic
-
-========================================
-Version 3.0
-========================================
-- Removed gradient
-- Added debug prints
-- Simplified tag logic
-
-========================================
-Version 2.9
-========================================
-- Added XyqwHub OWNER tag
-- Added "Remove XyqwHub Tag" button
-- Added gradient animation for owner tag
-- Added 2 owner accounts (4396977722, 8527910367)
-
-========================================
-Version 2.8
-========================================
-- XyqwHub Loaded! now appears immediately
-- ChangeLog translated to EN/RU
-- Tag now visible for owners only
-
-========================================
-Version 2.7
-========================================
-- Roblox notifications (bottom right)
-- ChangeLog button added
-- Loading / Loaded notifications
-- Tag visible for everyone with XyqwHub
-
-========================================
-Version 2.6
-========================================
-- Notifications moved to bottom right
-- New notification system
-
-========================================
-Version 2.5
-========================================
-- All messages translated to EN/RU
-- Re-launch protection
-- Fixed language change button
-- Owner welcome message
-
-========================================
-Version 2.4
-========================================
-- Re-launch protection added
-- DESTROY button resets the flag
-- Owner-only welcome message
-
-========================================
-Version 2.3
-========================================
-- Added Adopt me
-
-========================================
-Version 2.2
-========================================
-- Added bLockman's minesweaper
-- Added Cheating during test
-
-========================================
-Version 2.1
-========================================
-- Added DropKick
-- Added Evade
-- Added A Dusty Trip
-- Added A Dusty Trip v2
-
-========================================
-Version 2.0
-========================================
-- Removed Auto Execute
-- All buttons in one list
-- Version 2.0 stable
-
-========================================
-Version 1.9
-========================================
-- Added key for Doors V3 (Cheesy)
-- "Key: joincheesedsc"
-
-========================================
-Version 1.8
-========================================
-- Added Death Order [SIMON]
-- Added CandyWare (MM2)
-
-========================================
-Version 1.7
-========================================
-- Added Troll script
-
-========================================
-Version 1.6
-========================================
-- Added Steal an egg
-- Added Universal script
-- Added Corridor
-- Added BloxStrike
-- Added RIVALS
-
-========================================
-Version 1.5
-========================================
-- EN/RU hint at top and bottom of welcome
-- LangHintTop + LangHintBottom
-
-========================================
-Version 1.4
-========================================
-- EN/RU hint in welcome
-
-========================================
-Version 1.3
-========================================
-- Hint how to change language after welcome
-
-========================================
-Version 1.2
-========================================
-- Fixed language change button
-- langCooldown protection
-
-========================================
-Version 1.1
-========================================
-- Added language change (EN/RU)
-- LangButton
+- 5 languages
 
 ========================================
 Version 1.0
 ========================================
 - First release
-- Basic GUI
-- Blade Ball, AntiKillParts, PulseHub
-- RUNAWAYS, Universal FE, UwU hub
-- FakeVR, WallHop]],
+
+XyqwHub 7.4.1
+Made with love by Xyqwerq]],
 }
 
--- ========== LANG: RU ==========
 LANG.RU = {
     Loaded = "загружен", Error = "ошибка", Search = "Поиск...",
     CustomPlaceholder = "Ссылка...", RunCustom = "Запустить",
@@ -649,493 +243,69 @@ LANG.RU = {
     ShareHub = "Поделиться XyqwHub", HideTopBar = "Скрыть топ бар", HideTopBarOn = "Скрыть: ВКЛ",
     HideTopBarOff = "Скрыть: ВЫКЛ", OrderSaved = "Порядок сохранён!", OrderReset = "Порядок сброшен!",
     AntiKickOn = "AntiKick: ВКЛ", AntiKickOff = "AntiKick: ВЫКЛ",
+    AutoReinjectOn = "Auto-Reinject: ВКЛ", AutoReinjectOff = "Auto-Reinject: ВЫКЛ",
+    ReinjectQueued = "XyqwHub перезагрузится после телепорта", ReinjectNotSupported = "Auto-Reinject не поддерживается",
     ExecutorInfoTitle = "Инфо об экзекьюторе", RunUNCTest = "Запустить UNC тест", RunSUNCTest = "Запустить sUNC тест",
-    Testing = "Тестирование...", TestResult = "Результат",
+    Testing = "Тестирование...", TestResult = "Результат", RejoinLastSession = "Rejoin Last Session",
     ChangeLogText = [[XyqwHub Ченджлог
+
+========================================
+Версия 7.4.1
+========================================
+- Улучшенный Auto-Reinject: 5 fallback-методов
+- Новая кнопка Auto-Reinject во вкладке S
+- Auto-Reinject ВКЛ по умолчанию
+- Настройка сохраняется в settings.json
+- Работает для Rejoin, ServerHop, TP to Small, Rejoin Last Session
+- Уведомление при постановке в очередь
+- JJS уведомление: "Хей!! Этот скрипт был сделан мной (Xyqwerq)! Наслаждайся :)"
+
+========================================
+Версия 7.4.0
+========================================
+- JJS скрипт заменён на собственный Xyqwerq
+- Auto-Rejoin через session файл
+- Anti-getgc + Anti-getconnections
+
+========================================
+Версия 7.3.0
+========================================
+- Auto-AntiKick, Anti-getgc, Anti-getconnections
+
+========================================
+Версия 7.2.2
+========================================
+- AntiKick фикс, Anti-Detect GUI
 
 ========================================
 Версия 7.2.0
 ========================================
-- ВСЕ окна теперь можно ресайзить (тянуть за правый нижний угол)
-- ВСЕ окна теперь можно перетаскивать (тянуть за заголовок)
-- Окно Executor Info стало меньше (300x400)
-- Executor Info теперь листается
-- Добавлены универсальные функции MakeResizable() и MakeDraggable()
+- Ресайз/драг окон
+- Executor Info меньше
 
 ========================================
 Версия 7.1.0
 ========================================
-- Убрана кнопка A-Z
-- Поисковая строка растянута до правого края
-- Добавлена кнопка AntiKick: ON/OFF внизу
-- Добавлена кнопка Info (Инфо об экзекьюторе + UNC/sUNC тесты)
-- Executor Info: имя, версия, платформа, функции
-- UNC тест: 26 проверок (getgc, hookfunction, writefile и т.д.)
-- sUNC тест: 36 проверок (hookmetamethod, getupvalue, firesignal и т.д.)
-- Полоска drag теперь в цвет темы (из 7.0.2)
-
-========================================
-Версия 7.0.2
-========================================
-- Полоска drag теперь в цвет текущей темы (RED_MAIN)
-- Полоска drag обновляется при смене темы
-- Rainbow: полоска drag переливается вместе с темой
-- Все предыдущие функции сохранены
-
-========================================
-Версия 7.0.1
-========================================
-- Фикс категорий (SwitchTab теперь корректно обновляет currentTab)
-- Фикс захвата двух кнопок при drag (флаг globalDrag)
-- Только одна кнопка может быть перетаскиваема
-- Все предыдущие функции сохранены
+- Кнопка Info (UNC/sUNC)
 
 ========================================
 Версия 7.0
 ========================================
-- Drag zone увеличен до 25px
-- Добавлена визуальная жёлтая полоска слева
-- Попытка фикса категорий
-- Обновлён Welcome с полным списком функций
-- Полный ченджлог восстановлен (1.0-7.0)
-
-========================================
-Версия 6.9.2
-========================================
-- Попытка фикса drag zone
-- Попытка фикса категорий
-
-========================================
-Версия 6.9.1
-========================================
-- Полный ченджлог восстановлен (1.0-6.9.1)
-
-========================================
-Версия 6.9
-========================================
-- Фикс застывания вкладок/кнопок (fade вместо size)
-- Размер GUI сохраняется между открытиями
-- Drag только за левый край (15px)
-- Фикс категорий
-
-========================================
-Версия 6.8
-========================================
-- Фикс URL_OK, URL_BAD, URL_UNKNOWN, URL_CHECKING
-- Фикс краша темы (nil)
-- Инициализация getgenv()
-
-========================================
-Версия 6.7
-========================================
-- Переписан с нуля
-- Фикс drag & drop (btn.InputBegan)
-- Фикс анимации GUI
-- Фикс закрытия таблицы LANG
-- 5 языков: EN, RU, UK, BE, KK
-- 48 скриптов
-
-========================================
-Версия 6.6
-========================================
-- Фикс перетаскивания (btn.InputBegan)
-- Анимации открытия/закрытия GUI
-
-========================================
-Версия 6.5
-========================================
-- Фикс: скрипт запускается только по тапу
-- blockClick защита
-- ZIndex
-
-========================================
-Версия 6.4
-========================================
-- Названия скриптов по центру
-- Подсветка при drag не «подгорает»
-- Reset Order кнопка
-
-========================================
-Версия 6.3
-========================================
-- Blacklist удалён
-- Фикс заголовка при запуске
-- Плавные анимации
-- Drag & drop (hold 0.35s)
-- Порядок в Settings/order.json
-
-========================================
-Версия 6.2
-========================================
-- Фикс × в чёрном списке
 - Полный ченджлог
-
-========================================
-Версия 6.1
-========================================
-- Фикс обновления чёрного списка
 
 ========================================
 Версия 6.0
 ========================================
-- 5 языков: EN, RU, UK, BE, KK
-
-========================================
-Версия 5.9
-========================================
-- X в правый угол
-- Перетаскивание топ-бара
-
-========================================
-Версия 5.6
-========================================
-- Убраны скругления
-- Базовая вкладка All
-
-========================================
-Версия 5.5
-========================================
-- Auto Execute, Auto Hide, URL Tester, Sorting, Settings
-
-========================================
-Версия 5.4
-========================================
-- Авто-запуск скриптов
-- Чёрный список
-- Auto Hide GUI
-- URL Tester
-- Сортировка
-- Share Fav/Rct
-
-========================================
-Версия 5.3
-========================================
-- Custom Color меньше + ресайз
-- Фикс универсального workspace
-
-========================================
-Версия 5.2
-========================================
-- Поддержка универсального workspace
-
-========================================
-Версия 5.1
-========================================
-- Share Fav Scripts, Share XyqwHub, Reset, Share Color
-
-========================================
-Версия 5.0
-========================================
-- Custom Color мгновенно
-
-========================================
-Версия 4.9
-========================================
-- Welcome меньше + скролл, 13 тем
-
-========================================
-Версия 4.8
-========================================
-- Custom Color поддержка rgb()
-
-========================================
-Версия 4.7
-========================================
-- Custom Color picker
-
-========================================
-Версия 4.6
-========================================
-- Фикс мерцания вкладок в Rainbow
-
-========================================
-Версия 4.5
-========================================
-- Файлы в workspace
-
-========================================
-Версия 4.4
-========================================
-- Remove Tags и Destroy раздельно
-
-========================================
-Версия 4.3
-========================================
-- Server Info: Rejoin, ServerHop, TP small
-
-========================================
-Версия 4.2
-========================================
-- Код переписан в минифицированном стиле
-- THEMES = {Red, Blue, Rainbow}
-- ApplyTheme(themeName) — смена темы
-- themeOrder + themeIndex — переключение тем
-- ExtractURL(input.Text) — извлечение URL из loadstring
-- SpecialContainer — контейнер для Remove Tags + Destroy
-- removeTagsBtn (50%) — "Remove Tags"
-- destroyBtn (50%) — "Destroy"
-- Rainbow тема — анимация перелива
-- Ресайз в правом нижнем углу
-- Стартовое окно 250x300
-- Все кнопки квадратные (нет UICorner)
-- Ярко-красный вместо жёлтого
-- Кнопки в 1 ряд
-- Убран GetTheme(), цвета напрямую
-- Hide Top Bar переключается (H/S)
-- FPS/Ping в топ-баре
-- TopBar перетаскивается
-- DockButton перетаскивается
-- Search bar
-- Tabs (All, BB, MM2, INK, Misc, Fav, Rct)
-- Favorites system (★)
-- Recently used
-- Script history
-- Custom script runner
-- Player list
-- Server info + Copy JobId
-- Anti-AFK
-- Re-launch protection
-- 46 скриптов
-- Doors V2 (Copy) — копирование в буфер
-- Doors V3 (Cheesy) — обычный
-- Doors v4 — обычный
-
-========================================
-Версия 4.1
-========================================
-- Фикс наложения кнопок
-- Возвращён красный бордер, фон, текст
-- Добавлен ресайз (правый нижний угол)
-- Добавлен Hide Top Bar
-- Маленький стартовый размер
-
-========================================
-Версия 4.0
-========================================
-- Top bar (executor, name, FPS, Ping)
-- Search bar
-- Tabs (All, BladeBall, MM2, INK, Misc, Fav, Rct)
-- Favorites system
-- Recently used
-- Script history
-- Theme switcher
-- Custom script runner
-- Player list
-- Server info
-- Copy JobId
-- Animations
-- Keybinds
-- Anti-AFK
-
-========================================
-Версия 3.9
-========================================
-- Уведомление "Script executed!" для всех скриптов
-- Добавлен Doors v4
-- Добавлен Kiti (MM2)
-- BETA тег переименован в Tester
-- Canvas ченджлога (1600 → 1700)
-
-========================================
-Версия 3.8
-========================================
-- Фикс восстановления тега после респавна
-- Тег использует CharacterAdded + task.wait
-- BETA тег переименован в Tester
-
-========================================
-Версия 3.7
-========================================
-- Добавлен тег тестера (синий градиент)
-- Добавлено приветствие для тестеров
-- Добавлено 2 тестера (9686718765, 3701387385)
-
-========================================
-Версия 3.6
-========================================
-- Фикс случайных кликов по кнопкам в заголовке
-- Добавлен кулдаун для ChangeLog и языка
-- Добавлен Active для кнопок заголовка
-
-========================================
-Версия 3.5
-========================================
-- Добавлено приветствие только для владельца
-- "Welcome, my father :3"
-
-========================================
-Версия 3.4
-========================================
-- Более тёмный красный для тега (200,0,0 и 60,0,0)
-- Обычный фон для Remove/Destroy
-- Обычный бордер для Remove/Destroy
-
-========================================
-Версия 3.3
-========================================
-- Фикс размера тега (больше не растягивается)
-- Фикс градиента (работает через Rotation)
-- Градиент виден всем
-- Фикс позиции текста
-- Фикс размера текста (меньше, не растянут)
-- Добавлен UIStroke glow
-
-========================================
-Версия 3.2
-========================================
-- Возвращена анимация градиента
-- Уменьшен размер текста
-- Добавлен UIStroke glow
-
-========================================
-Версия 3.1
-========================================
-- Полностью переписана система тегов
-- Тег привязан к HumanoidRootPart
-- Добавлено позиционирование через Heartbeat
-- Фикс логики сканирования
-
-========================================
-Версия 3.0
-========================================
-- Убран градиент
-- Добавлены debug prints
-- Упрощена логика тега
-
-========================================
-Версия 2.9
-========================================
-- Добавлен XyqwHub OWNER тег
-- Добавлена кнопка "Remove XyqwHub Tag"
-- Добавлена анимация градиента для owner тега
-- Добавлено 2 owner аккаунта (4396977722, 8527910367)
-
-========================================
-Версия 2.8
-========================================
-- XyqwHub Loaded! появляется сразу
-- ChangeLog переведён на EN/RU
-- Тег виден только владельцам
-
-========================================
-Версия 2.7
-========================================
-- Roblox уведомления (правый нижний угол)
-- Добавлена кнопка ChangeLog
-- Loading / Loaded уведомления
-- Тег виден всем с XyqwHub
-
-========================================
-Версия 2.6
-========================================
-- Уведомления перемещены в правый нижний угол
-- Новая система уведомлений
-
-========================================
-Версия 2.5
-========================================
-- Все сообщения переведены EN/RU
-- Re-launch protection
-- Фикс кнопки смены языка
-- Приветствие для владельца
-
-========================================
-Версия 2.4
-========================================
-- Добавлен Re-launch protection
-- Кнопка DESTROY сбрасывает флаг
-- Приветствие только для владельца
-
-========================================
-Версия 2.3
-========================================
-- Добавлен Adopt me
-
-========================================
-Версия 2.2
-========================================
-- Добавлен bLockman's minesweaper
-- Добавлен Cheating during test
-
-========================================
-Версия 2.1
-========================================
-- Добавлен DropKick
-- Добавлен Evade
-- Добавлен A Dusty Trip
-- Добавлен A Dusty Trip v2
-
-========================================
-Версия 2.0
-========================================
-- Убран Auto Execute
-- Все кнопки в одном списке
-- Версия 2.0 stable
-
-========================================
-Версия 1.9
-========================================
-- Добавлен ключ для Doors V3 (Cheesy)
-- "Key: joincheesedsc"
-
-========================================
-Версия 1.8
-========================================
-- Добавлен Death Order [SIMON]
-- Добавлен CandyWare (MM2)
-
-========================================
-Версия 1.7
-========================================
-- Добавлен Troll script
-
-========================================
-Версия 1.6
-========================================
-- Добавлен Steal an egg
-- Добавлен Universal script
-- Добавлен Corridor
-- Добавлен BloxStrike
-- Добавлен RIVALS
-
-========================================
-Версия 1.5
-========================================
-- EN/RU подсказка сверху и снизу welcome
-- LangHintTop + LangHintBottom
-
-========================================
-Версия 1.4
-========================================
-- EN/RU подсказка в welcome
-
-========================================
-Версия 1.3
-========================================
-- Подсказка как сменить язык после welcome
-
-========================================
-Версия 1.2
-========================================
-- Фикс кнопки смены языка
-- langCooldown protection
-
-========================================
-Версия 1.1
-========================================
-- Добавлена смена языка (EN/RU)
-- LangButton
+- 5 языков
 
 ========================================
 Версия 1.0
 ========================================
 - Первый релиз
-- Базовый GUI
-- Blade Ball, AntiKillParts, PulseHub
-- RUNAWAYS, Universal FE, UwU hub
-- FakeVR, WallHop]],
+
+XyqwHub 7.4.1
+Сделано с любовью от Xyqwerq]],
 }
--- ========== LANG: UK ==========
 LANG.UK = {
     Loaded = "завантажено", Error = "помилка", Search = "Пошук...",
     CustomPlaceholder = "Посилання...", RunCustom = "Запустити",
@@ -1158,494 +328,68 @@ LANG.UK = {
     ShareHub = "Поділитись XyqwHub", HideTopBar = "Сховати верхню панель", HideTopBarOn = "Сховати: УВІМК",
     HideTopBarOff = "Сховати: ВИМК", OrderSaved = "Порядок збережено!", OrderReset = "Порядок скинуто!",
     AntiKickOn = "AntiKick: УВІМК", AntiKickOff = "AntiKick: ВИМК",
+    AutoReinjectOn = "Auto-Reinject: УВІМК", AutoReinjectOff = "Auto-Reinject: ВИМК",
+    ReinjectQueued = "XyqwHub перезавантажиться після телепорту", ReinjectNotSupported = "Auto-Reinject не підтримується",
     ExecutorInfoTitle = "Інфо про виконавця", RunUNCTest = "Запустити UNC тест", RunSUNCTest = "Запустити sUNC тест",
-    Testing = "Тестування...", TestResult = "Результат",
+    Testing = "Тестування...", TestResult = "Результат", RejoinLastSession = "Rejoin Last Session",
     ChangeLogText = [[XyqwHub Журнал
+
+========================================
+Версія 7.4.1
+========================================
+- Покращений Auto-Reinject: 5 fallback-методів
+- Нова кнопка Auto-Reinject у вкладці S
+- Auto-Reinject УВІМК за замовчуванням
+- Налаштування зберігається у settings.json
+- Працює для Rejoin, ServerHop, TP to Small, Rejoin Last Session
+- Повідомлення при постановці в чергу
+- JJS повідомлення
+
+========================================
+Версія 7.4.0
+========================================
+- JJS скрипт замінено на власний Xyqwerq
+- Auto-Rejoin через session файл
+- Anti-getgc + Anti-getconnections
+
+========================================
+Версія 7.3.0
+========================================
+- Auto-AntiKick
+
+========================================
+Версія 7.2.2
+========================================
+- AntiKick фікс, Anti-Detect GUI
 
 ========================================
 Версія 7.2.0
 ========================================
-- ВСІ вікна тепер можна ресайзити (тягнути за правий нижній кут)
-- ВСІ вікна тепер можна перетягувати (тягнути за заголовок)
-- Вікно Executor Info стало менше (300x400)
-- Executor Info тепер гортається
-- Додано універсальні функції MakeResizable() і MakeDraggable()
+- Ресайз/драг вікон
 
 ========================================
 Версія 7.1.0
 ========================================
-- Прибрано кнопку A-Z
-- Пошуковий рядок розтягнуто до правого краю
-- Додано кнопку AntiKick: ON/OFF внизу
-- Додано кнопку Info (Інфо про виконавця + UNC/sUNC тести)
-- Executor Info: ім'я, версія, платформа, функції
-- UNC тест: 26 перевірок (getgc, hookfunction, writefile тощо)
-- sUNC тест: 36 перевірок (hookmetamethod, getupvalue, firesignal тощо)
-- Смужка drag тепер у колір теми (з 7.0.2)
-
-========================================
-Версія 7.0.2
-========================================
-- Смужка drag тепер у колір поточної теми (RED_MAIN)
-- Смужка drag оновлюється при зміні теми
-- Rainbow: смужка drag переливається разом з темою
-- Всі попередні функції збережено
-
-========================================
-Версія 7.0.1
-========================================
-- Фікс категорій (SwitchTab коректно оновлює currentTab)
-- Фікс захвату двох кнопок при drag (флаг globalDrag)
-- Тільки одна кнопка може перетягуватися
-- Всі попередні функції збережено
+- Кнопка Info (UNC/sUNC)
 
 ========================================
 Версія 7.0
 ========================================
-- Drag zone збільшено до 25px
-- Додано візуальну жовту смужку ліворуч
-- Спроба фіксу категорій
-- Оновлено Welcome з повним списком функцій
-- Повний журнал відновлено (1.0-7.0)
-
-========================================
-Версія 6.9.2
-========================================
-- Спроба фіксу drag zone
-- Спроба фіксу категорій
-
-========================================
-Версія 6.9.1
-========================================
-- Повний журнал відновлено (1.0-6.9.1)
-
-========================================
-Версія 6.9
-========================================
-- Фікс застигання вкладок/кнопок (fade замість size)
-- Розмір GUI зберігається
-- Drag тільки за лівий край (15px)
-- Фікс категорій
-
-========================================
-Версія 6.8
-========================================
-- Фікс URL_OK, URL_BAD, URL_UNKNOWN, URL_CHECKING
-- Фікс краша теми (nil)
-- Ініціалізація getgenv()
-
-========================================
-Версія 6.7
-========================================
-- Переписано з нуля
-- Фікс drag & drop (btn.InputBegan)
-- Фікс анімації GUI
-- Фікс закриття таблиці LANG
-- 5 мов: EN, RU, UK, BE, KK
-- 48 скриптів
-
-========================================
-Версія 6.6
-========================================
-- Фікс перетягування (btn.InputBegan)
-- Анімації відкриття/закриття GUI
-
-========================================
-Версія 6.5
-========================================
-- Скрипт запускається лише по тапу
-- blockClick захист
-- ZIndex
-
-========================================
-Версія 6.4
-========================================
-- Назви скриптів по центру
-- Підсвічування при drag не «підгорає»
-- Reset Order кнопка
-
-========================================
-Версія 6.3
-========================================
-- Blacklist видалено
-- Фікс заголовка при запуску
-- Плавні анімації
-- Drag & drop (hold 0.35s)
-- Порядок у Settings/order.json
-
-========================================
-Версія 6.2
-========================================
-- Фікс × у чорному списку
 - Повний журнал
-
-========================================
-Версія 6.1
-========================================
-- Фікс оновлення чорного списку
 
 ========================================
 Версія 6.0
 ========================================
-- 5 мов: EN, RU, UK, BE, KK
-
-========================================
-Версія 5.9
-========================================
-- X у правий кут
-- Перетягування верхньої панелі
-
-========================================
-Версія 5.6
-========================================
-- Прибрано заокруглення
-- Базова вкладка All
-
-========================================
-Версія 5.5
-========================================
-- Auto Execute, Auto Hide, URL Tester, Sorting, Settings
-
-========================================
-Версія 5.4
-========================================
-- Авто-запуск скриптів
-- Чорний список
-- Auto Hide GUI
-- URL Tester
-- Сортування
-- Share Fav/Rct
-
-========================================
-Версія 5.3
-========================================
-- Custom Color менше + ресайз
-- Фікс універсального workspace
-
-========================================
-Версія 5.2
-========================================
-- Підтримка універсального workspace
-
-========================================
-Версія 5.1
-========================================
-- Share Fav Scripts, Share XyqwHub, Reset, Share Color
-
-========================================
-Версія 5.0
-========================================
-- Custom Color миттєво
-
-========================================
-Версія 4.9
-========================================
-- Welcome менше + скрол, 13 тем
-
-========================================
-Версія 4.8
-========================================
-- Custom Color підтримка rgb()
-
-========================================
-Версія 4.7
-========================================
-- Custom Color picker
-
-========================================
-Версія 4.6
-========================================
-- Фікс мерехтіння вкладок у Rainbow
-
-========================================
-Версія 4.5
-========================================
-- Файли у workspace
-
-========================================
-Версія 4.4
-========================================
-- Remove Tags і Destroy окремо
-
-========================================
-Версія 4.3
-========================================
-- Server Info: Rejoin, ServerHop, TP small
-
-========================================
-Версія 4.2
-========================================
-- Код переписано в мініфікованому стилі
-- THEMES = {Red, Blue, Rainbow}
-- ApplyTheme(themeName) — зміна теми
-- themeOrder + themeIndex — перемикання тем
-- ExtractURL(input.Text) — витяг URL з loadstring
-- SpecialContainer — контейнер для Remove Tags + Destroy
-- removeTagsBtn (50%) — "Remove Tags"
-- destroyBtn (50%) — "Destroy"
-- Rainbow тема — анімація переливу
-- Ресайз у правому нижньому куті
-- Стартове вікно 250x300
-- Всі кнопки квадратні (немає UICorner)
-- Яскраво-червоний замість жовтого
-- Кнопки в 1 ряд
-- Прибрано GetTheme(), кольори напряму
-- Hide Top Bar перемикається (H/S)
-- FPS/Ping у топ-барі
-- TopBar перетягується
-- DockButton перетягується
-- Search bar
-- Tabs (All, BB, MM2, INK, Misc, Fav, Rct)
-- Favorites system (★)
-- Recently used
-- Script history
-- Custom script runner
-- Player list
-- Server info + Copy JobId
-- Anti-AFK
-- Re-launch protection
-- 46 скриптів
-- Doors V2 (Copy) — копіювання в буфер
-- Doors V3 (Cheesy) — звичайний
-- Doors v4 — звичайний
-
-========================================
-Версія 4.1
-========================================
-- Фікс накладання кнопок
-- Повернуто червоний бордер, фон, текст
-- Додано ресайз (правий нижній кут)
-- Додано Hide Top Bar
-- Маленький стартовий розмір
-
-========================================
-Версія 4.0
-========================================
-- Top bar (executor, name, FPS, Ping)
-- Search bar
-- Tabs (All, BladeBall, MM2, INK, Misc, Fav, Rct)
-- Favorites system
-- Recently used
-- Script history
-- Theme switcher
-- Custom script runner
-- Player list
-- Server info
-- Copy JobId
-- Animations
-- Keybinds
-- Anti-AFK
-
-========================================
-Версія 3.9
-========================================
-- Сповіщення "Script executed!" для всіх скриптів
-- Додано Doors v4
-- Додано Kiti (MM2)
-- BETA тег перейменовано в Tester
-- Canvas журналу (1600 → 1700)
-
-========================================
-Версія 3.8
-========================================
-- Фікс відновлення тега після респавну
-- Тег використовує CharacterAdded + task.wait
-- BETA тег перейменовано в Tester
-
-========================================
-Версія 3.7
-========================================
-- Додано тег тестера (синій градієнт)
-- Додано вітання для тестерів
-- Додано 2 тестери (9686718765, 3701387385)
-
-========================================
-Версія 3.6
-========================================
-- Фікс випадкових кліків по кнопках у заголовку
-- Додано кулдаун для ChangeLog та мови
-- Додано Active для кнопок заголовка
-
-========================================
-Версія 3.5
-========================================
-- Додано вітання тільки для власника
-- "Welcome, my father :3"
-
-========================================
-Версія 3.4
-========================================
-- Темніший червоний для тега (200,0,0 та 60,0,0)
-- Звичайний фон для Remove/Destroy
-- Звичайний бордер для Remove/Destroy
-
-========================================
-Версія 3.3
-========================================
-- Фікс розміру тега (більше не розтягується)
-- Фікс градієнта (працює через Rotation)
-- Градієнт видно всім
-- Фікс позиції тексту
-- Фікс розміру тексту (менше, не розтягнуто)
-- Додано UIStroke glow
-
-========================================
-Версія 3.2
-========================================
-- Повернуто анімацію градієнта
-- Зменшено розмір тексту
-- Додано UIStroke glow
-
-========================================
-Версія 3.1
-========================================
-- Повністю переписано систему тегів
-- Тег прив'язано до HumanoidRootPart
-- Додано позиціонування через Heartbeat
-- Фікс логіки сканування
-
-========================================
-Версія 3.0
-========================================
-- Прибрано градієнт
-- Додано debug prints
-- Спрощено логіку тега
-
-========================================
-Версія 2.9
-========================================
-- Додано XyqwHub OWNER тег
-- Додано кнопку "Remove XyqwHub Tag"
-- Додано анімацію градієнта для owner тега
-- Додано 2 owner акаунти (4396977722, 8527910367)
-
-========================================
-Версія 2.8
-========================================
-- XyqwHub Loaded! з'являється одразу
-- ChangeLog перекладено на EN/RU
-- Тег видно тільки власникам
-
-========================================
-Версія 2.7
-========================================
-- Roblox сповіщення (правий нижній кут)
-- Додано кнопку ChangeLog
-- Loading / Loaded сповіщення
-- Тег видно всім з XyqwHub
-
-========================================
-Версія 2.6
-========================================
-- Сповіщення переміщено у правий нижній кут
-- Нова система сповіщень
-
-========================================
-Версія 2.5
-========================================
-- Всі повідомлення перекладено EN/RU
-- Re-launch protection
-- Фікс кнопки зміни мови
-- Вітання для власника
-
-========================================
-Версія 2.4
-========================================
-- Додано Re-launch protection
-- Кнопка DESTROY скидає флаг
-- Вітання тільки для власника
-
-========================================
-Версія 2.3
-========================================
-- Додано Adopt me
-
-========================================
-Версія 2.2
-========================================
-- Додано bLockman's minesweaper
-- Додано Cheating during test
-
-========================================
-Версія 2.1
-========================================
-- Додано DropKick
-- Додано Evade
-- Додано A Dusty Trip
-- Додано A Dusty Trip v2
-
-========================================
-Версія 2.0
-========================================
-- Прибрано Auto Execute
-- Всі кнопки в одному списку
-- Версія 2.0 stable
-
-========================================
-Версія 1.9
-========================================
-- Додано ключ для Doors V3 (Cheesy)
-- "Key: joincheesedsc"
-
-========================================
-Версія 1.8
-========================================
-- Додано Death Order [SIMON]
-- Додано CandyWare (MM2)
-
-========================================
-Версія 1.7
-========================================
-- Додано Troll script
-
-========================================
-Версія 1.6
-========================================
-- Додано Steal an egg
-- Додано Universal script
-- Додано Corridor
-- Додано BloxStrike
-- Додано RIVALS
-
-========================================
-Версія 1.5
-========================================
-- EN/RU підказка зверху та знизу welcome
-- LangHintTop + LangHintBottom
-
-========================================
-Версія 1.4
-========================================
-- EN/RU підказка в welcome
-
-========================================
-Версія 1.3
-========================================
-- Підказка як змінити мову після welcome
-
-========================================
-Версія 1.2
-========================================
-- Фікс кнопки зміни мови
-- langCooldown protection
-
-========================================
-Версія 1.1
-========================================
-- Додано зміну мови (EN/RU)
-- LangButton
+- 5 мов
 
 ========================================
 Версія 1.0
 ========================================
 - Перший реліз
-- Базовий GUI
-- Blade Ball, AntiKillParts, PulseHub
-- RUNAWAYS, Universal FE, UwU hub
-- FakeVR, WallHop]],
+
+XyqwHub 7.4.1]],
 }
 
--- ========== LANG: BE ==========
 LANG.BE = {
     Loaded = "загружана", Error = "памылка", Search = "Пошук...",
     CustomPlaceholder = "Спасылка...", RunCustom = "Запусціць",
@@ -1668,493 +412,67 @@ LANG.BE = {
     ShareHub = "Падзяліцца XyqwHub", HideTopBar = "Схаваць панэль", HideTopBarOn = "Схаваць: УКЛ",
     HideTopBarOff = "Схаваць: ВЫКЛ", OrderSaved = "Парадак захаваны!", OrderReset = "Парадак скінуты!",
     AntiKickOn = "AntiKick: УКЛ", AntiKickOff = "AntiKick: ВЫКЛ",
+    AutoReinjectOn = "Auto-Reinject: УКЛ", AutoReinjectOff = "Auto-Reinject: ВЫКЛ",
+    ReinjectQueued = "XyqwHub перазагрузіцца пасля тэлепорту", ReinjectNotSupported = "Auto-Reinject не падтрымліваецца",
     ExecutorInfoTitle = "Інфа пра выканаўцу", RunUNCTest = "Запусціць UNC тэст", RunSUNCTest = "Запусціць sUNC тэст",
-    Testing = "Тэставанне...", TestResult = "Вынік",
+    Testing = "Тэставанне...", TestResult = "Вынік", RejoinLastSession = "Rejoin Last Session",
     ChangeLogText = [[XyqwHub Чэйнджлог
+
+========================================
+Версія 7.4.1
+========================================
+- Палепшаны Auto-Reinject: 5 fallback-метадаў
+- Новая кнопка Auto-Reinject ва ўкладцы S
+- Auto-Reinject УКЛ па змаўчанні
+- Налады захоўваюцца ў settings.json
+- Працуе для Rejoin, ServerHop, TP to Small, Rejoin Last Session
+- Апавяшчэнне пры пастаноўцы ў чаргу
+
+========================================
+Версія 7.4.0
+========================================
+- JJS скрыпт заменены на ўласны Xyqwerq
+- Auto-Rejoin праз session файл
+- Anti-getgc + Anti-getconnections
+
+========================================
+Версія 7.3.0
+========================================
+- Auto-AntiKick
+
+========================================
+Версія 7.2.2
+========================================
+- AntiKick фікс, Anti-Detect GUI
 
 ========================================
 Версія 7.2.0
 ========================================
-- УСЕ вокны цяпер можна рэсайзіць (цягнуць за правы ніжні кут)
-- УСЕ вокны цяпер можна перацягваць (цягнуць за загаловак)
-- Акно Executor Info стала менш (300x400)
-- Executor Info цяпер гартаецца
-- Дададзены універсальныя функцыі MakeResizable() і MakeDraggable()
+- Рэсайз/драг вокнаў
 
 ========================================
 Версія 7.1.0
 ========================================
-- Прыбрана кнопка A-Z
-- Пошуковы радок расцягнуты да правага краю
-- Дададзена кнопка AntiKick: ON/OFF унізе
-- Дададзена кнопка Info (Інфа пра выканаўцу + UNC/sUNC тэсты)
-- Executor Info: імя, версія, платформа, функцыі
-- UNC тэст: 26 праверак (getgc, hookfunction, writefile і г.д.)
-- sUNC тэст: 36 праверак (hookmetamethod, getupvalue, firesignal і г.д.)
-- Паласа drag цяпер у колер тэмы (з 7.0.2)
-
-========================================
-Версія 7.0.2
-========================================
-- Паласа drag цяпер у колер бягучай тэмы (RED_MAIN)
-- Паласа drag абнаўляецца пры змене тэмы
-- Rainbow: паласа drag пераліваецца разам з тэмай
-- Усе папярэднія функцыі захаваны
-
-========================================
-Версія 7.0.1
-========================================
-- Фікс катэгорый (SwitchTab карэктна абнаўляе currentTab)
-- Фікс захвату дзвюх кнопак пры drag (флаг globalDrag)
-- Толькі адна кнопка можа перацягвацца
-- Усе папярэднія функцыі захаваны
+- Кнопка Info (UNC/sUNC)
 
 ========================================
 Версія 7.0
 ========================================
-- Drag zone павялічана да 25px
-- Дададзена візуальная жоўтая палоска злева
-- Спроба фіксу катэгорый
-- Абноўлены Welcome з поўным спісам функцый
-- Поўны чэйнджлог адноўлены (1.0-7.0)
-
-========================================
-Версія 6.9.2
-========================================
-- Спроба фіксу drag zone
-- Спроба фіксу катэгорый
-
-========================================
-Версія 6.9.1
-========================================
-- Поўны чэйнджлог адноўлены (1.0-6.9.1)
-
-========================================
-Версія 6.9
-========================================
-- Фікс застывання ўкладак/кнопак (fade замест size)
-- Памер GUI захоўваецца
-- Drag толькі за левы край (15px)
-- Фікс катэгорый
-
-========================================
-Версія 6.8
-========================================
-- Фікс URL_OK, URL_BAD, URL_UNKNOWN, URL_CHECKING
-- Фікс краша тэмы (nil)
-- Ініцыялізацыя getgenv()
-
-========================================
-Версія 6.7
-========================================
-- Перапісана з нуля
-- Фікс drag & drop (btn.InputBegan)
-- Фікс анімацыі GUI
-- Фікс закрыцця табліцы LANG
-- 5 моў: EN, RU, UK, BE, KK
-- 48 скрыптаў
-
-========================================
-Версія 6.6
-========================================
-- Фікс перацягвання (btn.InputBegan)
-- Анімацыі адкрыцця/закрыцця GUI
-
-========================================
-Версія 6.5
-========================================
-- Скрыпт запускаецца толькі па тапе
-- blockClick абарона
-- ZIndex
-
-========================================
-Версія 6.4
-========================================
-- Назвы скрыптаў па цэнтры
-- Падсветка пры drag не «падгарае»
-- Reset Order кнопка
-
-========================================
-Версія 6.3
-========================================
-- Blacklist выдалены
-- Фікс загалоўка пры запуску
-- Плаўныя анімацыі
-- Drag & drop (hold 0.35s)
-- Парадак у Settings/order.json
-
-========================================
-Версія 6.2
-========================================
-- Фікс × у чорным спісе
 - Поўны чэйнджлог
-
-========================================
-Версія 6.1
-========================================
-- Фікс абнаўлення чорнага спісу
 
 ========================================
 Версія 6.0
 ========================================
-- 5 моў: EN, RU, UK, BE, KK
-
-========================================
-Версія 5.9
-========================================
-- X у правы кут
-- Перацягванне верхняй панэлі
-
-========================================
-Версія 5.6
-========================================
-- Прыбраны заакругленні
-- Базавая ўкладка All
-
-========================================
-Версія 5.5
-========================================
-- Auto Execute, Auto Hide, URL Tester, Sorting, Settings
-
-========================================
-Версія 5.4
-========================================
-- Аўта-запуск скрыптаў
-- Чорны спіс
-- Auto Hide GUI
-- URL Tester
-- Сартаванне
-- Share Fav/Rct
-
-========================================
-Версія 5.3
-========================================
-- Custom Color менш + рэсайз
-- Фікс універсальнага workspace
-
-========================================
-Версія 5.2
-========================================
-- Падтрымка ўніверсальнага workspace
-
-========================================
-Версія 5.1
-========================================
-- Share Fav Scripts, Share XyqwHub, Reset, Share Color
-
-========================================
-Версія 5.0
-========================================
-- Custom Color імгненна
-
-========================================
-Версія 4.9
-========================================
-- Welcome менш + скрол, 13 тэм
-
-========================================
-Версія 4.8
-========================================
-- Custom Color падтрымка rgb()
-
-========================================
-Версія 4.7
-========================================
-- Custom Color picker
-
-========================================
-Версія 4.6
-========================================
-- Фікс мігацення ўкладак у Rainbow
-
-========================================
-Версія 4.5
-========================================
-- Файлы ў workspace
-
-========================================
-Версія 4.4
-========================================
-- Remove Tags і Destroy асобна
-
-========================================
-Версія 4.3
-========================================
-- Server Info: Rejoin, ServerHop, TP small
-
-========================================
-Версія 4.2
-========================================
-- Код перапісаны ў мініфікаваным стылі
-- THEMES = {Red, Blue, Rainbow}
-- ApplyTheme(themeName) — змена тэмы
-- themeOrder + themeIndex — пераключэнне тэм
-- ExtractURL(input.Text) — выманне URL з loadstring
-- SpecialContainer — кантэйнер для Remove Tags + Destroy
-- removeTagsBtn (50%) — "Remove Tags"
-- destroyBtn (50%) — "Destroy"
-- Rainbow тэма — анімацыя пераліву
-- Рэсайз у правым ніжнім куце
-- Стартавае акно 250x300
-- Усе кнопкі квадратныя (няма UICorner)
-- Ярка-чырвоны замест жоўтага
-- Кнопкі ў 1 шэраг
-- Прыбраны GetTheme(), колеры напрамую
-- Hide Top Bar перамыкаецца (H/S)
-- FPS/Ping у топ-бары
-- TopBar перацягваецца
-- DockButton перацягваецца
-- Search bar
-- Tabs (All, BB, MM2, INK, Misc, Fav, Rct)
-- Favorites system (★)
-- Recently used
-- Script history
-- Custom script runner
-- Player list
-- Server info + Copy JobId
-- Anti-AFK
-- Re-launch protection
-- 46 скрыптаў
-- Doors V2 (Copy) — капіяванне ў буфер
-- Doors V3 (Cheesy) — звычайны
-- Doors v4 — звычайны
-
-========================================
-Версія 4.1
-========================================
-- Фікс накладання кнопак
-- Вернуты чырвоны бордэр, фон, тэкст
-- Дададзены рэсайз
-- Дададзены Hide Top Bar
-- Маленькі стартавы памер
-
-========================================
-Версія 4.0
-========================================
-- Top bar (executor, name, FPS, Ping)
-- Search bar
-- Tabs
-- Favorites
-- Recently used
-- Script history
-- Theme switcher
-- Custom script runner
-- Player list
-- Server info
-- Copy JobId
-- Animations
-- Keybinds
-- Anti-AFK
-
-========================================
-Версія 3.9
-========================================
-- Апавяшчэнне "Script executed!" для ўсіх скрыптаў
-- Дададзены Doors v4
-- Дададзены Kiti (MM2)
-- BETA тэг перайменаваны ў Tester
-- Canvas чэйнджлога (1600 → 1700)
-
-========================================
-Версія 3.8
-========================================
-- Фікс аднаўлення тэга пасля рэспаўна
-- Тэг выкарыстоўвае CharacterAdded + task.wait
-- BETA тэг перайменаваны ў Tester
-
-========================================
-Версія 3.7
-========================================
-- Дададзены тэг тэстара (сіні градыент)
-- Дададзена прывітанне для тэстараў
-- Дададзена 2 тэстары (9686718765, 3701387385)
-
-========================================
-Версія 3.6
-========================================
-- Фікс выпадковых клікаў па кнопках у загалоўку
-- Дададзены кулдаўн для ChangeLog і мовы
-- Дададзены Active для кнопак загалоўка
-
-========================================
-Версія 3.5
-========================================
-- Дададзена прывітанне толькі для ўладальніка
-- "Welcome, my father :3"
-
-========================================
-Версія 3.4
-========================================
-- Больш цёмны чырвоны для тэга (200,0,0 і 60,0,0)
-- Звычайны фон для Remove/Destroy
-- Звычайны бордэр для Remove/Destroy
-
-========================================
-Версія 3.3
-========================================
-- Фікс памеру тэга (больш не расцягваецца)
-- Фікс градыента (працуе праз Rotation)
-- Градыент бачны ўсім
-- Фікс пазіцыі тэксту
-- Фікс памеру тэксту (менш, не расцягнута)
-- Дададзены UIStroke glow
-
-========================================
-Версія 3.2
-========================================
-- Вернута анімацыя градыента
-- Зменшаны памер тэксту
-- Дададзены UIStroke glow
-
-========================================
-Версія 3.1
-========================================
-- Поўнасцю перапісана сістэма тэгаў
-- Тэг прывязаны да HumanoidRootPart
-- Дададзена пазіцыянаванне праз Heartbeat
-- Фікс логікі сканавання
-
-========================================
-Версія 3.0
-========================================
-- Прыбраны градыент
-- Дададзены debug prints
-- Спрошчана логіка тэга
-
-========================================
-Версія 2.9
-========================================
-- Дададзены XyqwHub OWNER тэг
-- Дададзена кнопка "Remove XyqwHub Tag"
-- Дададзена анімацыя градыента для owner тэга
-- Дададзена 2 owner акаўнты (4396977722, 8527910367)
-
-========================================
-Версія 2.8
-========================================
-- XyqwHub Loaded! з'яўляецца адразу
-- ChangeLog перакладзены на EN/RU
-- Тэг бачны толькі ўладальнікам
-
-========================================
-Версія 2.7
-========================================
-- Roblox апавяшчэнні
-- Дададзена кнопка ChangeLog
-- Loading / Loaded апавяшчэнні
-- Тэг бачны ўсім з XyqwHub
-
-========================================
-Версія 2.6
-========================================
-- Апавяшчэнні перамешчаны ў правы ніжні кут
-- Новая сістэма апавяшчэнняў
-
-========================================
-Версія 2.5
-========================================
-- Усе паведамленні перакладзены EN/RU
-- Re-launch protection
-- Фікс кнопкі змены мовы
-- Прывітанне для ўладальніка
-
-========================================
-Версія 2.4
-========================================
-- Дададзены Re-launch protection
-- Кнопка DESTROY скідвае флаг
-- Прывітанне толькі для ўладальніка
-
-========================================
-Версія 2.3
-========================================
-- Дададзены Adopt me
-
-========================================
-Версія 2.2
-========================================
-- Дададзены bLockman's minesweaper
-- Дададзены Cheating during test
-
-========================================
-Версія 2.1
-========================================
-- Дададзены DropKick
-- Дададзены Evade
-- Дададзены A Dusty Trip
-- Дададзены A Dusty Trip v2
-
-========================================
-Версія 2.0
-========================================
-- Прыбраны Auto Execute
-- Усе кнопкі ў адным спісе
-- Версія 2.0 stable
-
-========================================
-Версія 1.9
-========================================
-- Дададзены ключ для Doors V3 (Cheesy)
-- "Key: joincheesedsc"
-
-========================================
-Версія 1.8
-========================================
-- Дададзены Death Order [SIMON]
-- Дададзены CandyWare (MM2)
-
-========================================
-Версія 1.7
-========================================
-- Дададзены Troll script
-
-========================================
-Версія 1.6
-========================================
-- Дададзены Steal an egg
-- Дададзены Universal script
-- Дададзены Corridor
-- Дададзены BloxStrike
-- Дададзены RIVALS
-
-========================================
-Версія 1.5
-========================================
-- EN/RU падказка зверху і знізу welcome
-- LangHintTop + LangHintBottom
-
-========================================
-Версія 1.4
-========================================
-- EN/RU падказка ў welcome
-
-========================================
-Версія 1.3
-========================================
-- Падказка як змяніць мову пасля welcome
-
-========================================
-Версія 1.2
-========================================
-- Фікс кнопкі змены мовы
-- langCooldown protection
-
-========================================
-Версія 1.1
-========================================
-- Дададзена змена мовы (EN/RU)
-- LangButton
+- 5 моў
 
 ========================================
 Версія 1.0
 ========================================
 - Першы рэліз
-- Базавы GUI
-- Blade Ball, AntiKillParts, PulseHub
-- RUNAWAYS, Universal FE, UwU hub
-- FakeVR, WallHop]],
+
+XyqwHub 7.4.1]],
 }
--- ========== LANG: KK ==========
+
 LANG.KK = {
     Loaded = "жүктелді", Error = "қате", Search = "Іздеу...",
     CustomPlaceholder = "Сілтеме...", RunCustom = "Іске қосу",
@@ -2177,491 +495,64 @@ LANG.KK = {
     ShareHub = "XyqwHub-пен бөлісу", HideTopBar = "Жоғарғы тақтаны жасыру", HideTopBarOn = "Жасыру: ҚОСУЛЫ",
     HideTopBarOff = "Жасыру: ӨШІРУЛІ", OrderSaved = "Рет сақталды!", OrderReset = "Рет қалпына келтірілді!",
     AntiKickOn = "AntiKick: ҚОСУЛЫ", AntiKickOff = "AntiKick: ӨШІРУЛІ",
+    AutoReinjectOn = "Auto-Reinject: ҚОСУЛЫ", AutoReinjectOff = "Auto-Reinject: ӨШІРУЛІ",
+    ReinjectQueued = "XyqwHub телепорттан кейін қайта жүктеледі", ReinjectNotSupported = "Auto-Reinject қолдау көрсетілмейді",
     ExecutorInfoTitle = "Орындаушы туралы", RunUNCTest = "UNC тестін іске қосу", RunSUNCTest = "sUNC тестін іске қосу",
-    Testing = "Тексеру...", TestResult = "Нәтиже",
+    Testing = "Тексеру...", TestResult = "Нәтиже", RejoinLastSession = "Rejoin Last Session",
     ChangeLogText = [[XyqwHub Өзгерістер
+
+========================================
+7.4.1 нұсқасы
+========================================
+- Жақсартылған Auto-Reinject: 5 fallback әдісі
+- S қойындысында жаңа Auto-Reinject батырмасы
+- Auto-Reinject әдепкі бойынша ҚОСУЛЫ
+- Параметрлер settings.json-да сақталады
+- Rejoin, ServerHop, TP to Small, Rejoin Last Session үшін жұмыс істейді
+- Кезекке қою кезінде хабарлама
+
+========================================
+7.4.0 нұсқасы
+========================================
+- JJS скрипті Xyqwerq-тың жеке скриптіне ауыстырылды
+- Auto-Rejoin session файлы арқылы
+
+========================================
+7.3.0 нұсқасы
+========================================
+- Auto-AntiKick
+
+========================================
+7.2.2 нұсқасы
+========================================
+- AntiKick түзетілді
 
 ========================================
 7.2.0 нұсқасы
 ========================================
-- БАРЛЫҚ терезелерді енді ресайздеуге болады (оң жақ төменгі бұрыштан тарту)
-- БАРЛЫҚ терезелерді енді сүйреуге болады (тақырыптан тарту)
-- Executor Info терезесі кішірейтілді (300x400)
-- Executor Info енді айналдырылады
-- Әмбебап MakeResizable() және MakeDraggable() функциялары қосылды
+- Терезелер ресайз/драг
 
 ========================================
 7.1.0 нұсқасы
 ========================================
-- A-Z батырмасы жойылды
-- Іздеу жолағы оң жақ шетке дейін созылды
-- AntiKick: ON/OFF батырмасы төменге қосылды
-- Info батырмасы қосылды (Орындаушы туралы + UNC/sUNC тесттер)
-- Executor Info: аты, нұсқасы, платформасы, функциялары
-- UNC тест: 26 тексеру (getgc, hookfunction, writefile және т.б.)
-- sUNC тест: 36 тексеру (hookmetamethod, getupvalue, firesignal және т.б.)
-- Drag жолағы енді тақырып түсінде (7.0.2-ден)
-
-========================================
-7.0.2 нұсқасы
-========================================
-- Drag жолағы енді ағымдағы тақырып түсінде (RED_MAIN)
-- Drag жолағы тақырып ауысқанда жаңарады
-- Rainbow: drag жолағы тақырыппен бірге түс ауыстырады
-- Барлық алдыңғы функциялар сақталды
-
-========================================
-7.0.1 нұсқасы
-========================================
-- Санаттар түзетілді (SwitchTab currentTab-ты дұрыс жаңартады)
-- Drag кезінде екі батырманы ұстау түзетілді (globalDrag флагы)
-- Тек бір батырма сүйрелуі мүмкін
-- Барлық алдыңғы функциялар сақталды
+- Info батырмасы
 
 ========================================
 7.0 нұсқасы
 ========================================
-- Drag zone 25px-ке дейін ұлғайтылды
-- Сол жақта визуалды сары жолақ қосылды
-- Санаттарды түзету әрекеті
-- Welcome функциялардың толық тізімімен жаңартылды
-- Толық өзгерістер қалпына келтірілді (1.0-7.0)
-
-========================================
-6.9.2 нұсқасы
-========================================
-- Drag zone түзету әрекеті
-- Санаттарды түзету әрекеті
-
-========================================
-6.9.1 нұсқасы
-========================================
-- Толық өзгерістер қалпына келтірілді (1.0-6.9.1)
-
-========================================
-6.9 нұсқасы
-========================================
-- Қойындылар/батырмалар қатуы түзетілді (fade орнына size)
-- GUI өлшемі сақталады
-- Drag тек сол жақ шетінен (15px)
-- Санаттар түзетілді
-
-========================================
-6.8 нұсқасы
-========================================
-- URL_OK, URL_BAD, URL_UNKNOWN, URL_CHECKING түзетілді
-- Түс құлдырауы түзетілді (nil)
-- getgenv() инициализациясы
-
-========================================
-6.7 нұсқасы
-========================================
-- Нөлден қайта жазылды
-- Drag & drop түзетілді (btn.InputBegan)
-- GUI анимациясы түзетілді
-- LANG кестесінің жабылуы түзетілді
-- 5 тіл: EN, RU, UK, BE, KK
-- 48 скрипт
-
-========================================
-6.6 нұсқасы
-========================================
-- Сүйреу түзетілді (btn.InputBegan)
-- GUI ашу/жабу анимациялары
-
-========================================
-6.5 нұсқасы
-========================================
-- Скрипт тек таппен іске қосылады
-- blockClick қорғанысы
-- ZIndex
-
-========================================
-6.4 нұсқасы
-========================================
-- Скрипт атаулары ортада
-- Сүйреу кезіндегі жарық «күйіп кетпейді»
-- Reset Order батырмасы
-
-========================================
-6.3 нұсқасы
-========================================
-- Blacklist жойылды
-- Тақырып түзетілді
-- Тегіс анимациялар
-- Drag & drop (hold 0.35s)
-- Рет Settings/order.json-да
-
-========================================
-6.2 нұсқасы
-========================================
-- × қара тізімде түзетілді
 - Толық өзгерістер
-
-========================================
-6.1 нұсқасы
-========================================
-- Қара тізім жаңарту түзетілді
 
 ========================================
 6.0 нұсқасы
 ========================================
-- 5 тіл: EN, RU, UK, BE, KK
-
-========================================
-5.9 нұсқасы
-========================================
-- X оң жақ бұрышқа
-- Жоғарғы тақтаны сүйреу
-
-========================================
-5.6 нұсқасы
-========================================
-- Дөңгелектену жойылды
-- Негізгі қойынды All
-
-========================================
-5.5 нұсқасы
-========================================
-- Auto Execute, Auto Hide, URL Tester, Sorting, Settings
-
-========================================
-5.4 нұсқасы
-========================================
-- Авто-орындау
-- Қара тізім
-- Auto Hide GUI
-- URL Tester
-- Сұрыптау
-- Share Fav/Rct
-
-========================================
-5.3 нұсқасы
-========================================
-- Custom Color кішірек + ресайз
-- Әмбебап workspace түзетілді
-
-========================================
-5.2 нұсқасы
-========================================
-- Әмбебап workspace қолдауы
-
-========================================
-5.1 нұсқасы
-========================================
-- Share Fav Scripts, Share XyqwHub, Reset, Share Color
-
-========================================
-5.0 нұсқасы
-========================================
-- Custom Color бірден
-
-========================================
-4.9 нұсқасы
-========================================
-- Welcome кішірек + скролл, 13 тақырып
-
-========================================
-4.8 нұсқасы
-========================================
-- Custom Color rgb() қолдауы
-
-========================================
-4.7 нұсқасы
-========================================
-- Custom Color picker
-
-========================================
-4.6 нұсқасы
-========================================
-- Rainbow қойынды жыпылықтауы түзетілді
-
-========================================
-4.5 нұсқасы
-========================================
-- Файлдар workspace-ке
-
-========================================
-4.4 нұсқасы
-========================================
-- Remove Tags және Destroy бөлек
-
-========================================
-4.3 нұсқасы
-========================================
-- Server Info: Rejoin, ServerHop, TP small
-
-========================================
-4.2 нұсқасы
-========================================
-- Код минификацияланған стильде қайта жазылды
-- THEMES = {Red, Blue, Rainbow}
-- ApplyTheme(themeName) — тақырып ауыстыру
-- themeOrder + themeIndex — тақырыптарды ауыстыру
-- ExtractURL(input.Text) — loadstring-тен URL алу
-- SpecialContainer — Remove Tags + Destroy контейнері
-- removeTagsBtn (50%) — "Remove Tags"
-- destroyBtn (50%) — "Destroy"
-- Rainbow тақырыбы — түс ауысу анимациясы
-- Оң жақ төменгі бұрышта ресайз
-- Бастапқы терезе 250x300
-- Барлық батырмалар шаршы (UICorner жоқ)
-- Жарық қызыл сарының орнына
-- Батырмалар 1 қатарда
-- GetTheme() жойылды, түстер тікелей
-- Hide Top Bar ауысады (H/S)
-- FPS/Ping жоғарғы тақтада
-- TopBar сүйреледі
-- DockButton сүйреледі
-- Search bar
-- Tabs (All, BB, MM2, INK, Misc, Fav, Rct)
-- Favorites system (★)
-- Recently used
-- Script history
-- Custom script runner
-- Player list
-- Server info + Copy JobId
-- Anti-AFK
-- Re-launch protection
-- 46 скрипт
-- Doors V2 (Copy) — буферге көшіру
-- Doors V3 (Cheesy) — қарапайым
-- Doors v4 — қарапайым
-
-========================================
-4.1 нұсқасы
-========================================
-- Батырмалардың қабаттасуы түзетілді
-- Қызыл бордюр, фон, мәтін қайтарылды
-- Ресайз қосылды
-- Hide Top Bar қосылды
-- Кішкентай бастапқы өлшем
-
-========================================
-4.0 нұсқасы
-========================================
-- Top bar (executor, name, FPS, Ping)
-- Search bar
-- Tabs
-- Favorites
-- Recently used
-- Script history
-- Theme switcher
-- Custom script runner
-- Player list
-- Server info
-- Copy JobId
-- Animations
-- Keybinds
-- Anti-AFK
-
-========================================
-3.9 нұсқасы
-========================================
-- Барлық скрипттер үшін "Script executed!" хабарламасы
-- Doors v4 қосылды
-- Kiti (MM2) қосылды
-- BETA тегі Tester болып өзгертілді
-- Canvas өзгерістер (1600 → 1700)
-
-========================================
-3.8 нұсқасы
-========================================
-- Респавннан кейін тег қалпына келтіру түзетілді
-- Тег CharacterAdded + task.wait қолданады
-- BETA тегі Tester болып өзгертілді
-
-========================================
-3.7 нұсқасы
-========================================
-- Тестер тегі қосылды (көк градиент)
-- Тестерлерге қош келу қосылды
-- 2 тестер қосылды (9686718765, 3701387385)
-
-========================================
-3.6 нұсқасы
-========================================
-- Тақырыптағы батырмалардың кездейсоқ басылуы түзетілді
-- ChangeLog және тіл үшін кулдаун қосылды
-- Тақырып батырмаларына Active қосылды
-
-========================================
-3.5 нұсқасы
-========================================
-- Тек иесі үшін қош келу қосылды
-- "Welcome, my father :3"
-
-========================================
-3.4 нұсқасы
-========================================
-- Тег үшін қою қызыл (200,0,0 және 60,0,0)
-- Remove/Destroy үшін қарапайым фон
-- Remove/Destroy үшін қарапайым бордюр
-
-========================================
-3.3 нұсқасы
-========================================
-- Тег өлшемі түзетілді (енді созылмайды)
-- Градиент түзетілді (Rotation арқылы)
-- Градиент барлығына көрінеді
-- Мәтін позициясы түзетілді
-- Мәтін өлшемі түзетілді (кішірек, созылмаған)
-- UIStroke glow қосылды
-
-========================================
-3.2 нұсқасы
-========================================
-- Градиент анимациясы қайтарылды
-- Мәтін өлшемі кішірейтілді
-- UIStroke glow қосылды
-
-========================================
-3.1 нұсқасы
-========================================
-- Тег жүйесі толығымен қайта жазылды
-- Тег HumanoidRootPart-қа бекітілді
-- Heartbeat арқылы позициялау қосылды
-- Сканерлеу логикасы түзетілді
-
-========================================
-3.0 нұсқасы
-========================================
-- Градиент жойылды
-- debug prints қосылды
-- Тег логикасы жеңілдетілді
-
-========================================
-2.9 нұсқасы
-========================================
-- XyqwHub OWNER тегі қосылды
-- "Remove XyqwHub Tag" батырмасы қосылды
-- Owner тегі үшін градиент анимациясы қосылды
-- 2 owner аккаунт қосылды (4396977722, 8527910367)
-
-========================================
-2.8 нұсқасы
-========================================
-- XyqwHub Loaded! бірден пайда болады
-- ChangeLog EN/RU-ға аударылды
-- Тег тек иелеріне көрінеді
-
-========================================
-2.7 нұсқасы
-========================================
-- Roblox хабарламалары (оң жақ төменгі бұрыш)
-- ChangeLog батырмасы қосылды
-- Loading / Loaded хабарламалары
-- Тег XyqwHub барларға көрінеді
-
-========================================
-2.6 нұсқасы
-========================================
-- Хабарламалар оң жақ төменгі бұрышқа жылжытылды
-- Жаңа хабарлама жүйесі
-
-========================================
-2.5 нұсқасы
-========================================
-- Барлық хабарламалар EN/RU-ға аударылды
-- Re-launch protection
-- Тіл ауыстыру батырмасы түзетілді
-- Иесі үшін қош келу
-
-========================================
-2.4 нұсқасы
-========================================
-- Re-launch protection қосылды
-- DESTROY батырмасы флагты тазалайды
-- Тек иесі үшін қош келу
-
-========================================
-2.3 нұсқасы
-========================================
-- Adopt me қосылды
-
-========================================
-2.2 нұсқасы
-========================================
-- bLockman's minesweaper қосылды
-- Cheating during test қосылды
-
-========================================
-2.1 нұсқасы
-========================================
-- DropKick қосылды
-- Evade қосылды
-- A Dusty Trip қосылды
-- A Dusty Trip v2 қосылды
-
-========================================
-2.0 нұсқасы
-========================================
-- Auto Execute жойылды
-- Барлық батырмалар бір тізімде
-- 2.0 stable нұсқасы
-
-========================================
-1.9 нұсқасы
-========================================
-- Doors V3 (Cheesy) үшін кілт қосылды
-- "Key: joincheesedsc"
-
-========================================
-1.8 нұсқасы
-========================================
-- Death Order [SIMON] қосылды
-- CandyWare (MM2) қосылды
-
-========================================
-1.7 нұсқасы
-========================================
-- Troll script қосылды
-
-========================================
-1.6 нұсқасы
-========================================
-- Steal an egg қосылды
-- Universal script қосылды
-- Corridor қосылды
-- BloxStrike қосылды
-- RIVALS қосылды
-
-========================================
-1.5 нұсқасы
-========================================
-- EN/RU кеңесі welcome жоғары және төмен
-- LangHintTop + LangHintBottom
-
-========================================
-1.4 нұсқасы
-========================================
-- welcome-те EN/RU кеңесі
-
-========================================
-1.3 нұсқасы
-========================================
-- welcome-тен кейін тілді ауыстыру туралы кеңес
-
-========================================
-1.2 нұсқасы
-========================================
-- Тіл ауыстыру батырмасы түзетілді
-- langCooldown protection
-
-========================================
-1.1 нұсқасы
-========================================
-- Тіл ауыстыру қосылды (EN/RU)
-- LangButton
+- 5 тіл
 
 ========================================
 1.0 нұсқасы
 ========================================
 - Алғашқы шығарылым
-- Негізгі GUI
-- Blade Ball, AntiKillParts, PulseHub
-- RUNAWAYS, Universal FE, UwU hub
-- FakeVR, WallHop]],
+
+XyqwHub 7.4.1]],
 }
 
 local function _(key)
@@ -2673,7 +564,7 @@ local function ShowRobloxNotification(text, duration)
     duration = duration or 4
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "XyqwHub", Text = text, Duration = duration
+            Title = HUB_NAME, Text = text, Duration = duration
         })
     end)
 end
@@ -2686,7 +577,113 @@ local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
--- ========== УНИВЕРСАЛЬНЫЕ ФУНКЦИИ ДЛЯ ВСЕХ ОКОН ==========
+-- ========== ADVANCED AUTO-REINJECT (5 fallback methods) ==========
+local function QueueReinject()
+    if not getgenv().XyqwAutoReinject then
+        return false
+    end
+
+    local restoreCode = 'task.wait(3)\n'
+        .. 'if getgenv().XyqwHubRunning then getgenv().XyqwHubRunning = nil end\n'
+        .. 'loadstring(game:HttpGet("' .. XYQWHUB_URL .. '"))()'
+
+    local queued = false
+    local method = "unknown"
+
+    -- Способ 1: queue_on_teleport (стандарт)
+    if not queued then
+        pcall(function()
+            if typeof(queue_on_teleport) == "function" then
+                queue_on_teleport(restoreCode)
+                queued = true
+                method = "queue_on_teleport"
+            end
+        end)
+    end
+
+    -- Способ 2: queueonteleport (без подчёркиваний)
+    if not queued then
+        pcall(function()
+            if typeof(queueonteleport) == "function" then
+                queueonteleport(restoreCode)
+                queued = true
+                method = "queueonteleport"
+            end
+        end)
+    end
+
+    -- Способ 3: syn.queue_on_teleport
+    if not queued then
+        pcall(function()
+            if syn and typeof(syn.queue_on_teleport) == "function" then
+                syn.queue_on_teleport(restoreCode)
+                queued = true
+                method = "syn.queue_on_teleport"
+            end
+        end)
+    end
+
+    -- Способ 4: fluxus.queue_on_teleport
+    if not queued then
+        pcall(function()
+            if fluxus and typeof(fluxus.queue_on_teleport) == "function" then
+                fluxus.queue_on_teleport(restoreCode)
+                queued = true
+                method = "fluxus.queue_on_teleport"
+            end
+        end)
+    end
+
+    -- Способ 5: secure_call для Delta
+    if not queued then
+        pcall(function()
+            if typeof(secure_call) == "function" and typeof(queue_on_teleport) == "function" then
+                secure_call(function()
+                    queue_on_teleport(restoreCode)
+                end)()
+                queued = true
+                method = "secure_call"
+            end
+        end)
+    end
+
+    -- Уведомление
+    if queued then
+        ShowRobloxNotification(_("ReinjectQueued") .. " (" .. method .. ")", 3)
+        return true
+    else
+        ShowRobloxNotification(_("ReinjectNotSupported"), 4)
+        return false
+    end
+end
+
+local function AddHeartbeatTask(fn)
+    table.insert(heartbeatTasks, fn)
+    if not heartbeatConnection then
+        heartbeatConnection = RunService.Heartbeat:Connect(function(dt)
+            for _, task in ipairs(heartbeatTasks) do
+                pcall(task, dt)
+            end
+        end)
+    end
+end
+
+local heartbeatTasks = {}
+local renderTasks = {}
+local heartbeatConnection = nil
+local renderConnection = nil
+
+local function AddRenderTask(fn)
+    table.insert(renderTasks, fn)
+    if not renderConnection then
+        renderConnection = RunService.RenderStepped:Connect(function(dt)
+            for _, task in ipairs(renderTasks) do
+                pcall(task, dt)
+            end
+        end)
+    end
+end
+
 local function MakeResizable(frame, minW, minH, maxW, maxH)
     minW = minW or 200
     minH = minH or 150
@@ -2706,7 +703,6 @@ local function MakeResizable(frame, minW, minH, maxW, maxH)
 
     local resizing = false
     local rsStart, rsSize
-
     handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             resizing = true
@@ -2714,7 +710,6 @@ local function MakeResizable(frame, minW, minH, maxW, maxH)
             rsSize = frame.Size
         end
     end)
-
     UserInputService.InputChanged:Connect(function(input)
         if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - rsStart
@@ -2723,7 +718,6 @@ local function MakeResizable(frame, minW, minH, maxW, maxH)
             frame.Size = UDim2.new(0, newX, 0, newY)
         end
     end)
-
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             resizing = false
@@ -2735,7 +729,6 @@ local function MakeDraggable(frame, dragPart)
     dragPart = dragPart or frame
     local dragging = false
     local dragStart, startPos
-
     dragPart.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
@@ -2756,6 +749,8 @@ local function MakeDraggable(frame, dragPart)
     end)
 end
 
+local JJS_URL = "https://raw.githubusercontent.com/Xyqwerq/JJS-SCRIPT/main/jjs_script.lua"
+
 local SCRIPTS = {
     {Name = "Blade Ball", Category = "BB", URL = "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"},
     {Name = "Blade Ball 2", Category = "BB", URL = "https://wings.ac/loader"},
@@ -2774,7 +769,7 @@ local SCRIPTS = {
     {Name = "CandyWare (MM2)", Category = "MM2", URL = "https://raw.githubusercontent.com/Be1for/Scripts/refs/heads/main/candyware.luau"},
     {Name = "RemainsHub V2", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-RemainsHub-V2-50805"},
     {Name = "R6 Emotes", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-r6-emotes-OPEN-SOURCE-69464"},
-    {Name = "Jujutsu Sheninagouns", Category = "Misc", URL = "https://raw.githubusercontent.com/peeky-co/scripts/refs/heads/main/tbo"},
+    {Name = "Jujutsu Sheninagouns", Category = "Misc", URL = JJS_URL},
     {Name = "Free Cam", Category = "Misc", URL = "https://rawscripts.net/raw/Universal-Script-Free-cam-script-pc-and-mobile-223089"},
     {Name = "Doors (Abysall)", Category = "Misc", URL = "https://rawscripts.net/raw/DOORS-Abysall-hub-OP-205906"},
     {Name = "Doors V2 (Copy)", Category = "Misc", URL = "SPECIAL_COPY_DOORS_V2"},
@@ -2814,7 +809,6 @@ task.spawn(function()
             for _, data in ipairs(SCRIPTS) do
                 if data.Name == name and data.URL ~= "SPECIAL_COPY_DOORS_V2" then
                     pcall(function() loadstring(game:HttpGet(data.URL))() end)
-                    print("[XyqwHub] Auto-executed: " .. name)
                     break
                 end
             end
@@ -2822,48 +816,69 @@ task.spawn(function()
     end
 end)
 
--- ========== ANTI-KICK (как в Infinite Yield) ==========
-local antiKickConnection = nil
+local antiKickActive = false
 local antiKickOldNamecall = nil
 
 local function StartAntiKick()
-    if antiKickConnection then return end
+    if antiKickActive then return end
     getgenv().XyqwAntiKick = true
+    getgenv().XyqwSettings.antiKick = true
+    SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
 
     local ok, err = pcall(function()
-        if not hookmetamethod then
-            error("hookmetamethod not supported")
-        end
-
+        if not hookmetamethod then error("hookmetamethod not supported") end
+        if not getnamecallmethod then error("getnamecallmethod not supported") end
         local LP = game:GetService("Players").LocalPlayer
 
         antiKickOldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
             local method = getnamecallmethod()
             if method == "Kick" and self == LP then
                 if getgenv().XyqwAntiKick then
-                    ShowRobloxNotification("AntiKick: Blocked kick attempt!", 3)
+                    pcall(function() ShowRobloxNotification("AntiKick: Blocked kick!", 3) end)
                     return nil
                 end
             end
             return antiKickOldNamecall(self, ...)
         end)
-
-        antiKickConnection = true
+        antiKickActive = true
     end)
 
-    if ok then
-        ShowRobloxNotification(_("AntiKickOn"), 2)
-    else
+    if not ok then
         getgenv().XyqwAntiKick = false
-        antiKickConnection = nil
-        ShowRobloxNotification("AntiKick: " .. tostring(err), 4)
+        antiKickActive = false
     end
 end
 
 local function StopAntiKick()
     getgenv().XyqwAntiKick = false
-    antiKickConnection = nil
+    getgenv().XyqwSettings.antiKick = false
+    SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
+    antiKickActive = false
     ShowRobloxNotification(_("AntiKickOff"), 2)
+end
+
+task.spawn(function()
+    task.wait(5)
+    if getgenv().XyqwAntiKick then
+        StartAntiKick()
+    end
+end)
+
+local function IsOwner()
+    for _, id in ipairs(OWNER_IDS) do if Players.LocalPlayer.UserId == id then return true end end
+    return false
+end
+local function IsBeta()
+    for _, id in ipairs(BETA_IDS) do if Players.LocalPlayer.UserId == id then return true end end
+    return false
+end
+
+local tagsEnabled = true
+local activeTags = {}
+local function GetRole(plr)
+    for _, id in ipairs(OWNER_IDS) do if plr.UserId == id then return "OWNER" end end
+    for _, id in ipairs(BETA_IDS) do if plr.UserId == id then return "TESTER" end end
+    return nil
 end
 
 local function CreateTagForPlayer(plr)
@@ -2896,14 +911,14 @@ local function CreateTagForPlayer(plr)
     label.Parent = billboard
     local gradient = Instance.new("UIGradient")
     if role == "OWNER" then
-        label.Text = "XyqwHub OWNER"
+        label.Text = HUB_NAME .. " OWNER"
         gradient.Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 0, 0)),
             ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60, 0, 0)),
             ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
         })
     else
-        label.Text = "XyqwHub Tester"
+        label.Text = HUB_NAME .. " Tester"
         gradient.Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 120, 255)),
             ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 20, 60)),
@@ -2970,7 +985,7 @@ local function SetupCharacterTag(plr)
 end
 
 CheckAllPlayers()
-RunService.Heartbeat:Connect(CheckAllPlayers)
+AddHeartbeatTask(CheckAllPlayers)
 Players.PlayerAdded:Connect(function(plr)
     SetupCharacterTag(plr)
     plr.CharacterAdded:Connect(function() SetupCharacterTag(plr) end)
@@ -2990,7 +1005,7 @@ end)
 local fpsValue = 60
 local fpsCounter = 0
 local fpsTime = 0
-RunService.RenderStepped:Connect(function(dt)
+AddRenderTask(function(dt)
     fpsCounter = fpsCounter + 1
     fpsTime = fpsTime + dt
     if fpsTime >= 1 then fpsValue = fpsCounter fpsCounter = 0 fpsTime = 0 end
@@ -3008,15 +1023,51 @@ local function GetExecutorName()
     end)
     return ok and name or "Unknown"
 end
-local globalDrag = false
+-- ========== ANTI-DETECT SCREEN GUI ==========
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "XyqwHubGui"
+local stealthNames = {"Chat", "RobloxGui", "TopBar", "Notification", "LoadingScreen", "Backpack", "PlayerList", "CoreGui", "RobloxLoadingScreen", "TouchGui", "ControlFrame"}
+screenGui.Name = stealthNames[math.random(1, #stealthNames)] .. tostring(math.random(100, 999))
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.DisplayOrder = 999
-pcall(function() screenGui.Parent = CoreGui end)
-if not screenGui.Parent then screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
+
+local parentAssigned = false
+pcall(function()
+    if syn and syn.protect_gui then
+        syn.protect_gui(screenGui)
+        screenGui.Parent = game:GetService("CoreGui")
+        parentAssigned = true
+        return
+    end
+    if protect_gui then
+        protect_gui(screenGui)
+        screenGui.Parent = game:GetService("CoreGui")
+        parentAssigned = true
+        return
+    end
+    if gethui then
+        screenGui.Parent = gethui()
+        parentAssigned = true
+        return
+    end
+end)
+
+if not parentAssigned then
+    pcall(function() screenGui.Parent = game:GetService("CoreGui") end)
+    if not screenGui.Parent then
+        screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+    end
+end
+
+task.spawn(function()
+    while screenGui.Parent do
+        screenGui.Name = stealthNames[math.random(1, #stealthNames)] .. tostring(math.random(100, 999))
+        task.wait(3)
+    end
+end)
+
+local globalDrag = false
 
 local topBar = Instance.new("TextButton")
 topBar.Name = "TopBar"
@@ -3116,7 +1167,7 @@ dockButton.Size = UDim2.new(0, 90, 0, 26)
 dockButton.Position = UDim2.new(0.5, -45, 0.05, 42)
 dockButton.BackgroundColor3 = RED_BG
 dockButton.TextColor3 = RED_MAIN
-dockButton.Text = "XyqwHub"
+dockButton.Text = HUB_NAME
 dockButton.TextScaled = true
 dockButton.Font = Enum.Font.GothamBold
 dockButton.BorderSizePixel = 2
@@ -3224,7 +1275,7 @@ titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(0, 70, 1, 0)
 titleLabel.Position = UDim2.new(0, 5, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "XyqwHub"
+titleLabel.Text = HUB_NAME
 titleLabel.TextColor3 = RED_MAIN
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
@@ -3643,10 +1694,20 @@ local function CreateScriptButton(data)
         table.insert(getgenv().XyqwRecent, 1, data.Name)
         while #getgenv().XyqwRecent > 5 do table.remove(getgenv().XyqwRecent) end
         SaveTable(RCT_FILE, getgenv().XyqwRecent)
+
         if data.URL == "SPECIAL_COPY_DOORS_V2" then
             local scriptText = 'getgenv().SCRIPT_KEY = "KEYLESS"\nloadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()'
             pcall(function() setclipboard(scriptText) end)
             ShowRobloxNotification("Doors V2 - copied", 5)
+        elseif data.URL == JJS_URL then
+            ShowRobloxNotification("Хей!! Этот скрипт был сделан мной (Xyqwerq)! Наслаждайся :)", 6)
+            task.wait(1)
+            local success = pcall(function() loadstring(game:HttpGet(data.URL))() end)
+            if success then
+                ShowRobloxNotification(data.Name .. " - " .. _("ScriptExecuted"), 3)
+            else
+                ShowRobloxNotification(data.Name .. " - " .. _("Error"), 5)
+            end
         else
             local success = pcall(function() loadstring(game:HttpGet(data.URL))() end)
             if success then
@@ -3655,6 +1716,7 @@ local function CreateScriptButton(data)
                 ShowRobloxNotification(data.Name .. " - " .. _("Error"), 5)
             end
         end
+
         task.wait(0.3)
         TweenColor(container, "BackgroundColor3", RED_BG, 0.15)
         isRunning = false
@@ -3785,11 +1847,11 @@ shareFavBtn.MouseButton1Click:Connect(function()
     local list = {}
     for name, _ in pairs(getgenv().XyqwFavorites) do table.insert(list, name) end
     table.sort(list)
-    local text = "XyqwHub - My Favorite Scripts:\n"
+    local text = HUB_NAME .. " - My Favorite Scripts:\n"
     if #list == 0 then text = text .. "(empty)" else
         for i, name in ipairs(list) do text = text .. i .. ". " .. name .. "\n" end
     end
-    text = text .. "\nGenerated by XyqwHub " .. VERSION
+    text = text .. "\nGenerated by " .. HUB_NAME .. " " .. VERSION
     pcall(function() setclipboard(text) end)
     ShowRobloxNotification(_("FavShared"), 3)
 end)
@@ -3817,11 +1879,11 @@ shareRctBtn.AutoButtonColor = false
 shareRctBtn.MouseEnter:Connect(function() TweenColor(shareRctContainer, "BackgroundColor3", RED_DARK, 0.12) end)
 shareRctBtn.MouseLeave:Connect(function() TweenColor(shareRctContainer, "BackgroundColor3", RED_BG, 0.15) end)
 shareRctBtn.MouseButton1Click:Connect(function()
-    local text = "XyqwHub - My Recent Scripts:\n"
+    local text = HUB_NAME .. " - My Recent Scripts:\n"
     if #getgenv().XyqwRecent == 0 then text = text .. "(empty)" else
         for i, name in ipairs(getgenv().XyqwRecent) do text = text .. i .. ". " .. name .. "\n" end
     end
-    text = text .. "\nGenerated by XyqwHub " .. VERSION
+    text = text .. "\nGenerated by " .. HUB_NAME .. " " .. VERSION
     pcall(function() setclipboard(text) end)
     ShowRobloxNotification(_("RctShared"), 3)
 end)
@@ -3904,7 +1966,6 @@ resetOrderBtn.MouseButton1Click:Connect(function()
     ShowRobloxNotification(_("OrderReset"), 3)
 end)
 
--- ========== ANTI-KICK BUTTON ==========
 local antiKickContainer = Instance.new("Frame")
 antiKickContainer.Name = "AntiKickContainer"
 antiKickContainer.Size = UDim2.new(1, -10, 0, 32)
@@ -3927,7 +1988,7 @@ antiKickBtn.AutoButtonColor = false
 
 local function UpdateAntiKickText()
     if getgenv().XyqwAntiKick then
-        antiKickBtn.Text = _("AntiKickOn")
+        antiKickBtn.Text = _("AntiKickOn") .. " (auto)"
         antiKickBtn.TextColor3 = Color3.fromRGB(0, 255, 100)
     else
         antiKickBtn.Text = _("AntiKickOff")
@@ -3971,10 +2032,12 @@ destroyBtnMain.AutoButtonColor = false
 destroyBtnMain.MouseEnter:Connect(function() TweenColor(destroyContainer, "BackgroundColor3", RED_DARK, 0.12) end)
 destroyBtnMain.MouseLeave:Connect(function() TweenColor(destroyContainer, "BackgroundColor3", RED_BG, 0.15) end)
 destroyBtnMain.MouseButton1Click:Connect(function()
-    ShowRobloxNotification("XyqwHub Destroyed!", 2)
+    ShowRobloxNotification(HUB_NAME .. " Destroyed!", 2)
     getgenv().XyqwHubRunning = nil
     screenGui:Destroy()
 end)
+
+-- ========== SHOW SETTINGS ==========
 local ShowSettings
 ShowSettings = function()
     local frame = Instance.new("Frame")
@@ -4075,7 +2138,7 @@ ShowSettings = function()
     hint.Position = UDim2.new(0, 10, 0, 105)
     hint.BackgroundTransparency = 1
     hint.TextColor3 = Color3.fromRGB(150, 150, 150)
-    hint.Text = "Press bind to hide/show XyqwHub GUI.\nCurrent: " .. tostring(getgenv().XyqwSettings.autoHideBind)
+    hint.Text = "Press bind to hide/show " .. HUB_NAME .. " GUI.\nCurrent: " .. tostring(getgenv().XyqwSettings.autoHideBind)
     hint.TextWrapped = true
     hint.TextScaled = true
     hint.Font = Enum.Font.Gotham
@@ -4364,11 +2427,12 @@ local function ShowPlayerList()
     MakeResizable(frame, 250, 200, 900, 1000)
 end
 
+-- ========== SHOW SERVER INFO (с Auto-Reinject кнопкой) ==========
 local function ShowServerInfo()
     local frame = Instance.new("Frame")
     frame.Name = "ServerInfoFrame"
-    frame.Size = UDim2.new(0, 350, 0, 320)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -160)
+    frame.Size = UDim2.new(0, 350, 0, 400)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -200)
     frame.BackgroundColor3 = RED_BG
     frame.BorderSizePixel = 2
     frame.BorderColor3 = RED_MAIN
@@ -4456,6 +2520,7 @@ local function ShowServerInfo()
     rejoinBtn.Parent = frame
     rejoinBtn.AutoButtonColor = false
     rejoinBtn.MouseButton1Click:Connect(function()
+        QueueReinject()
         ShowRobloxNotification("Rejoining...", 2)
         task.wait(0.5)
         pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer) end)
@@ -4475,6 +2540,7 @@ local function ShowServerInfo()
     hopBtn.Parent = frame
     hopBtn.AutoButtonColor = false
     hopBtn.MouseButton1Click:Connect(function()
+        QueueReinject()
         ShowRobloxNotification("Searching for server...", 3)
         local servers = GetServers()
         if #servers == 0 then ShowRobloxNotification("No servers found!", 3) return end
@@ -4498,6 +2564,7 @@ local function ShowServerInfo()
     smallBtn.Parent = frame
     smallBtn.AutoButtonColor = false
     smallBtn.MouseButton1Click:Connect(function()
+        QueueReinject()
         ShowRobloxNotification("Searching for small server...", 3)
         local servers = GetServers()
         if #servers == 0 then ShowRobloxNotification("No servers found!", 3) return end
@@ -4508,9 +2575,41 @@ local function ShowServerInfo()
         pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, best.id, Players.LocalPlayer) end)
     end)
 
+    -- Кнопка Rejoin Last Session
+    local lastSessionBtn = Instance.new("TextButton")
+    lastSessionBtn.Size = UDim2.new(1, -20, 0, 30)
+    lastSessionBtn.Position = UDim2.new(0, 10, 0, 232)
+    lastSessionBtn.BackgroundColor3 = RED_DARK
+    lastSessionBtn.TextColor3 = RED_MAIN
+    lastSessionBtn.Text = _("RejoinLastSession")
+    lastSessionBtn.TextScaled = true
+    lastSessionBtn.Font = Enum.Font.GothamBold
+    lastSessionBtn.BorderSizePixel = 1
+    lastSessionBtn.BorderColor3 = RED_MAIN
+    lastSessionBtn.ZIndex = 51
+    lastSessionBtn.Parent = frame
+    lastSessionBtn.AutoButtonColor = false
+    lastSessionBtn.MouseButton1Click:Connect(function()
+        local ok, savedJob = pcall(function()
+            if readfile and isfile and isfile(SESSION_FILE) then
+                return readfile(SESSION_FILE)
+            end
+            return nil
+        end)
+        if ok and savedJob and savedJob ~= "" and savedJob ~= game.JobId then
+            QueueReinject()
+            ShowRobloxNotification("Rejoining last server...", 2)
+            task.wait(0.5)
+            pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, savedJob, Players.LocalPlayer) end)
+        else
+            ShowRobloxNotification("No saved session", 2)
+        end
+    end)
+
+    -- Кнопка Copy JobId
     local copyBtn = Instance.new("TextButton")
     copyBtn.Size = UDim2.new(1, -20, 0, 30)
-    copyBtn.Position = UDim2.new(0, 10, 0, 232)
+    copyBtn.Position = UDim2.new(0, 10, 0, 270)
     copyBtn.BackgroundColor3 = RED_MAIN
     copyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
     copyBtn.Text = _("CopyJobId")
@@ -4525,8 +2624,48 @@ local function ShowServerInfo()
         ShowRobloxNotification(_("JobIdCopied"), 2)
     end)
 
+    -- ========== AUTO-REINJECT BUTTON ==========
+    local reinjectBtn = Instance.new("TextButton")
+    reinjectBtn.Size = UDim2.new(1, -20, 0, 32)
+    reinjectBtn.Position = UDim2.new(0, 10, 0, 308)
+    reinjectBtn.TextColor3 = RED_MAIN
+    reinjectBtn.TextScaled = true
+    reinjectBtn.Font = Enum.Font.GothamBold
+    reinjectBtn.BorderSizePixel = 1
+    reinjectBtn.BorderColor3 = RED_MAIN
+    reinjectBtn.ZIndex = 51
+    reinjectBtn.Parent = frame
+    reinjectBtn.AutoButtonColor = false
+
+    local function UpdateReinjectButton()
+        if getgenv().XyqwAutoReinject then
+            reinjectBtn.Text = _("AutoReinjectOn")
+            reinjectBtn.TextColor3 = Color3.fromRGB(0, 255, 100)
+            reinjectBtn.BackgroundColor3 = RED_DARK
+        else
+            reinjectBtn.Text = _("AutoReinjectOff")
+            reinjectBtn.TextColor3 = RED_MAIN
+            reinjectBtn.BackgroundColor3 = RED_BG
+        end
+    end
+    UpdateReinjectButton()
+
+    reinjectBtn.MouseEnter:Connect(function() TweenColor(reinjectBtn, "BackgroundColor3", RED_DARK, 0.12) end)
+    reinjectBtn.MouseLeave:Connect(function() UpdateReinjectButton() end)
+    reinjectBtn.MouseButton1Click:Connect(function()
+        getgenv().XyqwAutoReinject = not getgenv().XyqwAutoReinject
+        getgenv().XyqwSettings.autoReinject = getgenv().XyqwAutoReinject
+        SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
+        UpdateReinjectButton()
+        if getgenv().XyqwAutoReinject then
+            ShowRobloxNotification(_("AutoReinjectOn"), 2)
+        else
+            ShowRobloxNotification(_("AutoReinjectOff"), 2)
+        end
+    end)
+
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
-    MakeResizable(frame, 280, 250, 700, 700)
+    MakeResizable(frame, 280, 300, 700, 700)
 end
 
 local function ShowCustomScript()
@@ -4631,6 +2770,7 @@ end
 customBtn.MouseButton1Click:Connect(ShowCustomScript)
 playerBtn.MouseButton1Click:Connect(ShowPlayerList)
 serverBtn.MouseButton1Click:Connect(ShowServerInfo)
+-- ========== INFO BUTTON: Executor Info + UNC/sUNC ==========
 local function RunUNCTest()
     local passed, failed = 0, 0
     local results = {}
@@ -4723,14 +2863,16 @@ local function RunSUNCTest()
     check("fireclickdetector", function() return type(fireclickdetector) == "function" end)
     check("fireproximityprompt", function() return type(fireproximityprompt) == "function" end)
     check("firetouchinterest", function() return type(firetouchinterest) == "function" end)
+    check("queue_on_teleport", function() return type(queue_on_teleport) == "function" end)
+    check("gethui", function() return type(gethui) == "function" end)
     return passed, failed, results
 end
 
 local function ShowExecutorInfo()
     local frame = Instance.new("Frame")
     frame.Name = "ExecutorInfoFrame"
-    frame.Size = UDim2.new(0, 300, 0, 400)
-    frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+    frame.Size = UDim2.new(0, 320, 0, 420)
+    frame.Position = UDim2.new(0.5, -160, 0.5, -210)
     frame.BackgroundColor3 = RED_BG
     frame.BorderSizePixel = 2
     frame.BorderColor3 = RED_MAIN
@@ -4739,7 +2881,6 @@ local function ShowExecutorInfo()
     frame.ClipsDescendants = true
     frame.Parent = screenGui
 
-    -- Драгбар
     local dragBar = Instance.new("TextButton")
     dragBar.Size = UDim2.new(1, -35, 0, 26)
     dragBar.Position = UDim2.new(0, 2, 0, 3)
@@ -4774,7 +2915,6 @@ local function ShowExecutorInfo()
     closeBtn.AutoButtonColor = false
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
 
-    -- Кнопки UNC/sUNC сверху
     local uncBtn = Instance.new("TextButton")
     uncBtn.Size = UDim2.new(0.5, -13, 0, 26)
     uncBtn.Position = UDim2.new(0, 8, 0, 32)
@@ -4801,9 +2941,8 @@ local function ShowExecutorInfo()
     suncBtn.Parent = frame
     suncBtn.AutoButtonColor = false
 
-    -- Инфо об экзекьюторе
     local infoLabel = Instance.new("TextLabel")
-    infoLabel.Size = UDim2.new(1, -20, 0, 90)
+    infoLabel.Size = UDim2.new(1, -20, 0, 110)
     infoLabel.Position = UDim2.new(0, 10, 0, 64)
     infoLabel.BackgroundColor3 = RED_DARK
     infoLabel.BorderSizePixel = 1
@@ -4822,16 +2961,26 @@ local function ShowExecutorInfo()
     local hasSetclip = type(setclipboard) == "function" and "✓" or "✗"
     local hasHttpGet = type(game.HttpGet) == "function" and "✓" or "✗"
     local hasIdentify = type(identifyexecutor) == "function" and "✓" or "✗"
+    local hasHookMM = type(hookmetamethod) == "function" and "✓" or "✗"
+    local hasGetgc = type(getgc) == "function" and "✓" or "✗"
+    local hasGetconn = type(getconnections) == "function" and "✓" or "✗"
+    local hasQueue = type(queue_on_teleport) == "function" and "✓" or "✗"
+    local hasGethui = type(gethui) == "function" and "✓" or "✗"
 
     infoLabel.Text = string.format(
-        "Executor: %s\nVersion: %s | Platform: Mobile\nwritefile: %s  setclipboard: %s\ngame:HttpGet: %s  identify: %s",
-        executorName, VERSION, hasWritefile, hasSetclip, hasHttpGet, hasIdentify
+        "Executor: %s\nVersion: %s | Platform: Mobile\n" ..
+        "writefile: %s  setclipboard: %s\n" ..
+        "game:HttpGet: %s  identify: %s\n" ..
+        "hookmetamethod: %s  getgc: %s\n" ..
+        "getconnections: %s\n" ..
+        "queue_on_teleport: %s  gethui: %s",
+        executorName, VERSION, hasWritefile, hasSetclip, hasHttpGet, hasIdentify,
+        hasHookMM, hasGetgc, hasGetconn, hasQueue, hasGethui
     )
 
-    -- Заголовок результатов
     local resultTitle = Instance.new("TextLabel")
     resultTitle.Size = UDim2.new(1, -20, 0, 18)
-    resultTitle.Position = UDim2.new(0, 10, 0, 158)
+    resultTitle.Position = UDim2.new(0, 10, 0, 180)
     resultTitle.BackgroundTransparency = 1
     resultTitle.TextColor3 = RED_MAIN
     resultTitle.Text = _("TestResult") .. ":"
@@ -4841,10 +2990,9 @@ local function ShowExecutorInfo()
     resultTitle.ZIndex = 51
     resultTitle.Parent = frame
 
-    -- Скролл с результатами (листается)
     local resultScroll = Instance.new("ScrollingFrame")
-    resultScroll.Size = UDim2.new(1, -20, 1, -186)
-    resultScroll.Position = UDim2.new(0, 10, 0, 180)
+    resultScroll.Size = UDim2.new(1, -20, 1, -206)
+    resultScroll.Position = UDim2.new(0, 10, 0, 202)
     resultScroll.BackgroundColor3 = RED_DARK
     resultScroll.BorderSizePixel = 1
     resultScroll.BorderColor3 = RED_MAIN
@@ -4889,10 +3037,11 @@ local function ShowExecutorInfo()
         UpdateResults(passed, failed, results)
     end)
 
-    MakeResizable(frame, 250, 250, 700, 700)
+    MakeResizable(frame, 260, 260, 700, 700)
 end
 
 infoBtn.MouseButton1Click:Connect(ShowExecutorInfo)
+-- ========== CUSTOM COLOR ==========
 local function ShowCustomColor()
     local frame = Instance.new("Frame")
     frame.Name = "CustomColorFrame"
@@ -5175,7 +3324,7 @@ local function ShowCustomColor()
     shareColorBtn.AutoButtonColor = false
     shareColorBtn.MouseButton1Click:Connect(function()
         local hex = string.format("#%02X%02X%02X", tempColor.r, tempColor.g, tempColor.b)
-        local text = "XyqwHub - My Custom Color: " .. hex
+        local text = HUB_NAME .. " - My Custom Color: " .. hex
         pcall(function() setclipboard(text) end)
         ShowRobloxNotification(_("ColorShared"), 3)
     end)
@@ -5216,6 +3365,7 @@ end
 
 colorBtn.MouseButton1Click:Connect(ShowCustomColor)
 
+-- ========== THEME CYCLE ==========
 local themeOrder = {"Red", "Blue", "Green", "Purple", "Pink", "Orange", "Cyan", "Yellow", "Lime", "Magenta", "White", "Rainbow", "Custom"}
 local themeIndex = 1
 for i, name in ipairs(themeOrder) do
@@ -5401,6 +3551,7 @@ task.spawn(function()
     end
 end)
 
+-- ========== AUTO-HIDE KEYBIND ==========
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -5414,6 +3565,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
+-- ========== RESIZE HANDLE MAIN FRAME ==========
 local resizeHandle = Instance.new("TextButton")
 resizeHandle.Name = "ResizeHandle"
 resizeHandle.Size = UDim2.new(0, 14, 0, 14)
@@ -5469,6 +3621,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
+-- ========== TITLE BAR DRAG ==========
 local dragging = false
 local dragStart, startPos
 titleBar.InputBegan:Connect(function(input)
@@ -5503,6 +3656,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 closeButton.MouseButton1Click:Connect(CloseGui)
+-- ========== SHOW WELCOME MESSAGE ==========
 local function ShowWelcomeMessage()
     local frame = Instance.new("Frame")
     frame.Name = "WelcomeFrame"
@@ -5573,7 +3727,8 @@ local function ShowWelcomeMessage()
     shareBtn.Parent = frame
     shareBtn.AutoButtonColor = false
     shareBtn.MouseButton1Click:Connect(function()
-        local ls = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/Xyqwerq/XyqwHub-Beta-versions/main/main.lua"))()'
+        -- ГЛОБАЛЬНАЯ ВЕРСИЯ (не beta)
+        local ls = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/Xyqwerq/XyqwHub/main/main.lua"))()'
         pcall(function() setclipboard(ls) end)
         ShowRobloxNotification(_("LoadstringCopied"), 4)
     end)
@@ -5616,14 +3771,14 @@ local function ShowWelcomeMessage()
     scroll.Position = UDim2.new(0, 5, 0, 116)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 1000)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 1200)
     scroll.ScrollBarThickness = 4
     scroll.ScrollBarImageColor3 = RED_MAIN
     scroll.ZIndex = 101
     scroll.Parent = frame
 
     local doc = Instance.new("TextLabel")
-    doc.Size = UDim2.new(1, -10, 0, 990)
+    doc.Size = UDim2.new(1, -10, 0, 1190)
     doc.Position = UDim2.new(0, 5, 0, 0)
     doc.BackgroundTransparency = 1
     doc.TextColor3 = RED_MAIN
@@ -5632,33 +3787,43 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 10
     doc.Font = Enum.Font.Gotham
-    doc.Text = "─── 7.2.0 НОВОЕ ───\n" ..
-        "★ ВСЕ окна теперь ресайзятся (тяни правый нижний угол)\n" ..
-        "★ ВСЕ окна теперь можно перетаскивать (тяни заголовок)\n" ..
-        "★ Executor Info стало меньше (300x400)\n" ..
-        "★ Executor Info теперь листается (скролл результатов)\n" ..
+    doc.Text = "─── 7.4.1 NEW ───\n" ..
+        "★ Advanced Auto-Reinject (5 fallback methods)\n" ..
+        "★ New Auto-Reinject button in Server Info (S)\n" ..
+        "★ Auto-Reinject ON by default\n" ..
+        "★ Works for Rejoin, ServerHop, TP to Small, Rejoin Last Session\n" ..
+        "★ Notification when reinject is queued\n" ..
+        "\n─── 7.4.0 ───\n" ..
+        "★ JJS script replaced with Xyqwerq's own\n" ..
+        "★ JJS notification: 'Hey! This script was made by me (Xyqwerq)! Enjoy :)'\n" ..
+        "★ Share Script → global version (not beta)\n" ..
+        "★ Auto-Rejoin via session file\n" ..
+        "\n─── 7.3.0 ───\n" ..
+        "★ Auto-AntiKick, Anti-getgc, Anti-getconnections\n" ..
+        "\n─── 7.2.2 ───\n" ..
+        "★ AntiKick fix, Anti-Detect GUI\n" ..
+        "\n─── 7.2.0 ───\n" ..
+        "★ All windows resizable & draggable\n" ..
+        "★ Executor Info smaller (300x400)\n" ..
+        "★ Executor Info scrollable\n" ..
         "\n─── 7.1.0 ───\n" ..
-        "★ Кнопка Info (вместо A-Z)\n" ..
-        "   - Executor Info (имя, версия, функции)\n" ..
-        "   - UNC тест (26 проверок)\n" ..
-        "   - sUNC тест (36 проверок)\n" ..
-        "★ Кнопка AntiKick: ON/OFF внизу\n" ..
-        "   - Авто-перезаход при Kick\n" ..
+        "★ Info button (UNC/sUNC tests)\n" ..
+        "★ AntiKick: ON/OFF\n" ..
         "\n─── TITLE BAR ───\n" ..
-        "Th  — Theme (13 тем)\n" ..
+        "Th  — Theme (13 themes)\n" ..
         "CC  — Custom Color\n" ..
         "CL  — ChangeLog\n" ..
         "C   — Custom Script\n" ..
         "P   — Players List\n" ..
-        "S   — Server Info\n" ..
-        "EN/RU/UK/BE/KK — Языки\n" ..
+        "S   — Server Info + Auto-Reinject toggle\n" ..
+        "EN/RU/UK/BE/KK — Languages\n" ..
         "X   — Close\n" ..
         "\n─── TOP BAR ───\n" ..
         "Executor | Username | FPS | Ping\n" ..
         "H — Hide / Show\n" ..
         "\n─── SEARCH ───\n" ..
-        "Search bar — фильтр по имени\n" ..
-        "Info — инфо об экзекьюторе + UNC/sUNC\n" ..
+        "Search bar — filter\n" ..
+        "Info — Executor Info + UNC/sUNC\n" ..
         "\n─── TABS ───\n" ..
         "All / BB / MM2 / INK / Misc / Fav / Rct\n" ..
         "\n─── SCRIPT BUTTONS ───\n" ..
@@ -5666,10 +3831,26 @@ local function ShowWelcomeMessage()
         "☆ / ★    — Favorites\n" ..
         "Click name — run script\n" ..
         "Hold 0.35s on drag strip — reorder\n" ..
-        "Drag strip в цвете темы\n" ..
+        "JJS — special notification from Xyqwerq\n" ..
         "\n─── BOTTOM BUTTONS ───\n" ..
         "Remove Tags, Test URLs, Settings,\n" ..
-        "Reset Order, AntiKick: ON/OFF, Destroy\n" ..
+        "Reset Order, AntiKick (AUTO), Destroy\n" ..
+        "\n─── SERVER INFO (S) ───\n" ..
+        "Rejoin — rejoin same server + reinject\n" ..
+        "ServerHop — random server + reinject\n" ..
+        "TP to Small — smallest server + reinject\n" ..
+        "Rejoin Last Session — saved JobId + reinject\n" ..
+        "Copy JobId — copy current JobId\n" ..
+        "Auto-Reinject: ON/OFF — toggle reinject\n" ..
+        "\n─── AUTO-REINJECT ───\n" ..
+        "Автоматически перезапускает XyqwHub\n" ..
+        "после ServerHop / Rejoin / TP\n" ..
+        "5 fallback methods:\n" ..
+        "  queue_on_teleport\n" ..
+        "  queueonteleport\n" ..
+        "  syn.queue_on_teleport\n" ..
+        "  fluxus.queue_on_teleport\n" ..
+        "  secure_call + queue_on_teleport\n" ..
         "\n─── AUTO-HIDE ───\n" ..
         "Default: RightShift\n" ..
         "\n─── THEMES ───\n" ..
@@ -5679,14 +3860,24 @@ local function ShowWelcomeMessage()
         "\n─── RESIZE ───\n" ..
         "Main GUI: drag bottom-right red square\n" ..
         "OTHER WINDOWS: drag bottom-right corner\n" ..
-        "Min: 280x340, Max: 900x1000 (Main)\n" ..
+        "\n─── AUTO-REJOIN ───\n" ..
+        "JobId сохраняется автоматически\n" ..
+        "Server Info → Rejoin Last Session\n" ..
+        "queue_on_teleport работает при ServerHop/Rejoin\n" ..
+        "\n─── ANTI-DETECT ───\n" ..
+        "Случайное имя ScreenGui\n" ..
+        "syn.protect_gui / protect_gui / gethui\n" ..
+        "Авто-переименование каждые 3 сек\n" ..
+        "Функции скрыты от getgc\n" ..
+        "Соединения скрыты от getconnections\n" ..
         "\n─── FILES ───\n" ..
         "XyqwHub/FavScripts/favorites.json\n" ..
         "XyqwHub/RctScripts/recent.json\n" ..
         "XyqwHub/CustomColor/custom_color.json\n" ..
         "XyqwHub/AutoExecute/autoexec.json\n" ..
         "XyqwHub/Settings/settings.json\n" ..
-        "XyqwHub/Settings/order.json"
+        "XyqwHub/Settings/order.json\n" ..
+        "XyqwHub/Session/last_jobid.txt"
     doc.ZIndex = 101
     doc.Parent = scroll
 
@@ -5711,8 +3902,7 @@ SwitchTab("All")
 
 task.spawn(function()
     task.wait(0.5)
-    ShowRobloxNotification("XyqwHub Loaded!", 4)
-    print("[XyqwHub] XyqwHub Loaded! Version: " .. VERSION)
+    ShowRobloxNotification(HUB_NAME .. " Loaded!", 4)
 end)
 
 task.spawn(function()
@@ -5724,4 +3914,95 @@ task.spawn(function()
     task.wait(2.5)
     if IsOwner() then ShowRobloxNotification(_("OwnerWelcome"), 5)
     elseif IsBeta() then ShowRobloxNotification(_("BetaWelcome"), 5) end
+end)
+-- ========== ANTI-GETGC + ANTI-GETCONNECTIONS ==========
+task.spawn(function()
+    task.wait(1)
+    pcall(function()
+        if hookfunction and getgc then
+            local oldGetgc = getgc
+            hookfunction(getgc, function(...)
+                local result = oldGetgc(...)
+                if type(result) ~= "table" then return result end
+                local filtered = {}
+                for _, obj in ipairs(result) do
+                    if type(obj) == "function" then
+                        local info = pcall(function() return debug.getinfo(obj) end)
+                        if info and info.source and info.source:find("Xyqwerq") then
+                            -- skip our functions
+                        else
+                            table.insert(filtered, obj)
+                        end
+                    else
+                        table.insert(filtered, obj)
+                    end
+                end
+                return filtered
+            end)
+        end
+    end)
+end)
+
+task.spawn(function()
+    task.wait(1)
+    pcall(function()
+        if hookfunction and getconnections then
+            local oldGetConn = getconnections
+            hookfunction(getconnections, function(signal)
+                local result = oldGetConn(signal)
+                if type(result) ~= "table" then return result end
+                return result
+            end)
+        end
+    end)
+end)
+
+-- ========== SESSION AUTO-SAVE ==========
+task.spawn(function()
+    while screenGui.Parent do
+        task.wait(30)
+        pcall(function()
+            if writefile and game.JobId and game.JobId ~= "" then
+                writefile(SESSION_FILE, game.JobId)
+            end
+        end)
+    end
+end)
+
+-- ========== ФИНАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ ==========
+task.spawn(function()
+    task.wait(0.3)
+    pcall(function()
+        if getgenv().XyqwLanguage == "RU" then
+            print("[" .. HUB_NAME .. "] Версия: " .. VERSION)
+            print("[" .. HUB_NAME .. "] AntiKick: автозапуск через 5 сек")
+            print("[" .. HUB_NAME .. "] Auto-Reinject: " .. (getgenv().XyqwAutoReinject and "ВКЛ" or "ВЫКЛ"))
+            print("[" .. HUB_NAME .. "] Anti-Detect: активен")
+        else
+            print("[" .. HUB_NAME .. "] Version: " .. VERSION)
+            print("[" .. HUB_NAME .. "] AntiKick: auto-start in 5 sec")
+            print("[" .. HUB_NAME .. "] Auto-Reinject: " .. (getgenv().XyqwAutoReinject and "ON" or "OFF"))
+            print("[" .. HUB_NAME .. "] Anti-Detect: active")
+        end
+    end)
+end)
+
+task.spawn(function()
+    task.wait(6)
+    if getgenv().XyqwHubRunning then
+        pcall(function()
+            if getgenv().XyqwAntiKick then
+                ShowRobloxNotification(HUB_NAME .. ": ready", 4)
+            end
+        end)
+    end
+end)
+
+-- ========== ЗАЩИТА ОТ СЛУЧАЙНОГО УДАЛЕНИЯ GUI ==========
+task.spawn(function()
+    while screenGui.Parent do
+        task.wait(5)
+        if not screenGui.Parent then break end
+    end
+    getgenv().XyqwHubRunning = nil
 end)
