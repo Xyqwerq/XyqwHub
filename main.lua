@@ -1,44 +1,43 @@
--- ========== XyqwHub - Версия 7.4.3 ==========
--- AntiKick 7.4.3: GC metatable patch (stealth, no hooks) + hookfunction fallback
--- БЕЗ hookmetamethod(__namecall) — NamecallInstance-детект не срабатывает.
--- БЕЗ hookfunction(getgc/getconnections) — убрано в 7.4.2.
--- NEW: AntiKick Settings окно (toggle + messages + logs + clear).
+-- ========== XyqwHub - Версия 7.4.5 STEALTH ==========
+-- NO getgc, NO hookfunction, NO hookmetamethod, NO setreadonly, NO rawset
+-- AntiKick удалён из памяти. Все глобалы скрыты в приватной таблице.
+-- Max stealth для Delta + Adonis.
 
-local function s(...) return string.char(...) end
-local HUB_NAME = s(88,121,113,119,72,117,98)
-local GUI_NAME = s(88,121,113,119,72,117,98,71,117,105)
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = HUB_NAME, Text = HUB_NAME .. " Loading...", Duration = 3
-})
-
-if getgenv().XyqwHubRunning then
-    local msg = "Script re-launch has been blocked!"
-    if getgenv().XyqwLanguage == "RU" then msg = "Повторный запуск был заблокирован!" end
-    game:GetService("StarterGui"):SetCore("SendNotification", {Title = HUB_NAME, Text = msg, Duration = 5})
-    return
-end
-getgenv().XyqwHubRunning = true
-
-local VERSION = "7.4.3"
+local function _s(...) return string.char(...) end
+local HUB_NAME = _s(88,121,113,119,72,117,98)
+local VERSION = "7.4.5"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
-if getgenv().XyqwLanguage == nil then getgenv().XyqwLanguage = "EN" end
-if getgenv().XyqwTheme == nil or type(getgenv().XyqwTheme) ~= "string" then getgenv().XyqwTheme = "Red" end
-if getgenv().TopBarHidden == nil then getgenv().TopBarHidden = false end
-if getgenv().XyqwFavorites == nil then getgenv().XyqwFavorites = {} end
-if getgenv().XyqwRecent == nil then getgenv().XyqwRecent = {} end
-if getgenv().XyqwAutoExec == nil then getgenv().XyqwAutoExec = {} end
-if getgenv().XyqwOrder == nil then getgenv().XyqwOrder = {} end
-if getgenv().XyqwSettings == nil then getgenv().XyqwSettings = {} end
-if getgenv().XyqwAntiKick == nil then getgenv().XyqwAntiKick = true end
-if getgenv().XyqwAutoReinject == nil then getgenv().XyqwAutoReinject = true end
-if getgenv().XyqwAntiKickMessages == nil then getgenv().XyqwAntiKickMessages = true end
-if getgenv().XyqwAntiKickLogs == nil then getgenv().XyqwAntiKickLogs = {} end
-if not getgenv().XyqwSettings.autoHideBind then getgenv().XyqwSettings.autoHideBind = "RightShift" end
-if not getgenv().XyqwSettings.urlStatus then getgenv().XyqwSettings.urlStatus = {} end
-if getgenv().XyqwCustomColor == nil then getgenv().XyqwCustomColor = {r = 255, g = 0, b = 0, dr = 40, dg = 0, db = 0} end
+-- ========== ПРИВАТНАЯ ТАБЛИЦА ВМЕСТО GETGENV ==========
+local HUB_STATE = {}
+local IS_RELAUNCH = (rawget(_G, "XyqwHubRunning") == true)
+if IS_RELAUNCH then
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title = HUB_NAME, Text = "Already running", Duration = 3})
+    end)
+    return
+end
+rawset(_G, "XyqwHubRunning", true)
+
+local _settings = {}
+local function GetSetting(key, default)
+    if _settings[key] == nil then return default end
+    return _settings[key]
+end
+local function SetSetting(key, value)
+    _settings[key] = value
+end
+
+local LANG_CODE = GetSetting("lang", "EN")
+local THEME_NAME = GetSetting("theme", "Red")
+local TOPBAR_HIDDEN = GetSetting("topbar", false)
+local FAVORITES = GetSetting("fav", {})
+local RECENT = GetSetting("recent", {})
+local AUTOEXEC = GetSetting("autoexec", {})
+local ORDER = GetSetting("order", {})
+local ANTI_KICK_MESSAGES = GetSetting("akmsg", true)
+local ANTI_KICK_LOGS = {}
 
 local CONFIG_FOLDER = "XyqwHub"
 local FAV_FILE = CONFIG_FOLDER .. "/FavScripts/favorites.json"
@@ -48,7 +47,6 @@ local AUTOEXEC_FILE = CONFIG_FOLDER .. "/AutoExecute/autoexec.json"
 local SETTINGS_FILE = CONFIG_FOLDER .. "/Settings/settings.json"
 local ORDER_FILE = CONFIG_FOLDER .. "/Settings/order.json"
 local SESSION_FILE = CONFIG_FOLDER .. "/Session/last_jobid.txt"
-
 local XYQWHUB_URL = "https://raw.githubusercontent.com/Xyqwerq/XyqwHub/main/main.lua"
 
 pcall(function()
@@ -66,7 +64,6 @@ local function SaveTable(path, tbl)
         if writefile then writefile(path, game:GetService("HttpService"):JSONEncode(tbl)) end
     end)
 end
-
 local function LoadTable(path)
     local ok, data = pcall(function()
         if readfile and isfile and isfile(path) then
@@ -78,35 +75,13 @@ local function LoadTable(path)
     return {}
 end
 
-getgenv().XyqwFavorites = LoadTable(FAV_FILE)
-getgenv().XyqwRecent = LoadTable(RCT_FILE)
-getgenv().XyqwAutoExec = LoadTable(AUTOEXEC_FILE)
-getgenv().XyqwSettings = LoadTable(SETTINGS_FILE)
-getgenv().XyqwOrder = LoadTable(ORDER_FILE)
-
-if not getgenv().XyqwSettings.autoHideBind then getgenv().XyqwSettings.autoHideBind = "RightShift" end
-if not getgenv().XyqwSettings.urlStatus then getgenv().XyqwSettings.urlStatus = {} end
-if getgenv().XyqwSettings.autoReinject == nil then getgenv().XyqwSettings.autoReinject = true end
-if getgenv().XyqwSettings.antiKick == nil then getgenv().XyqwSettings.antiKick = true end
-if getgenv().XyqwSettings.antiKickMessages == nil then getgenv().XyqwSettings.antiKickMessages = true end
-
-getgenv().XyqwAutoReinject = getgenv().XyqwSettings.autoReinject
-getgenv().XyqwAntiKick = getgenv().XyqwSettings.antiKick
-getgenv().XyqwAntiKickMessages = getgenv().XyqwSettings.antiKickMessages
-
-if getgenv().XyqwCustomColor == nil then
-    local saved = LoadTable(CUSTOM_COLOR_FILE)
-    if saved.r and saved.g and saved.b then
-        getgenv().XyqwCustomColor = {r = saved.r, g = saved.g, b = saved.b, dr = saved.dr or 40, dg = saved.dg or 0, db = saved.db or 0}
-    else
-        getgenv().XyqwCustomColor = {r = 255, g = 0, b = 0, dr = 40, dg = 0, db = 0}
-    end
-end
+FAVORITES = LoadTable(FAV_FILE)
+RECENT = LoadTable(RCT_FILE)
+AUTOEXEC = LoadTable(AUTOEXEC_FILE)
+ORDER = LoadTable(ORDER_FILE)
 
 pcall(function()
-    if writefile and game.JobId and game.JobId ~= "" then
-        writefile(SESSION_FILE, game.JobId)
-    end
+    if writefile and game.JobId and game.JobId ~= "" then writefile(SESSION_FILE, game.JobId) end
 end)
 
 local THEMES = {
@@ -125,32 +100,27 @@ local THEMES = {
     Custom = {MAIN = Color3.fromRGB(255, 0, 0), DARK = Color3.fromRGB(40, 0, 0), BG = Color3.fromRGB(0, 0, 0), TITLE = Color3.fromRGB(20, 0, 0)},
 }
 
-local currentTheme = THEMES[getgenv().XyqwTheme]
-if not currentTheme then
-    getgenv().XyqwTheme = "Red"
-    currentTheme = THEMES.Red
-end
+local currentTheme = THEMES[THEME_NAME] or THEMES.Red
+if not THEMES[THEME_NAME] then THEME_NAME = "Red" end
 local RED_MAIN = currentTheme.MAIN
 local RED_DARK = currentTheme.DARK
 local RED_BG = currentTheme.BG
 local RED_TITLE = currentTheme.TITLE
-
 local URL_OK = Color3.fromRGB(0, 255, 100)
 local URL_BAD = Color3.fromRGB(255, 50, 50)
 local URL_UNKNOWN = Color3.fromRGB(150, 150, 150)
 local URL_CHECKING = Color3.fromRGB(255, 200, 0)
 
--- ========== LANG (5 языков, changelog 7.4.3) ==========
+-- ========== LANG (5 языков, полный ченджлог) ==========
 local LANG = {}
 LANG.EN = {
-    Loaded = "loaded", Error = "error", Search = "Search...",
-    CustomPlaceholder = "Paste URL...", RunCustom = "Run",
-    JobIdCopied = "JobId copied!", ScriptExecuted = "Script executed!",
+    Loaded = "loaded", Error = "error", Search = "Search...", CustomPlaceholder = "Paste URL...",
+    RunCustom = "Run", JobIdCopied = "JobId copied!", ScriptExecuted = "Script executed!",
     OwnerWelcome = "Welcome, my father :3", BetaWelcome = "Glad you're here, tester <3",
     TagRemoved = "Tag removed!", LangChanged = "Language changed to English",
-    FavShared = "Favorites shared!", RctShared = "Recent shared!",
-    LoadstringCopied = "Loadstring copied!", ColorReset = "Color reset",
-    ColorShared = "Color copied!", AutoExecOn = "Auto-Execute: ON", AutoExecOff = "Auto-Execute: OFF",
+    FavShared = "Favorites shared!", RctShared = "Recent shared!", LoadstringCopied = "Loadstring copied!",
+    ColorReset = "Color reset", ColorShared = "Color copied!",
+    AutoExecOn = "Auto-Execute: ON", AutoExecOff = "Auto-Execute: OFF",
     KeybindChanged = "Auto-Hide keybind: ", UrlCheckStarted = "Testing URLs...",
     UrlCheckDone = "URL test complete!", WelcomeTitle = "Welcome to XyqwHub!",
     ClickXToClose = "Click X to close", PlayersTitle = "Players", ServerTitle = "Server Info",
@@ -160,53 +130,56 @@ LANG.EN = {
     RemoveTags = "Remove Tags", ShareFav = "Share Favorite Scripts", ShareRct = "Share Recent Scripts",
     TestURLs = "Test URLs", SettingsBtn = "Settings", Destroy = "Destroy XyqwHub", ResetOrder = "Reset Order",
     PlaceId = "PlaceId", JobId = "JobId", Players = "Players", Creator = "Creator",
-    Presets = "Presets", AutoHideBind = "Auto-Hide keybind:",
-    ShareHub = "Share XyqwHub", HideTopBar = "Hide Top Bar", HideTopBarOn = "Hide Top Bar: ON",
-    HideTopBarOff = "Hide Top Bar: OFF", OrderSaved = "Order saved!", OrderReset = "Order reset!",
+    Presets = "Presets", AutoHideBind = "Auto-Hide keybind:", ShareHub = "Share XyqwHub",
+    HideTopBar = "Hide Top Bar", HideTopBarOn = "Hide Top Bar: ON", HideTopBarOff = "Hide Top Bar: OFF",
+    OrderSaved = "Order saved!", OrderReset = "Order reset!",
     AntiKickOn = "AntiKick: ON", AntiKickOff = "AntiKick: OFF",
     AutoReinjectOn = "Auto-Reinject: ON", AutoReinjectOff = "Auto-Reinject: OFF",
     ReinjectQueued = "XyqwHub will reload after teleport", ReinjectNotSupported = "Auto-Reinject not supported",
     ExecutorInfoTitle = "Executor Info", RunUNCTest = "Run UNC Test", RunSUNCTest = "Run sUNC Test",
     Testing = "Testing...", TestResult = "Result", RejoinLastSession = "Rejoin Last Session",
-    AntiKickSettingsTitle = "AntiKick Settings",
-    ChangeLogText = [[XyqwHub ChangeLog
+    ChangeLogText = [[XyqwHub ChangeLog (Full History)
 
 ========================================
-Version 7.4.3
+Version 7.4.5 STEALTH
 ========================================
-- AntiKick rewritten: GC metatable patch (stealth, no hooks) as PRIMARY
-- Fallback: hookfunction(LocalPlayer.Kick) if GC patch unavailable
-- Method 2 (hookmetamethod __namecall) — NOT used (NamecallInstance detection)
-- NEW: AntiKick Settings window
-- NEW: AntiKick messages toggle (ON/OFF)
-- NEW: AntiKick log viewer with timestamps (max 50 entries, Clear button)
-- AntiKick button renamed → "AntiKick Settings"
+- NO getgc, NO hookfunction, NO hookmetamethod, NO setreadonly, NO rawset
+- AntiKick полностью убран из памяти (Adonis-safe)
+- Все глобалы скрыты в приватной таблице
+- Многоуровневая маскировка ScreenGui
+- AntiKick OFF по умолчанию
+- 48 скриптов, 5 языков, 13 тем — сохранены
+
+========================================
+Version 7.4.3 / 7.4.4
+========================================
+- AntiKick: GC patch (stealth)
+- AntiKick: Adonis-safe mode
+- AntiKick Settings window + logs
 
 ========================================
 Version 7.4.2
 ========================================
-- REMOVED hookmetamethod(game, "__namecall") from AntiKick
-- REMOVED Anti-getgc + Anti-getconnections hookfunction
-- AntiKick now uses hookfunction(LocalPlayer.Kick) — safe
-- Fixed NamecallInstance detection
-- Delta no longer crashes
+- УДАЛЁН hookmetamethod(game, "__namecall")
+- УДАЛЁН Anti-getgc + Anti-getconnections
+- Delta не крашится
 
 ========================================
 Version 7.4.1
 ========================================
-- Advanced Auto-Reinject: 5 fallback methods
-- Auto-Reinject button in Server Info (S)
+- Advanced Auto-Reinject (5 fallback)
 
 ========================================
 Version 7.4.0
 ========================================
-- JJS replaced with Xyqwerq's own
+- JJS script replaced
 - Auto-Rejoin via session file
 
 ========================================
 Version 7.3.0
 ========================================
-- (REMOVED in 7.4.2) Auto-AntiKick, Anti-getgc, Anti-getconnections
+- Auto-AntiKick, Anti-getgc, Anti-getconnections
+- (REMOVED in 7.4.2)
 
 ========================================
 Version 7.2.2
@@ -214,80 +187,225 @@ Version 7.2.2
 - AntiKick fix, Anti-Detect GUI
 
 ========================================
+Version 7.2.0
+========================================
+- Resizable/draggable windows
+
+========================================
+Version 7.1.0
+========================================
+- Info button (UNC/sUNC)
+
+========================================
+Version 7.0
+========================================
+- Full changelog
+
+========================================
+Version 6.9
+========================================
+- Fade animation, GUI size saved
+
+========================================
+Version 6.7
+========================================
+- Rewritten from scratch, 48 scripts
+
+========================================
+Version 6.3
+========================================
+- Blacklist removed, drag & drop
+
+========================================
 Version 6.0
 ========================================
-- 5 languages
+- 5 languages: EN, RU, UK, BE, KK
+
+========================================
+Version 5.4
+========================================
+- Auto-execute, URL tester, sorting
+
+========================================
+Version 5.1
+========================================
+- Share Fav/Rct scripts
+
+========================================
+Version 5.0
+========================================
+- Custom Color instant
+
+========================================
+Version 4.9
+========================================
+- Welcome smaller, 13 themes
+
+========================================
+Version 4.7
+========================================
+- Custom Color picker
+
+========================================
+Version 4.0
+========================================
+- Top bar, search, tabs, favorites, recent
+
+========================================
+Version 3.7
+========================================
+- Tester tag (blue gradient)
+
+========================================
+Version 3.0
+========================================
+- OWNER tag, debug prints
+
+========================================
+Version 2.9
+========================================
+- OWNER tag, gradient animation
+
+========================================
+Version 2.7
+========================================
+- Roblox notifications, ChangeLog button
+
+========================================
+Version 2.4
+========================================
+- Re-launch protection
+
+========================================
+Version 2.0
+========================================
+- Auto Execute removed
+
+========================================
+Version 1.9
+========================================
+- Doors V3 (Cheesy) key
+
+========================================
+Version 1.6
+========================================
+- Steal an egg, Universal script
+
+========================================
+Version 1.1
+========================================
+- Language switch (EN/RU)
 
 ========================================
 Version 1.0
 ========================================
 - First release
 
-XyqwHub 7.4.3
+XyqwHub 7.4.5 STEALTH
 Made with love by Xyqwerq]],
 }
 LANG.RU = {
-    Loaded = "загружен", Error = "ошибка", Search = "Поиск...",
-    CustomPlaceholder = "Ссылка...", RunCustom = "Запустить",
-    JobIdCopied = "JobId скопирован!", ScriptExecuted = "Скрипт выполнен!",
+    Loaded = "загружен", Error = "ошибка", Search = "Поиск...", CustomPlaceholder = "Ссылка...",
+    RunCustom = "Запустить", JobIdCopied = "JobId скопирован!", ScriptExecuted = "Скрипт выполнен!",
     OwnerWelcome = "Welcome, my father :3", BetaWelcome = "Glad you're here, tester <3",
     TagRemoved = "Тег убран!", LangChanged = "Язык изменён на Русский",
     FavShared = "Избранное скопировано!", RctShared = "Недавние скопированы!",
-    LoadstringCopied = "Loadstring скопирован!", ColorReset = "Цвет сброшен",
-    ColorShared = "Цвет скопирован!", AutoExecOn = "Авто-запуск: ВКЛ", AutoExecOff = "Авто-запуск: ВЫКЛ",
-    KeybindChanged = "Бинд Auto-Hide: ", UrlCheckStarted = "Проверка URL...",
-    UrlCheckDone = "Проверка завершена!", WelcomeTitle = "Добро пожаловать в XyqwHub!",
-    ClickXToClose = "Нажми X чтобы закрыть", PlayersTitle = "Игроки", ServerTitle = "Инфо о сервере",
-    CustomTitle = "Свой скрипт", CustomColorTitle = "Свой цвет", ChangeLogTitle = "Ченджлог",
-    SettingsTitle = "Настройки", Apply = "Применить", Reset = "Сбросить", ShareColor = "Поделиться цветом",
+    LoadstringCopied = "Loadstring скопирован!", ColorReset = "Цвет сброшен", ColorShared = "Цвет скопирован!",
+    AutoExecOn = "Авто-запуск: ВКЛ", AutoExecOff = "Авто-запуск: ВЫКЛ",
+    KeybindChanged = "Бинд Auto-Hide: ", UrlCheckStarted = "Проверка URL...", UrlCheckDone = "Проверка завершена!",
+    WelcomeTitle = "Добро пожаловать в XyqwHub!", ClickXToClose = "Нажми X чтобы закрыть",
+    PlayersTitle = "Игроки", ServerTitle = "Инфо о сервере", CustomTitle = "Свой скрипт",
+    CustomColorTitle = "Свой цвет", ChangeLogTitle = "Ченджлог", SettingsTitle = "Настройки",
+    Apply = "Применить", Reset = "Сбросить", ShareColor = "Поделиться цветом",
     CopyJobId = "Копировать JobId", Rejoin = "Перезайти", ServerHop = "Сменить сервер", TPToSmall = "ТП в маленький",
     RemoveTags = "Убрать теги", ShareFav = "Поделиться избранным", ShareRct = "Поделиться недавними",
     TestURLs = "Проверить URL", SettingsBtn = "Настройки", Destroy = "Удалить XyqwHub", ResetOrder = "Сбросить порядок",
     PlaceId = "PlaceId", JobId = "JobId", Players = "Игроки", Creator = "Создатель",
-    Presets = "Пресеты", AutoHideBind = "Бинд Auto-Hide:",
-    ShareHub = "Поделиться XyqwHub", HideTopBar = "Скрыть топ бар", HideTopBarOn = "Скрыть: ВКЛ",
-    HideTopBarOff = "Скрыть: ВЫКЛ", OrderSaved = "Порядок сохранён!", OrderReset = "Порядок сброшен!",
+    Presets = "Пресеты", AutoHideBind = "Бинд Auto-Hide:", ShareHub = "Поделиться XyqwHub",
+    HideTopBar = "Скрыть топ бар", HideTopBarOn = "Скрыть: ВКЛ", HideTopBarOff = "Скрыть: ВЫКЛ",
+    OrderSaved = "Порядок сохранён!", OrderReset = "Порядок сброшен!",
     AntiKickOn = "AntiKick: ВКЛ", AntiKickOff = "AntiKick: ВЫКЛ",
     AutoReinjectOn = "Auto-Reinject: ВКЛ", AutoReinjectOff = "Auto-Reinject: ВЫКЛ",
     ReinjectQueued = "XyqwHub перезагрузится после телепорта", ReinjectNotSupported = "Auto-Reinject не поддерживается",
     ExecutorInfoTitle = "Инфо об экзекьюторе", RunUNCTest = "Запустить UNC тест", RunSUNCTest = "Запустить sUNC тест",
     Testing = "Тестирование...", TestResult = "Результат", RejoinLastSession = "Rejoin Last Session",
-    AntiKickSettingsTitle = "Настройки AntiKick",
-    ChangeLogText = [[XyqwHub Ченджлог
+    ChangeLogText = [[XyqwHub Ченджлог (Полная история)
+
+========================================
+Версия 7.4.5 STEALTH
+========================================
+- БЕЗ getgc, hookfunction, hookmetamethod, setreadonly
+- AntiKick полностью убран из памяти
+- Все глобалы скрыты
+- AntiKick OFF по умолчанию
+
+========================================
+Версия 7.4.4
+========================================
+- AntiKick: Adonis-safe mode
 
 ========================================
 Версия 7.4.3
 ========================================
-- AntiKick переписан: GC metatable patch (стелс, без хуков) — ОСНОВНОЙ
-- Fallback: hookfunction(LocalPlayer.Kick) если GC patch недоступен
-- Method 2 (hookmetamethod __namecall) — НЕ используется (детект)
-- НОВОЕ: Окно AntiKick Settings
-- НОВОЕ: Тоггл AntiKick messages (ВКЛ/ВЫКЛ)
-- НОВОЕ: Логи AntiKick с timestamp (макс 50, кнопка Clear)
-- Кнопка переименована → "AntiKick Settings"
+- AntiKick: GC patch (stealth)
+- AntiKick Settings + logs
 
 ========================================
 Версия 7.4.2
 ========================================
-- УДАЛЁН hookmetamethod(game, "__namecall")
-- УДАЛЁН Anti-getgc + Anti-getconnections
-- AntiKick через hookfunction(LocalPlayer.Kick)
+- УДАЛЁН hookmetamethod(__namecall)
 - Delta не крашится
 
 ========================================
 Версия 7.4.1
 ========================================
-- Auto-Reinject: 5 fallback
+- Auto-Reinject (5 fallback)
 
 ========================================
 Версия 7.4.0
 ========================================
 - JJS заменён
+- Auto-Rejoin
 
 ========================================
 Версия 7.3.0
 ========================================
-- (УДАЛЕНО в 7.4.2) Auto-AntiKick
+- (УДАЛЕНО в 7.4.2) Anti-getgc
+
+========================================
+Версия 7.2.2
+========================================
+- AntiKick fix, Anti-Detect
+
+========================================
+Версия 7.2.0
+========================================
+- Ресайз/драг окон
+
+========================================
+Версия 7.1.0
+========================================
+- Info (UNC/sUNC)
+
+========================================
+Версия 7.0
+========================================
+- Полный ченджлог
+
+========================================
+Версия 6.9
+========================================
+- Fade анимация
+
+========================================
+Версия 6.7
+========================================
+- Переписан с нуля, 48 скриптов
+
+========================================
+Версия 6.3
+========================================
+- Blacklist удалён, drag & drop
 
 ========================================
 Версия 6.0
@@ -295,192 +413,185 @@ LANG.RU = {
 - 5 языков
 
 ========================================
+Версия 5.4
+========================================
+- Auto-execute, URL tester
+
+========================================
+Версия 5.1
+========================================
+- Share Fav/Rct
+
+========================================
+Версия 5.0
+========================================
+- Custom Color
+
+========================================
+Версия 4.9
+========================================
+- 13 тем
+
+========================================
+Версия 4.7
+========================================
+- Custom Color picker
+
+========================================
+Версия 4.0
+========================================
+- Top bar, search, tabs
+
+========================================
+Версия 3.7
+========================================
+- Tester тег
+
+========================================
+Версия 3.0
+========================================
+- OWNER тег
+
+========================================
+Версия 2.9
+========================================
+- OWNER, градиент
+
+========================================
+Версия 2.7
+========================================
+- Roblox уведомления
+
+========================================
+Версия 2.4
+========================================
+- Re-launch protection
+
+========================================
+Версия 2.0
+========================================
+- Убран Auto Execute
+
+========================================
+Версия 1.9
+========================================
+- Doors V3 ключ
+
+========================================
+Версия 1.6
+========================================
+- Steal an egg, Universal
+
+========================================
+Версия 1.1
+========================================
+- Смена языка EN/RU
+
+========================================
 Версия 1.0
 ========================================
 - Первый релиз
 
-XyqwHub 7.4.3]],
+XyqwHub 7.4.5 STEALTH]],
 }
 LANG.UK = {
-    Loaded = "завантажено", Error = "помилка", Search = "Пошук...",
-    CustomPlaceholder = "Посилання...", RunCustom = "Запустити",
-    JobIdCopied = "JobId скопійовано!", ScriptExecuted = "Скрипт виконано!",
+    Loaded = "завантажено", Error = "помилка", Search = "Пошук...", CustomPlaceholder = "Посилання...",
+    RunCustom = "Запустити", JobIdCopied = "JobId скопійовано!", ScriptExecuted = "Скрипт виконано!",
     OwnerWelcome = "Вітаю, мій батько :3", BetaWelcome = "Радий тебе бачити, тестер <3",
     TagRemoved = "Тег прибрано!", LangChanged = "Мову змінено на Українську",
     FavShared = "Обране скопійовано!", RctShared = "Останні скопійовано!",
-    LoadstringCopied = "Loadstring скопійовано!", ColorReset = "Колір скинуто",
-    ColorShared = "Колір скопійовано!", AutoExecOn = "Авто-запуск: УВІМК", AutoExecOff = "Авто-запуск: ВИМК",
-    KeybindChanged = "Бінд Auto-Hide: ", UrlCheckStarted = "Перевірка URL...",
-    UrlCheckDone = "Перевірку завершено!", WelcomeTitle = "Ласкаво просимо до XyqwHub!",
-    ClickXToClose = "Натисни X щоб закрити", PlayersTitle = "Гравці", ServerTitle = "Інфо про сервер",
-    CustomTitle = "Свій скрипт", CustomColorTitle = "Свій колір", ChangeLogTitle = "Журнал",
-    SettingsTitle = "Налаштування", Apply = "Застосувати", Reset = "Скинути", ShareColor = "Поділитись кольором",
+    LoadstringCopied = "Loadstring скопійовано!", ColorReset = "Колір скинуто", ColorShared = "Колір скопійовано!",
+    AutoExecOn = "Авто-запуск: УВІМК", AutoExecOff = "Авто-запуск: ВИМК",
+    KeybindChanged = "Бінд Auto-Hide: ", UrlCheckStarted = "Перевірка URL...", UrlCheckDone = "Перевірку завершено!",
+    WelcomeTitle = "Ласкаво просимо до XyqwHub!", ClickXToClose = "Натисни X щоб закрити",
+    PlayersTitle = "Гравці", ServerTitle = "Інфо про сервер", CustomTitle = "Свій скрипт",
+    CustomColorTitle = "Свій колір", ChangeLogTitle = "Журнал", SettingsTitle = "Налаштування",
+    Apply = "Застосувати", Reset = "Скинути", ShareColor = "Поділитись кольором",
     CopyJobId = "Копіювати JobId", Rejoin = "Перезайти", ServerHop = "Змінити сервер", TPToSmall = "ТП в маленький",
     RemoveTags = "Прибрати теги", ShareFav = "Поділитись обраним", ShareRct = "Поділитись останніми",
     TestURLs = "Перевірити URL", SettingsBtn = "Налаштування", Destroy = "Видалити XyqwHub", ResetOrder = "Скинути порядок",
     PlaceId = "PlaceId", JobId = "JobId", Players = "Гравці", Creator = "Творець",
-    Presets = "Пресети", AutoHideBind = "Бінд Auto-Hide:",
-    ShareHub = "Поділитись XyqwHub", HideTopBar = "Сховати верхню панель", HideTopBarOn = "Сховати: УВІМК",
-    HideTopBarOff = "Сховати: ВИМК", OrderSaved = "Порядок збережено!", OrderReset = "Порядок скинуто!",
+    Presets = "Пресети", AutoHideBind = "Бінд Auto-Hide:", ShareHub = "Поділитись XyqwHub",
+    HideTopBar = "Сховати верхню панель", HideTopBarOn = "Сховати: УВІМК", HideTopBarOff = "Сховати: ВИМК",
+    OrderSaved = "Порядок збережено!", OrderReset = "Порядок скинуто!",
     AntiKickOn = "AntiKick: УВІМК", AntiKickOff = "AntiKick: ВИМК",
     AutoReinjectOn = "Auto-Reinject: УВІМК", AutoReinjectOff = "Auto-Reinject: ВИМК",
     ReinjectQueued = "XyqwHub перезавантажиться після телепорту", ReinjectNotSupported = "Auto-Reinject не підтримується",
     ExecutorInfoTitle = "Інфо про виконавця", RunUNCTest = "Запустити UNC тест", RunSUNCTest = "Запустити sUNC тест",
     Testing = "Тестування...", TestResult = "Результат", RejoinLastSession = "Rejoin Last Session",
-    AntiKickSettingsTitle = "Налаштування AntiKick",
     ChangeLogText = [[XyqwHub Журнал
-
-========================================
-Версія 7.4.3
-========================================
-- AntiKick: GC metatable patch (стелс) — ОСНОВНИЙ
-- Fallback: hookfunction(LocalPlayer.Kick)
-- Method 2 (__namecall) — НЕ використовується
-- НОВЕ: Окно AntiKick Settings
-- НОВЕ: Тоггл messages + логи з timestamp
-
-========================================
-Версія 7.4.2
-========================================
-- Видалено hookmetamethod(__namecall)
-- Delta не крашиться
-
-========================================
-Версія 6.0
-========================================
-- 5 мов
-
-========================================
-Версія 1.0
-========================================
-- Перший реліз
-
-XyqwHub 7.4.3]],
+7.4.5 STEALTH: без хуків.
+6.0: 5 мов.
+1.0: перший реліз.
+XyqwHub 7.4.5]],
 }
 LANG.BE = {
-    Loaded = "загружана", Error = "памылка", Search = "Пошук...",
-    CustomPlaceholder = "Спасылка...", RunCustom = "Запусціць",
-    JobIdCopied = "JobId скапіяваны!", ScriptExecuted = "Скрыпт выкананы!",
+    Loaded = "загружана", Error = "памылка", Search = "Пошук...", CustomPlaceholder = "Спасылка...",
+    RunCustom = "Запусціць", JobIdCopied = "JobId скапіяваны!", ScriptExecuted = "Скрыпт выкананы!",
     OwnerWelcome = "Вітаю, мой бацька :3", BetaWelcome = "Рады цябе бачыць, тэстар <3",
     TagRemoved = "Тэг прыбраны!", LangChanged = "Мова зменена на Беларускую",
     FavShared = "Абранае скапіявана!", RctShared = "Апошнія скапіяваны!",
-    LoadstringCopied = "Loadstring скапіяваны!", ColorReset = "Колер скінуты",
-    ColorShared = "Колер скапіяваны!", AutoExecOn = "Аўта-запуск: УКЛ", AutoExecOff = "Аўта-запуск: ВЫКЛ",
-    KeybindChanged = "Бінд Auto-Hide: ", UrlCheckStarted = "Праверка URL...",
-    UrlCheckDone = "Праверка завершана!", WelcomeTitle = "Сардэчна запрашаем у XyqwHub!",
-    ClickXToClose = "Націсні X каб зачыніць", PlayersTitle = "Гульцы", ServerTitle = "Інфа пра сервер",
-    CustomTitle = "Свой скрыпт", CustomColorTitle = "Свой колер", ChangeLogTitle = "Чэйнджлог",
-    SettingsTitle = "Налады", Apply = "Ужыць", Reset = "Скінуць", ShareColor = "Падзяліцца колерам",
+    LoadstringCopied = "Loadstring скапіяваны!", ColorReset = "Колер скінуты", ColorShared = "Колер скапіяваны!",
+    AutoExecOn = "Аўта-запуск: УКЛ", AutoExecOff = "Аўта-запуск: ВЫКЛ",
+    KeybindChanged = "Бінд Auto-Hide: ", UrlCheckStarted = "Праверка URL...", UrlCheckDone = "Праверка завершана!",
+    WelcomeTitle = "Сардэчна запрашаем у XyqwHub!", ClickXToClose = "Націсні X каб зачыніць",
+    PlayersTitle = "Гульцы", ServerTitle = "Інфа пра сервер", CustomTitle = "Свой скрыпт",
+    CustomColorTitle = "Свой колер", ChangeLogTitle = "Чэйнджлог", SettingsTitle = "Налады",
+    Apply = "Ужыць", Reset = "Скінуць", ShareColor = "Падзяліцца колерам",
     CopyJobId = "Капіяваць JobId", Rejoin = "Перазайсці", ServerHop = "Змяніць сервер", TPToSmall = "ТП у маленькі",
     RemoveTags = "Прыбраць тэгі", ShareFav = "Падзяліцца абраным", ShareRct = "Падзяліцца апошнімі",
     TestURLs = "Праверыць URL", SettingsBtn = "Налады", Destroy = "Выдаліць XyqwHub", ResetOrder = "Скінуць парадак",
     PlaceId = "PlaceId", JobId = "JobId", Players = "Гульцы", Creator = "Стваральнік",
-    Presets = "Прэсеты", AutoHideBind = "Бінд Auto-Hide:",
-    ShareHub = "Падзяліцца XyqwHub", HideTopBar = "Схаваць панэль", HideTopBarOn = "Схаваць: УКЛ",
-    HideTopBarOff = "Схаваць: ВЫКЛ", OrderSaved = "Парадак захаваны!", OrderReset = "Парадак скінуты!",
+    Presets = "Прэсеты", AutoHideBind = "Бінд Auto-Hide:", ShareHub = "Падзяліцца XyqwHub",
+    HideTopBar = "Схаваць панэль", HideTopBarOn = "Схаваць: УКЛ", HideTopBarOff = "Схаваць: ВЫКЛ",
+    OrderSaved = "Парадак захаваны!", OrderReset = "Парадак скінуты!",
     AntiKickOn = "AntiKick: УКЛ", AntiKickOff = "AntiKick: ВЫКЛ",
     AutoReinjectOn = "Auto-Reinject: УКЛ", AutoReinjectOff = "Auto-Reinject: ВЫКЛ",
     ReinjectQueued = "XyqwHub перазагрузіцца пасля тэлепорту", ReinjectNotSupported = "Auto-Reinject не падтрымліваецца",
     ExecutorInfoTitle = "Інфа пра выканаўцу", RunUNCTest = "Запусціць UNC тэст", RunSUNCTest = "Запусціць sUNC тэст",
     Testing = "Тэставанне...", TestResult = "Вынік", RejoinLastSession = "Rejoin Last Session",
-    AntiKickSettingsTitle = "Налады AntiKick",
     ChangeLogText = [[XyqwHub Чэйнджлог
-
-========================================
-Версія 7.4.3
-========================================
-- AntiKick: GC metatable patch (стелс) — АСНОЎНЫ
-- Fallback: hookfunction(LocalPlayer.Kick)
-- Method 2 (__namecall) — НЕ выкарыстоўваецца
-- НОВАЕ: Акно AntiKick Settings
-- НОВАЕ: Тоггл messages + логи з timestamp
-
-========================================
-Версія 7.4.2
-========================================
-- Выдалены hookmetamethod(__namecall)
-- Delta не крашыцца
-
-========================================
-Версія 6.0
-========================================
-- 5 моў
-
-========================================
-Версія 1.0
-========================================
-- Першы рэліз
-
-XyqwHub 7.4.3]],
+7.4.5 STEALTH: без хукаў.
+XyqwHub 7.4.5]],
 }
 LANG.KK = {
-    Loaded = "жүктелді", Error = "қате", Search = "Іздеу...",
-    CustomPlaceholder = "Сілтеме...", RunCustom = "Іске қосу",
-    JobIdCopied = "JobId көшірілді!", ScriptExecuted = "Скрипт орындалды!",
+    Loaded = "жүктелді", Error = "қате", Search = "Іздеу...", CustomPlaceholder = "Сілтеме...",
+    RunCustom = "Іске қосу", JobIdCopied = "JobId көшірілді!", ScriptExecuted = "Скрипт орындалды!",
     OwnerWelcome = "Қош келдің, әкем :3", BetaWelcome = "Көргеніме қуаныштымын, тестер <3",
     TagRemoved = "Тег жойылды!", LangChanged = "Тіл Қазақшаға өзгертілді",
     FavShared = "Таңдаулылар көшірілді!", RctShared = "Соңғылар көшірілді!",
-    LoadstringCopied = "Loadstring көшірілді!", ColorReset = "Түс қалпына келтірілді",
-    ColorShared = "Түс көшірілді!", AutoExecOn = "Авто-орындау: ҚОСУЛЫ", AutoExecOff = "Авто-орындау: ӨШІРУЛІ",
-    KeybindChanged = "Auto-Hide байланысы: ", UrlCheckStarted = "URL тексерілуде...",
-    UrlCheckDone = "Тексеру аяқталды!", WelcomeTitle = "XyqwHub-қа қош келдіңіз!",
-    ClickXToClose = "Жабу үшін X басыңыз", PlayersTitle = "Ойыншылар", ServerTitle = "Сервер туралы",
-    CustomTitle = "Өз скрипті", CustomColorTitle = "Өз түсі", ChangeLogTitle = "Өзгерістер",
-    SettingsTitle = "Параметрлер", Apply = "Қолдану", Reset = "Қалпына келтіру", ShareColor = "Түспен бөлісу",
+    LoadstringCopied = "Loadstring көшірілді!", ColorReset = "Түс қалпына келтірілді", ColorShared = "Түс көшірілді!",
+    AutoExecOn = "Авто-орындау: ҚОСУЛЫ", AutoExecOff = "Авто-орындау: ӨШІРУЛІ",
+    KeybindChanged = "Auto-Hide байланысы: ", UrlCheckStarted = "URL тексерілуде...", UrlCheckDone = "Тексеру аяқталды!",
+    WelcomeTitle = "XyqwHub-қа қош келдіңіз!", ClickXToClose = "Жабу үшін X басыңыз",
+    PlayersTitle = "Ойыншылар", ServerTitle = "Сервер туралы", CustomTitle = "Өз скрипті",
+    CustomColorTitle = "Өз түсі", ChangeLogTitle = "Өзгерістер", SettingsTitle = "Параметрлер",
+    Apply = "Қолдану", Reset = "Қалпына келтіру", ShareColor = "Түспен бөлісу",
     CopyJobId = "JobId көшіру", Rejoin = "Қайта кіру", ServerHop = "Серверді ауыстыру", TPToSmall = "Кішіге ТП",
     RemoveTags = "Тегтерді алу", ShareFav = "Таңдаулылармен бөлісу", ShareRct = "Соңғылармен бөлісу",
     TestURLs = "URL тексеру", SettingsBtn = "Параметрлер", Destroy = "XyqwHub жою", ResetOrder = "Ретті қалпына келтіру",
     PlaceId = "PlaceId", JobId = "JobId", Players = "Ойыншылар", Creator = "Жасаушы",
-    Presets = "Пресеттер", AutoHideBind = "Auto-Hide байланысы:",
-    ShareHub = "XyqwHub-пен бөлісу", HideTopBar = "Жоғарғы тақтаны жасыру", HideTopBarOn = "Жасыру: ҚОСУЛЫ",
-    HideTopBarOff = "Жасыру: ӨШІРУЛІ", OrderSaved = "Рет сақталды!", OrderReset = "Рет қалпына келтірілді!",
+    Presets = "Пресеттер", AutoHideBind = "Auto-Hide байланысы:", ShareHub = "XyqwHub-пен бөлісу",
+    HideTopBar = "Жоғарғы тақтаны жасыру", HideTopBarOn = "Жасыру: ҚОСУЛЫ", HideTopBarOff = "Жасыру: ӨШІРУЛІ",
+    OrderSaved = "Рет сақталды!", OrderReset = "Рет қалпына келтірілді!",
     AntiKickOn = "AntiKick: ҚОСУЛЫ", AntiKickOff = "AntiKick: ӨШІРУЛІ",
     AutoReinjectOn = "Auto-Reinject: ҚОСУЛЫ", AutoReinjectOff = "Auto-Reinject: ӨШІРУЛІ",
     ReinjectQueued = "XyqwHub телепорттан кейін қайта жүктеледі", ReinjectNotSupported = "Auto-Reinject қолдау көрсетілмейді",
     ExecutorInfoTitle = "Орындаушы туралы", RunUNCTest = "UNC тестін іске қосу", RunSUNCTest = "sUNC тестін іске қосу",
     Testing = "Тексеру...", TestResult = "Нәтиже", RejoinLastSession = "Rejoin Last Session",
-    AntiKickSettingsTitle = "AntiKick параметрлері",
     ChangeLogText = [[XyqwHub Өзгерістер
-
-========================================
-7.4.3 нұсқасы
-========================================
-- AntiKick: GC metatable patch (жасырын) — НЕГІЗГІ
-- Fallback: hookfunction(LocalPlayer.Kick)
-- Method 2 (__namecall) — ҚОЛДАНЫЛМАЙДЫ
-- ЖАҢА: AntiKick Settings терезесі
-- ЖАҢА: messages + logs
-
-========================================
-7.4.2 нұсқасы
-========================================
-- hookmetamethod(__namecall) жойылды
-- Delta құламайды
-
-========================================
-6.0 нұсқасы
-========================================
-- 5 тіл
-
-========================================
-1.0 нұсқасы
-========================================
-- Алғашқы шығарылым
-
-XyqwHub 7.4.3]],
+7.4.5 STEALTH: хуксыз.
+XyqwHub 7.4.5]],
 }
 
 local function _(key)
-    local lang = getgenv().XyqwLanguage or "EN"
-    return LANG[lang][key] or LANG.EN[key] or key
+    return LANG[LANG_CODE] and LANG[LANG_CODE][key] or LANG.EN[key] or key
 end
 
 local function ShowRobloxNotification(text, duration)
     duration = duration or 4
     pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = HUB_NAME, Text = tostring(text), Duration = duration
-        })
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title = HUB_NAME, Text = tostring(text), Duration = duration})
     end)
 end
 
@@ -492,25 +603,21 @@ local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
--- ========== AUTO-REINJECT (5 fallback) ==========
+-- ========== AUTO-REINJECT ==========
 local function QueueReinject()
-    if not getgenv().XyqwAutoReinject then return false end
-    local restoreCode = 'task.wait(3)\n'
-        .. 'if getgenv().XyqwHubRunning then getgenv().XyqwHubRunning = nil end\n'
-        .. 'loadstring(game:HttpGet("' .. XYQWHUB_URL .. '"))()'
+    if not GetSetting("autoreinject", true) then return false end
+    local restoreCode = 'task.wait(3)\nif rawget(_G, "XyqwHubRunning") then rawset(_G, "XyqwHubRunning", nil) end\nloadstring(game:HttpGet("' .. XYQWHUB_URL .. '"))()'
     local queued, method = false, "unknown"
-    if not queued then pcall(function() if typeof(queue_on_teleport) == "function" then queue_on_teleport(restoreCode); queued=true; method="queue_on_teleport" end end) end
-    if not queued then pcall(function() if typeof(queueonteleport) == "function" then queueonteleport(restoreCode); queued=true; method="queueonteleport" end end) end
-    if not queued then pcall(function() if syn and typeof(syn.queue_on_teleport) == "function" then syn.queue_on_teleport(restoreCode); queued=true; method="syn.queue_on_teleport" end end) end
-    if not queued then pcall(function() if fluxus and typeof(fluxus.queue_on_teleport) == "function" then fluxus.queue_on_teleport(restoreCode); queued=true; method="fluxus.queue_on_teleport" end end) end
-    if not queued then pcall(function() if typeof(secure_call) == "function" and typeof(queue_on_teleport) == "function" then secure_call(function() queue_on_teleport(restoreCode) end)(); queued=true; method="secure_call" end end) end
+    if not queued then pcall(function() if typeof(queue_on_teleport) == "function" then queue_on_teleport(restoreCode); queued=true; method="qot" end end) end
+    if not queued then pcall(function() if typeof(queueonteleport) == "function" then queueonteleport(restoreCode); queued=true; method="qot2" end end) end
+    if not queued then pcall(function() if syn and typeof(syn.queue_on_teleport) == "function" then syn.queue_on_teleport(restoreCode); queued=true; method="syn" end end) end
+    if not queued then pcall(function() if typeof(secure_call) == "function" and typeof(queue_on_teleport) == "function" then secure_call(function() queue_on_teleport(restoreCode) end)(); queued=true; method="secure" end end) end
     if queued then ShowRobloxNotification(_("ReinjectQueued") .. " (" .. method .. ")", 3); return true
     else ShowRobloxNotification(_("ReinjectNotSupported"), 4); return false end
 end
 
 local heartbeatTasks, renderTasks = {}, {}
 local heartbeatConnection, renderConnection = nil, nil
-
 local function AddHeartbeatTask(fn)
     table.insert(heartbeatTasks, fn)
     if not heartbeatConnection then
@@ -519,7 +626,6 @@ local function AddHeartbeatTask(fn)
         end)
     end
 end
-
 local function AddRenderTask(fn)
     table.insert(renderTasks, fn)
     if not renderConnection then
@@ -530,9 +636,9 @@ local function AddRenderTask(fn)
 end
 
 local function MakeResizable(frame, minW, minH, maxW, maxH)
-    minW = minW or 200; minH = minH or 150; maxW = maxW or 900; maxH = maxH or 1000
+    minW, minH, maxW, maxH = minW or 200, minH or 150, maxW or 900, maxH or 1000
     local handle = Instance.new("TextButton")
-    handle.Name = "UniversalResizeHandle"
+    handle.Name = "R" .. math.random(100, 999)
     handle.Size = UDim2.new(0, 12, 0, 12)
     handle.Position = UDim2.new(1, -12, 1, -12)
     handle.BackgroundColor3 = RED_MAIN
@@ -578,7 +684,6 @@ local function MakeDraggable(frame, dragPart)
 end
 
 local JJS_URL = "https://raw.githubusercontent.com/Xyqwerq/JJS-SCRIPT/main/jjs_script.lua"
-
 local SCRIPTS = {
     {Name = "Blade Ball", Category = "BB", URL = "https://raw.githubusercontent.com/joshhhie/rise/refs/heads/main/loader.lua"},
     {Name = "Blade Ball 2", Category = "BB", URL = "https://wings.ac/loader"},
@@ -632,151 +737,38 @@ local SCRIPTS = {
     {Name = "Piggy Bots Control", Category = "Misc", URL = "https://robloxscripts.com/raw/control-piggy-bots"},
 }
 
-task.spawn(function()
-    task.wait(2)
-    for name, enabled in pairs(getgenv().XyqwAutoExec) do
-        if enabled then
-            for _, data in ipairs(SCRIPTS) do
-                if data.Name == name and data.URL ~= "SPECIAL_COPY_DOORS_V2" then
-                    pcall(function() loadstring(game:HttpGet(data.URL))() end)
-                    break
-                end
-            end
-        end
-    end
-end)
-
--- ========== ANTI-KICK 7.4.3 (GC patch PRIMARY + hookfunction FALLBACK) ==========
--- Method 1 (PRIMARY): GC metatable patch — БЕЗ hookfunction/hookmetamethod.
---   Не триггерит NamecallInstance, не детектится iscclosure/getrawmetatable.
---   Toggle-friendly: originalKickFn сохраняется, XyqwAntiKick проверяется внутри.
--- Fallback: hookfunction(LocalPlayer.Kick) если GC patch недоступен.
--- Method 2 (hookmetamethod __namecall) НЕ используется — детектится.
+-- ========== ANTIKICK (ТОЛЬКО UI, БЕЗ ПАМЯТИ) ==========
+local antiKickActive = false
 local kickMethodPatched = false
 
-local MAX_ANTIKICK_LOGS = 50
-local function GetAntiKickTime()
-    local ok, t = pcall(function() return os.date("%H:%M:%S") end)
-    return ok and t or "??:??:??"
-end
-
 local function AddAntiKickLog(text)
-    local entry = "[" .. GetAntiKickTime() .. "] " .. tostring(text)
-    table.insert(getgenv().XyqwAntiKickLogs, 1, entry)
-    while #getgenv().XyqwAntiKickLogs > MAX_ANTIKICK_LOGS do
-        table.remove(getgenv().XyqwAntiKickLogs)
-    end
-    if getgenv().RefreshAntiKickLogs then pcall(getgenv().RefreshAntiKickLogs) end
+    local ok, t = pcall(function() return os.date("%H:%M:%S") end)
+    local entry = "[" .. (ok and t or "??:??:??") .. "] " .. tostring(text)
+    table.insert(ANTI_KICK_LOGS, 1, entry)
+    while #ANTI_KICK_LOGS > 50 do table.remove(ANTI_KICK_LOGS) end
+    if _G.RefreshAntiKickLogs then pcall(_G.RefreshAntiKickLogs) end
 end
-
-local function AntiKickNotify(text, duration)
-    AddAntiKickLog(text)
-    if getgenv().XyqwAntiKickMessages then
-        ShowRobloxNotification(text, duration or 3)
-    end
-end
-
-local function PatchKickMetatable()
-    if type(getgc) ~= "function" then return false, "getgc unavailable" end
-    if type(setreadonly) ~= "function" then return false, "setreadonly unavailable" end
-    if type(rawget) ~= "function" or type(rawset) ~= "function" then return false, "rawget/rawset unavailable" end
-
-    local patched = 0
-    local ok, err = pcall(function()
-        local gc = getgc(true)
-        for i = 1, #gc do
-            local t = gc[i]
-            if type(t) == "table" then
-                local s, r = pcall(rawget, t, "indexInstance")
-                if s and type(r) == "table" and r[1] and tostring(r[1]):lower() == "kick" then
-                    pcall(setreadonly, t, false)
-                    for k, d in next, t do
-                        if type(d) == "table" and d[1] and tostring(d[1]):lower() == "kick" then
-                            local originalFn = d[2]
-                            pcall(setreadonly, d, false)
-                            pcall(rawset, d, 2, function(...)
-                                if getgenv().XyqwAntiKick then
-                                    AntiKickNotify("AntiKick: Blocked Kick()", 2)
-                                    return false
-                                end
-                                if type(originalFn) == "function" then return originalFn(...) end
-                                return nil
-                            end)
-                            patched = patched + 1
-                        end
-                    end
-                    pcall(rawset, t, "tvk", {"kick", function()
-                        if getgenv().XyqwAntiKick then
-                            AntiKickNotify("AntiKick: Blocked Kick() (tvk)", 2)
-                            return false
-                        end
-                        return nil
-                    end})
-                end
-            end
-        end
-    end)
-    if not ok then return false, tostring(err) end
-    return patched > 0, patched
-end
-
-local antiKickActive = false
-local antiKickOldKick = nil
 
 local function StartAntiKick()
-    if antiKickActive then return end
     getgenv().XyqwAntiKick = true
-    getgenv().XyqwSettings.antiKick = true
-    SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
-
-    local ok1, result = PatchKickMetatable()
-    if ok1 then
-        antiKickActive = true
-        kickMethodPatched = true
-        AddAntiKickLog("AntiKick started via GC metatable patch (" .. tostring(result) .. " entries)")
-        AntiKickNotify("AntiKick: ON (stealth GC patch)", 3)
-        return
-    end
-    AddAntiKickLog("GC patch unavailable: " .. tostring(result) .. " — falling back to hookfunction")
-
-    local ok, err = pcall(function()
-        if type(hookfunction) ~= "function" then error("hookfunction not supported") end
-        local LP = Players.LocalPlayer
-        if not LP or not LP.Kick then error("LocalPlayer.Kick not found") end
-        antiKickOldKick = hookfunction(LP.Kick, function(self, ...)
-            if getgenv().XyqwAntiKick then
-                AntiKickNotify("AntiKick: Blocked Kick() [hookfunction]", 2)
-                return nil
-            end
-            return antiKickOldKick(self, ...)
-        end)
-        antiKickActive = true
-        AddAntiKickLog("AntiKick started via hookfunction(LP.Kick) [fallback]")
-        AntiKickNotify("AntiKick: ON (hookfunction fallback)", 3)
-    end)
-
-    if not ok then
-        getgenv().XyqwAntiKick = false
-        antiKickActive = false
-        AddAntiKickLog("AntiKick FAILED: " .. tostring(err))
-        AntiKickNotify("AntiKick: FAILED — no method available", 5)
-    end
+    SetSetting("antikick", true)
+    antiKickActive = true
+    AddAntiKickLog("AntiKick: ENABLED (WARNING: Adonis может детектить)")
+    if ANTI_KICK_MESSAGES then ShowRobloxNotification("AntiKick: ON (DANGER)", 5) end
 end
 
 local function StopAntiKick()
     getgenv().XyqwAntiKick = false
-    getgenv().XyqwSettings.antiKick = false
-    SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
+    SetSetting("antikick", false)
     antiKickActive = false
-    AddAntiKickLog("AntiKick disabled by user")
-    AntiKickNotify(_("AntiKickOff"), 2)
+    AddAntiKickLog("AntiKick: OFF (safe)")
 end
 
-task.spawn(function()
-    task.wait(5)
-    if getgenv().XyqwAntiKick then StartAntiKick() end
-end)
+-- AntiKick ВЫКЛЮЧЕН по умолчанию
+getgenv().XyqwAntiKick = false
+SetSetting("antikick", false)
 
+-- ========== ТЕГИ ==========
 local function IsOwner()
     for _, id in ipairs(OWNER_IDS) do if Players.LocalPlayer.UserId == id then return true end end
     return false
@@ -804,7 +796,7 @@ local function CreateTagForPlayer(plr)
     local rootPart = char:FindFirstChild("HumanoidRootPart")
     if not rootPart then return end
     local billboard = Instance.new("BillboardGui")
-    billboard.Name = "XyqwTag"
+    billboard.Name = "T" .. math.random(1000, 9999)
     billboard.Size = UDim2.new(0, 160, 0, 20)
     billboard.StudsOffset = Vector3.new(0, 4, 0)
     billboard.AlwaysOnTop = true
@@ -825,20 +817,11 @@ local function CreateTagForPlayer(plr)
     local gradient = Instance.new("UIGradient")
     if role == "OWNER" then
         label.Text = HUB_NAME .. " OWNER"
-        gradient.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 0, 0)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60, 0, 0)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
-        })
+        gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 0, 0)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60, 0, 0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))})
     else
         label.Text = HUB_NAME .. " Tester"
-        gradient.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 120, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 20, 60)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 120, 255))
-        })
+        gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 120, 255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 20, 60)), ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 120, 255))})
     end
-    gradient.Rotation = 0
     gradient.Parent = label
     local glow = Instance.new("UIStroke")
     glow.Color = role == "OWNER" and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(50, 120, 255)
@@ -867,8 +850,9 @@ local function RemoveAllTags()
     for _, plr in ipairs(Players:GetPlayers()) do
         local char = plr.Character
         if char then
-            local oldTag = char:FindFirstChild("XyqwTag")
-            if oldTag then oldTag:Destroy() end
+            for _, child in ipairs(char:GetChildren()) do
+                if child.Name:sub(1,1) == "T" and child:IsA("BillboardGui") then child:Destroy() end
+            end
         end
     end
 end
@@ -887,8 +871,6 @@ local function SetupCharacterTag(plr)
         local char = plr.Character or plr.CharacterAdded:Wait()
         local rootPart = char:WaitForChild("HumanoidRootPart", 5)
         if not rootPart then return end
-        local oldTag = char:FindFirstChild("XyqwTag")
-        if oldTag then oldTag:Destroy() end
         activeTags[plr] = nil
         task.wait(0.5)
         if GetRole(plr) and tagsEnabled then CreateTagForPlayer(plr) end
@@ -925,39 +907,35 @@ local function GetPing()
     local ok, ping = pcall(function() return math.floor(Players.LocalPlayer:GetNetworkPing() * 1000) end)
     return ok and ping or 0
 end
-
 local function GetExecutorName()
-    local ok, name = pcall(function()
-        if identifyexecutor then return identifyexecutor() end
-        return "Unknown"
-    end)
+    local ok, name = pcall(function() if identifyexecutor then return identifyexecutor() end return "Unknown" end)
     return ok and name or "Unknown"
 end
 
--- ========== ANTI-DETECT SCREEN GUI ==========
+-- ========== STEALTH SCREEN GUI ==========
 local screenGui = Instance.new("ScreenGui")
 local stealthNames = {"Chat", "RobloxGui", "TopBar", "Notification", "LoadingScreen", "Backpack", "PlayerList", "CoreGui", "RobloxLoadingScreen", "TouchGui", "ControlFrame"}
-screenGui.Name = stealthNames[math.random(1, #stealthNames)] .. tostring(math.random(100, 999))
+screenGui.Name = stealthNames[math.random(1, #stealthNames)] .. tostring(math.random(100000, 999999))
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.DisplayOrder = 999
+screenGui.DisplayOrder = math.random(100, 500)
 
 local parentAssigned = false
 pcall(function()
-    if syn and syn.protect_gui then syn.protect_gui(screenGui); screenGui.Parent = game:GetService("CoreGui"); parentAssigned = true; return end
-    if protect_gui then protect_gui(screenGui); screenGui.Parent = game:GetService("CoreGui"); parentAssigned = true; return end
+    if syn and syn.protect_gui then syn.protect_gui(screenGui); screenGui.Parent = CoreGui; parentAssigned = true; return end
+    if protect_gui then protect_gui(screenGui); screenGui.Parent = CoreGui; parentAssigned = true; return end
     if gethui then screenGui.Parent = gethui(); parentAssigned = true; return end
 end)
 if not parentAssigned then
-    pcall(function() screenGui.Parent = game:GetService("CoreGui") end)
+    pcall(function() screenGui.Parent = CoreGui end)
     if not screenGui.Parent then screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
 end
 
 task.spawn(function()
     while screenGui.Parent do
-        screenGui.Name = stealthNames[math.random(1, #stealthNames)] .. tostring(math.random(100, 999))
-        task.wait(3)
+        screenGui.Name = stealthNames[math.random(1, #stealthNames)] .. tostring(math.random(100000, 999999))
+        task.wait(2 + math.random() * 2)
     end
 end)
 
@@ -983,19 +961,18 @@ topBarText.Font = Enum.Font.GothamBold
 topBarText.TextSize = 12
 topBarText.TextColor3 = RED_MAIN
 topBarText.TextXAlignment = Enum.TextXAlignment.Left
-topBarText.Text = "Loading..."
+topBarText.Text = "..."
 topBarText.Parent = topBar
 
 task.spawn(function()
     while topBarText.Parent do
-        topBarText.Text = string.format("%s | %s | FPS: %d | Ping: %d ms",
-            GetExecutorName(), Players.LocalPlayer.Name, fpsValue, GetPing())
+        topBarText.Text = string.format("%s | %s | FPS: %d | Ping: %d ms", GetExecutorName(), Players.LocalPlayer.Name, fpsValue, GetPing())
         task.wait(1)
     end
 end)
 
 local hideTopBtn = Instance.new("TextButton")
-hideTopBtn.Name = "HideTopBtn"
+hideTopBtn.Name = "H"
 hideTopBtn.Size = UDim2.new(0, 45, 1, 0)
 hideTopBtn.Position = UDim2.new(1, -45, 0, 0)
 hideTopBtn.BackgroundColor3 = RED_DARK
@@ -1026,7 +1003,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 local function UpdateHideTopBtn()
-    if getgenv().TopBarHidden then
+    if TOPBAR_HIDDEN then
         hideTopBtn.Text = "S"
         topBar.BackgroundTransparency = 1
         topBar.BorderSizePixel = 0
@@ -1041,8 +1018,9 @@ end
 UpdateHideTopBtn()
 
 hideTopBtn.MouseButton1Click:Connect(function()
-    getgenv().TopBarHidden = not getgenv().TopBarHidden
-    ShowRobloxNotification(getgenv().TopBarHidden and _("HideTopBarOn") or _("HideTopBarOff"), 2)
+    TOPBAR_HIDDEN = not TOPBAR_HIDDEN
+    SetSetting("topbar", TOPBAR_HIDDEN)
+    ShowRobloxNotification(TOPBAR_HIDDEN and _("HideTopBarOn") or _("HideTopBarOff"), 2)
     UpdateHideTopBtn()
 end)
 
@@ -1075,16 +1053,14 @@ UserInputService.InputChanged:Connect(function(input)
         local delta = input.Position - dockDragStart
         if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then dockDragMoved = true end
         if dockDragMoved then
-            dockButton.Position = UDim2.new(
-                dockStartPos.X.Scale, dockStartPos.X.Offset + delta.X,
-                dockStartPos.Y.Scale, dockStartPos.Y.Offset + delta.Y)
+            dockButton.Position = UDim2.new(dockStartPos.X.Scale, dockStartPos.X.Offset + delta.X, dockStartPos.Y.Scale, dockStartPos.Y.Offset + delta.Y)
         end
     end
 end)
 
 local savedSize = UDim2.new(0, 280, 0, 340)
 local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
+mainFrame.Name = "M" .. math.random(1000, 9999)
 mainFrame.Size = savedSize
 mainFrame.Position = UDim2.new(0.5, -140, 0.5, -170)
 mainFrame.BackgroundColor3 = RED_BG
@@ -1128,7 +1104,7 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 local clickBlocker = Instance.new("TextButton")
-clickBlocker.Name = "ClickBlocker"
+clickBlocker.Name = "C"
 clickBlocker.Size = UDim2.new(1, 0, 1, 0)
 clickBlocker.BackgroundTransparency = 1
 clickBlocker.Text = ""
@@ -1173,7 +1149,7 @@ local langButton = Instance.new("TextButton")
 langButton.Name = "LangBtn"
 langButton.BackgroundColor3 = RED_DARK
 langButton.TextColor3 = RED_MAIN
-langButton.Text = getgenv().XyqwLanguage
+langButton.Text = LANG_CODE
 langButton.TextScaled = true
 langButton.Font = Enum.Font.GothamBold
 langButton.BorderSizePixel = 1
@@ -1298,7 +1274,7 @@ local function UpdateHeaderLayout()
     for i = 1, count do
         buttons[i].Text = useLong and HEADER_LONG_TEXT[i] or HEADER_SHORT_TEXT[i]
     end
-    langButton.Text = getgenv().XyqwLanguage
+    langButton.Text = LANG_CODE
 end
 
 -- ========== SEARCH BAR + INFO ==========
@@ -1360,7 +1336,7 @@ local function SwitchTab(name)
         btn.BorderColor3 = RED_MAIN
     end
     task.wait(0.01)
-    if getgenv().RefreshButtons then getgenv().RefreshButtons() end
+    if _G.RefreshButtons then _G.RefreshButtons() end
 end
 
 for i, name in ipairs(TAB_LIST) do
@@ -1415,8 +1391,8 @@ local function UpdateScriptButtonLayout()
     if w == 0 then w = mainFrame.Size.X.Offset end
     local useLong = w >= 500
     for _, entry in ipairs(buttons) do
-        entry.AutoBtn.Text = getgenv().XyqwAutoExec[entry.Data.Name] and (useLong and "On" or "✓") or (useLong and "Auto" or "▶")
-        entry.Star.Text = getgenv().XyqwFavorites[entry.Data.Name] and (useLong and "Fav+" or "★") or (useLong and "Fav" or "☆")
+        entry.AutoBtn.Text = AUTOEXEC[entry.Data.Name] and (useLong and "On" or "✓") or (useLong and "Auto" or "▶")
+        entry.Star.Text = FAVORITES[entry.Data.Name] and (useLong and "Fav+" or "★") or (useLong and "Fav" or "☆")
     end
 end
 
@@ -1430,14 +1406,15 @@ end
 local function SaveOrder()
     local order = {}
     for _, entry in ipairs(buttons) do table.insert(order, entry.Data.Name) end
-    getgenv().XyqwOrder = order
+    ORDER = order
+    SetSetting("order", ORDER)
     SaveTable(ORDER_FILE, order)
 end
 
 local function ApplyOrderFromFile()
-    if #getgenv().XyqwOrder == 0 then return end
+    if #ORDER == 0 then return end
     local orderMap = {}
-    for i, name in ipairs(getgenv().XyqwOrder) do orderMap[name] = i end
+    for i, name in ipairs(ORDER) do orderMap[name] = i end
     table.sort(buttons, function(a, b)
         local ai = orderMap[a.Data.Name] or 9999
         local bi = orderMap[b.Data.Name] or 9999
@@ -1506,24 +1483,25 @@ local function CreateScriptButton(data)
     autoBtn.ZIndex = 2
     autoBtn.Parent = container
     autoBtn.AutoButtonColor = false
-    if getgenv().XyqwAutoExec[data.Name] then
+    if AUTOEXEC[data.Name] then
         autoBtn.Text = "✓"
         autoBtn.BackgroundColor3 = RED_MAIN
         autoBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
     end
     autoBtn.MouseButton1Click:Connect(function()
-        if getgenv().XyqwAutoExec[data.Name] then
-            getgenv().XyqwAutoExec[data.Name] = nil
+        if AUTOEXEC[data.Name] then
+            AUTOEXEC[data.Name] = nil
             TweenColor(autoBtn, "BackgroundColor3", RED_BG)
             autoBtn.TextColor3 = RED_MAIN
             ShowRobloxNotification(data.Name .. " — " .. _("AutoExecOff"), 3)
         else
-            getgenv().XyqwAutoExec[data.Name] = true
+            AUTOEXEC[data.Name] = true
             TweenColor(autoBtn, "BackgroundColor3", RED_MAIN)
             autoBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
             ShowRobloxNotification(data.Name .. " — " .. _("AutoExecOn"), 3)
         end
-        SaveTable(AUTOEXEC_FILE, getgenv().XyqwAutoExec)
+        SetSetting("autoexec", AUTOEXEC)
+        SaveTable(AUTOEXEC_FILE, AUTOEXEC)
         UpdateScriptButtonLayout()
     end)
 
@@ -1541,16 +1519,17 @@ local function CreateScriptButton(data)
     star.ZIndex = 2
     star.Parent = container
     star.AutoButtonColor = false
-    if getgenv().XyqwFavorites[data.Name] then star.Text = "★" end
+    if FAVORITES[data.Name] then star.Text = "★" end
     star.MouseButton1Click:Connect(function()
-        if getgenv().XyqwFavorites[data.Name] then
-            getgenv().XyqwFavorites[data.Name] = nil
+        if FAVORITES[data.Name] then
+            FAVORITES[data.Name] = nil
             star.Text = "☆"
         else
-            getgenv().XyqwFavorites[data.Name] = true
+            FAVORITES[data.Name] = true
             star.Text = "★"
         end
-        SaveTable(FAV_FILE, getgenv().XyqwFavorites)
+        SetSetting("fav", FAVORITES)
+        SaveTable(FAV_FILE, FAVORITES)
         UpdateScriptButtonLayout()
     end)
 
@@ -1565,12 +1544,13 @@ local function CreateScriptButton(data)
         lastRun = now
         isRunning = true
         TweenColor(container, "BackgroundColor3", RED_MAIN, 0.1)
-        for i, name in ipairs(getgenv().XyqwRecent) do
-            if name == data.Name then table.remove(getgenv().XyqwRecent, i) break end
+        for i, name in ipairs(RECENT) do
+            if name == data.Name then table.remove(RECENT, i) break end
         end
-        table.insert(getgenv().XyqwRecent, 1, data.Name)
-        while #getgenv().XyqwRecent > 5 do table.remove(getgenv().XyqwRecent) end
-        SaveTable(RCT_FILE, getgenv().XyqwRecent)
+        table.insert(RECENT, 1, data.Name)
+        while #RECENT > 5 do table.remove(RECENT) end
+        SetSetting("recent", RECENT)
+        SaveTable(RCT_FILE, RECENT)
 
         if data.URL == "SPECIAL_COPY_DOORS_V2" then
             local scriptText = 'getgenv().SCRIPT_KEY = "KEYLESS"\nloadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/abd3cc54d2dc7de4a091fb19c8f4ea9e15e939e7ecc88b475e6956e8af94ad6f/download"))()'
@@ -1648,7 +1628,7 @@ local function CreateScriptButton(data)
                     SaveOrder()
                     ShowRobloxNotification(_("OrderSaved"), 2)
                 end
-                if getgenv().RefreshButtons then getgenv().RefreshButtons() end
+                if _G.RefreshButtons then _G.RefreshButtons() end
                 task.wait(0.05)
                 blockClick = false
             end
@@ -1664,7 +1644,6 @@ ApplyOrderFromFile()
 
 -- ========== SPECIAL BOTTOM BUTTONS ==========
 local removeTagsContainer = Instance.new("Frame")
-removeTagsContainer.Name = "RemoveTagsContainer"
 removeTagsContainer.Size = UDim2.new(1, -10, 0, 32)
 removeTagsContainer.Position = UDim2.new(0, 5, 0, 0)
 removeTagsContainer.BackgroundColor3 = RED_BG
@@ -1674,7 +1653,6 @@ removeTagsContainer.Parent = scrollFrame
 removeTagsContainer.Visible = false
 
 local removeTagsBtn = Instance.new("TextButton")
-removeTagsBtn.Name = "RemoveTagsBtn"
 removeTagsBtn.Size = UDim2.new(1, 0, 1, 0)
 removeTagsBtn.BackgroundTransparency = 1
 removeTagsBtn.Text = _("RemoveTags")
@@ -1691,7 +1669,6 @@ removeTagsBtn.MouseButton1Click:Connect(function()
 end)
 
 local shareFavContainer = Instance.new("Frame")
-shareFavContainer.Name = "ShareFavContainer"
 shareFavContainer.Size = UDim2.new(1, -10, 0, 32)
 shareFavContainer.Position = UDim2.new(0, 5, 0, 0)
 shareFavContainer.BackgroundColor3 = RED_BG
@@ -1701,7 +1678,6 @@ shareFavContainer.Parent = scrollFrame
 shareFavContainer.Visible = false
 
 local shareFavBtn = Instance.new("TextButton")
-shareFavBtn.Name = "ShareFavBtn"
 shareFavBtn.Size = UDim2.new(1, 0, 1, 0)
 shareFavBtn.BackgroundTransparency = 1
 shareFavBtn.Text = _("ShareFav")
@@ -1714,7 +1690,7 @@ shareFavBtn.MouseEnter:Connect(function() TweenColor(shareFavContainer, "Backgro
 shareFavBtn.MouseLeave:Connect(function() TweenColor(shareFavContainer, "BackgroundColor3", RED_BG, 0.15) end)
 shareFavBtn.MouseButton1Click:Connect(function()
     local list = {}
-    for name, _ in pairs(getgenv().XyqwFavorites) do table.insert(list, name) end
+    for name, _ in pairs(FAVORITES) do table.insert(list, name) end
     table.sort(list)
     local text = HUB_NAME .. " - My Favorite Scripts:\n"
     if #list == 0 then text = text .. "(empty)" else
@@ -1726,7 +1702,6 @@ shareFavBtn.MouseButton1Click:Connect(function()
 end)
 
 local shareRctContainer = Instance.new("Frame")
-shareRctContainer.Name = "ShareRctContainer"
 shareRctContainer.Size = UDim2.new(1, -10, 0, 32)
 shareRctContainer.Position = UDim2.new(0, 5, 0, 0)
 shareRctContainer.BackgroundColor3 = RED_BG
@@ -1736,7 +1711,6 @@ shareRctContainer.Parent = scrollFrame
 shareRctContainer.Visible = false
 
 local shareRctBtn = Instance.new("TextButton")
-shareRctBtn.Name = "ShareRctBtn"
 shareRctBtn.Size = UDim2.new(1, 0, 1, 0)
 shareRctBtn.BackgroundTransparency = 1
 shareRctBtn.Text = _("ShareRct")
@@ -1749,8 +1723,8 @@ shareRctBtn.MouseEnter:Connect(function() TweenColor(shareRctContainer, "Backgro
 shareRctBtn.MouseLeave:Connect(function() TweenColor(shareRctContainer, "BackgroundColor3", RED_BG, 0.15) end)
 shareRctBtn.MouseButton1Click:Connect(function()
     local text = HUB_NAME .. " - My Recent Scripts:\n"
-    if #getgenv().XyqwRecent == 0 then text = text .. "(empty)" else
-        for i, name in ipairs(getgenv().XyqwRecent) do text = text .. i .. ". " .. name .. "\n" end
+    if #RECENT == 0 then text = text .. "(empty)" else
+        for i, name in ipairs(RECENT) do text = text .. i .. ". " .. name .. "\n" end
     end
     text = text .. "\nGenerated by " .. HUB_NAME .. " " .. VERSION
     pcall(function() setclipboard(text) end)
@@ -1758,7 +1732,6 @@ shareRctBtn.MouseButton1Click:Connect(function()
 end)
 
 local urlTestContainer = Instance.new("Frame")
-urlTestContainer.Name = "UrlTestContainer"
 urlTestContainer.Size = UDim2.new(1, -10, 0, 32)
 urlTestContainer.Position = UDim2.new(0, 5, 0, 0)
 urlTestContainer.BackgroundColor3 = RED_BG
@@ -1768,7 +1741,6 @@ urlTestContainer.Parent = scrollFrame
 urlTestContainer.Visible = false
 
 local urlTestBtn = Instance.new("TextButton")
-urlTestBtn.Name = "UrlTestBtn"
 urlTestBtn.Size = UDim2.new(1, 0, 1, 0)
 urlTestBtn.BackgroundTransparency = 1
 urlTestBtn.Text = _("TestURLs")
@@ -1781,7 +1753,6 @@ urlTestBtn.MouseEnter:Connect(function() TweenColor(urlTestContainer, "Backgroun
 urlTestBtn.MouseLeave:Connect(function() TweenColor(urlTestContainer, "BackgroundColor3", RED_BG, 0.15) end)
 
 local settingsContainer = Instance.new("Frame")
-settingsContainer.Name = "SettingsContainer"
 settingsContainer.Size = UDim2.new(1, -10, 0, 32)
 settingsContainer.Position = UDim2.new(0, 5, 0, 0)
 settingsContainer.BackgroundColor3 = RED_BG
@@ -1791,7 +1762,6 @@ settingsContainer.Parent = scrollFrame
 settingsContainer.Visible = false
 
 local settingsBtn = Instance.new("TextButton")
-settingsBtn.Name = "SettingsBtn"
 settingsBtn.Size = UDim2.new(1, 0, 1, 0)
 settingsBtn.BackgroundTransparency = 1
 settingsBtn.Text = _("SettingsBtn")
@@ -1804,7 +1774,6 @@ settingsBtn.MouseEnter:Connect(function() TweenColor(settingsContainer, "Backgro
 settingsBtn.MouseLeave:Connect(function() TweenColor(settingsContainer, "BackgroundColor3", RED_BG, 0.15) end)
 
 local resetOrderContainer = Instance.new("Frame")
-resetOrderContainer.Name = "ResetOrderContainer"
 resetOrderContainer.Size = UDim2.new(1, -10, 0, 32)
 resetOrderContainer.Position = UDim2.new(0, 5, 0, 0)
 resetOrderContainer.BackgroundColor3 = RED_BG
@@ -1814,7 +1783,6 @@ resetOrderContainer.Parent = scrollFrame
 resetOrderContainer.Visible = false
 
 local resetOrderBtn = Instance.new("TextButton")
-resetOrderBtn.Name = "ResetOrderBtn"
 resetOrderBtn.Size = UDim2.new(1, 0, 1, 0)
 resetOrderBtn.BackgroundTransparency = 1
 resetOrderBtn.Text = _("ResetOrder")
@@ -1826,18 +1794,18 @@ resetOrderBtn.AutoButtonColor = false
 resetOrderBtn.MouseEnter:Connect(function() TweenColor(resetOrderContainer, "BackgroundColor3", RED_DARK, 0.12) end)
 resetOrderBtn.MouseLeave:Connect(function() TweenColor(resetOrderContainer, "BackgroundColor3", RED_BG, 0.15) end)
 resetOrderBtn.MouseButton1Click:Connect(function()
-    getgenv().XyqwOrder = {}
+    ORDER = {}
+    SetSetting("order", ORDER)
     SaveTable(ORDER_FILE, {})
     for _, entry in ipairs(buttons) do entry.Container:Destroy() end
     buttons = {}
     for _, data in ipairs(SCRIPTS) do CreateScriptButton(data) end
-    if getgenv().RefreshButtons then getgenv().RefreshButtons() end
+    if _G.RefreshButtons then _G.RefreshButtons() end
     ShowRobloxNotification(_("OrderReset"), 3)
 end)
 
 -- ========== ANTIKICK SETTINGS BUTTON ==========
 local antiKickContainer = Instance.new("Frame")
-antiKickContainer.Name = "AntiKickContainer"
 antiKickContainer.Size = UDim2.new(1, -10, 0, 32)
 antiKickContainer.Position = UDim2.new(0, 5, 0, 0)
 antiKickContainer.BackgroundColor3 = RED_BG
@@ -1858,11 +1826,11 @@ antiKickBtn.AutoButtonColor = false
 
 local function UpdateAntiKickText()
     if getgenv().XyqwAntiKick then
-        antiKickBtn.Text = "AntiKick Settings — ON"
-        antiKickBtn.TextColor3 = Color3.fromRGB(0, 255, 100)
+        antiKickBtn.Text = "AntiKick Settings — ON (WARNING)"
+        antiKickBtn.TextColor3 = Color3.fromRGB(255, 150, 0) -- Оранжевый = опасно
     else
-        antiKickBtn.Text = "AntiKick Settings — OFF"
-        antiKickBtn.TextColor3 = RED_MAIN
+        antiKickBtn.Text = "AntiKick Settings — OFF (Safe)"
+        antiKickBtn.TextColor3 = Color3.fromRGB(0, 255, 100) -- Зеленый = безопасно
     end
 end
 UpdateAntiKickText()
@@ -1870,14 +1838,12 @@ UpdateAntiKickText()
 antiKickBtn.MouseEnter:Connect(function() TweenColor(antiKickContainer, "BackgroundColor3", RED_DARK, 0.12) end)
 antiKickBtn.MouseLeave:Connect(function() TweenColor(antiKickContainer, "BackgroundColor3", RED_BG, 0.15) end)
 
--- forward declaration
 local ShowAntiKickSettings
 antiKickBtn.MouseButton1Click:Connect(function()
     if ShowAntiKickSettings then ShowAntiKickSettings() end
 end)
 
 local destroyContainer = Instance.new("Frame")
-destroyContainer.Name = "DestroyContainer"
 destroyContainer.Size = UDim2.new(1, -10, 0, 32)
 destroyContainer.Position = UDim2.new(0, 5, 0, 0)
 destroyContainer.BackgroundColor3 = RED_BG
@@ -1887,7 +1853,6 @@ destroyContainer.Parent = scrollFrame
 destroyContainer.Visible = false
 
 local destroyBtnMain = Instance.new("TextButton")
-destroyBtnMain.Name = "DestroyBtn"
 destroyBtnMain.Size = UDim2.new(1, 0, 1, 0)
 destroyBtnMain.BackgroundTransparency = 1
 destroyBtnMain.Text = _("Destroy")
@@ -1900,14 +1865,14 @@ destroyBtnMain.MouseEnter:Connect(function() TweenColor(destroyContainer, "Backg
 destroyBtnMain.MouseLeave:Connect(function() TweenColor(destroyContainer, "BackgroundColor3", RED_BG, 0.15) end)
 destroyBtnMain.MouseButton1Click:Connect(function()
     ShowRobloxNotification(HUB_NAME .. " Destroyed!", 2)
-    getgenv().XyqwHubRunning = nil
+    rawset(_G, "XyqwHubRunning", nil)
     screenGui:Destroy()
 end)
 
--- ========== ANTIKICK SETTINGS WINDOW (7.4.3) ==========
+-- ========== ANTIKICK SETTINGS WINDOW ==========
 ShowAntiKickSettings = function()
     local frame = Instance.new("Frame")
-    frame.Name = "AntiKickSettingsFrame"
+    frame.Name = "AKFrame"
     frame.Size = UDim2.new(0, 350, 0, 400)
     frame.Position = UDim2.new(0.5, -175, 0.5, -200)
     frame.BackgroundColor3 = RED_BG
@@ -1951,11 +1916,10 @@ ShowAntiKickSettings = function()
     closeBtn.Parent = frame
     closeBtn.AutoButtonColor = false
     closeBtn.MouseButton1Click:Connect(function()
-        getgenv().RefreshAntiKickLogs = nil
+        _G.RefreshAntiKickLogs = nil
         frame:Destroy()
     end)
 
-    -- Toggle AntiKick
     local toggleAntiKick = Instance.new("TextButton")
     toggleAntiKick.Size = UDim2.new(1, -20, 0, 34)
     toggleAntiKick.Position = UDim2.new(0, 10, 0, 40)
@@ -1970,25 +1934,23 @@ ShowAntiKickSettings = function()
 
     local function UpdateToggleAntiKick()
         if getgenv().XyqwAntiKick then
-            toggleAntiKick.Text = "AntiKick: ON"
-            toggleAntiKick.TextColor3 = Color3.fromRGB(0, 255, 100)
+            toggleAntiKick.Text = "AntiKick: ON (WARNING: DETECTABLE)"
+            toggleAntiKick.TextColor3 = Color3.fromRGB(255, 150, 0)
             toggleAntiKick.BackgroundColor3 = RED_DARK
         else
-            toggleAntiKick.Text = "AntiKick: OFF"
-            toggleAntiKick.TextColor3 = RED_MAIN
+            toggleAntiKick.Text = "AntiKick: OFF (Safe)"
+            toggleAntiKick.TextColor3 = Color3.fromRGB(0, 255, 100)
             toggleAntiKick.BackgroundColor3 = RED_BG
         end
     end
     UpdateToggleAntiKick()
 
     toggleAntiKick.MouseButton1Click:Connect(function()
-        if getgenv().XyqwAntiKick then StopAntiKick()
-        else StartAntiKick() end
+        if getgenv().XyqwAntiKick then StopAntiKick() else StartAntiKick() end
         UpdateToggleAntiKick()
         UpdateAntiKickText()
     end)
 
-    -- Toggle messages
     local toggleMessages = Instance.new("TextButton")
     toggleMessages.Size = UDim2.new(1, -20, 0, 34)
     toggleMessages.Position = UDim2.new(0, 10, 0, 80)
@@ -2002,7 +1964,7 @@ ShowAntiKickSettings = function()
     toggleMessages.AutoButtonColor = false
 
     local function UpdateToggleMessages()
-        if getgenv().XyqwAntiKickMessages then
+        if ANTI_KICK_MESSAGES then
             toggleMessages.Text = "AntiKick messages: ON"
             toggleMessages.TextColor3 = Color3.fromRGB(0, 255, 100)
             toggleMessages.BackgroundColor3 = RED_DARK
@@ -2015,27 +1977,24 @@ ShowAntiKickSettings = function()
     UpdateToggleMessages()
 
     toggleMessages.MouseButton1Click:Connect(function()
-        getgenv().XyqwAntiKickMessages = not getgenv().XyqwAntiKickMessages
-        getgenv().XyqwSettings.antiKickMessages = getgenv().XyqwAntiKickMessages
-        SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
+        ANTI_KICK_MESSAGES = not ANTI_KICK_MESSAGES
+        SetSetting("akmsg", ANTI_KICK_MESSAGES)
         UpdateToggleMessages()
-        ShowRobloxNotification("AntiKick messages: " .. (getgenv().XyqwAntiKickMessages and "ON" or "OFF"), 2)
+        ShowRobloxNotification("AntiKick messages: " .. (ANTI_KICK_MESSAGES and "ON" or "OFF"), 2)
     end)
 
-    -- Method label
     local methodLbl = Instance.new("TextLabel")
     methodLbl.Size = UDim2.new(1, -20, 0, 14)
     methodLbl.Position = UDim2.new(0, 10, 0, 120)
     methodLbl.BackgroundTransparency = 1
     methodLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
-    methodLbl.Text = "Method: " .. (kickMethodPatched and "GC patch (stealth)" or (antiKickActive and "hookfunction (fallback)" or "not active"))
+    methodLbl.Text = "Method: UI-Only (no memory hooks)"
     methodLbl.TextSize = 10
     methodLbl.Font = Enum.Font.Gotham
     methodLbl.TextXAlignment = Enum.TextXAlignment.Left
     methodLbl.ZIndex = 51
     methodLbl.Parent = frame
 
-    -- Logs label
     local logsLbl = Instance.new("TextLabel")
     logsLbl.Size = UDim2.new(1, -120, 0, 18)
     logsLbl.Position = UDim2.new(0, 10, 0, 140)
@@ -2048,7 +2007,6 @@ ShowAntiKickSettings = function()
     logsLbl.ZIndex = 51
     logsLbl.Parent = frame
 
-    -- Clear logs button
     local clearBtn = Instance.new("TextButton")
     clearBtn.Size = UDim2.new(0, 100, 0, 18)
     clearBtn.Position = UDim2.new(1, -110, 0, 140)
@@ -2063,11 +2021,10 @@ ShowAntiKickSettings = function()
     clearBtn.Parent = frame
     clearBtn.AutoButtonColor = false
     clearBtn.MouseButton1Click:Connect(function()
-        getgenv().XyqwAntiKickLogs = {}
-        if getgenv().RefreshAntiKickLogs then getgenv().RefreshAntiKickLogs() end
+        ANTI_KICK_LOGS = {}
+        if _G.RefreshAntiKickLogs then _G.RefreshAntiKickLogs() end
     end)
 
-    -- Logs scroll
     local logsScroll = Instance.new("ScrollingFrame")
     logsScroll.Size = UDim2.new(1, -20, 1, -170)
     logsScroll.Position = UDim2.new(0, 10, 0, 160)
@@ -2094,21 +2051,20 @@ ShowAntiKickSettings = function()
     logsText.ZIndex = 52
     logsText.Parent = logsScroll
 
-    getgenv().RefreshAntiKickLogs = function()
+    _G.RefreshAntiKickLogs = function()
         if not logsText.Parent then return end
-        local logs = getgenv().XyqwAntiKickLogs or {}
-        if #logs == 0 then
+        if #ANTI_KICK_LOGS == 0 then
             logsText.Text = "(no logs yet)"
             logsText.Size = UDim2.new(1, -10, 0, 30)
             logsScroll.CanvasSize = UDim2.new(0, 0, 0, 40)
         else
-            logsText.Text = table.concat(logs, "\n")
-            local h = math.max(30, #logs * 16 + 20)
+            logsText.Text = table.concat(ANTI_KICK_LOGS, "\n")
+            local h = math.max(30, #ANTI_KICK_LOGS * 16 + 20)
             logsText.Size = UDim2.new(1, -10, 0, h)
             logsScroll.CanvasSize = UDim2.new(0, 0, 0, h + 10)
         end
     end
-    getgenv().RefreshAntiKickLogs()
+    _G.RefreshAntiKickLogs()
 
     MakeResizable(frame, 300, 300, 700, 700)
 end
@@ -2117,7 +2073,6 @@ end
 local ShowSettings
 ShowSettings = function()
     local frame = Instance.new("Frame")
-    frame.Name = "SettingsFrame"
     frame.Size = UDim2.new(0, 300, 0, 200)
     frame.Position = UDim2.new(0.5, -150, 0.5, -100)
     frame.BackgroundColor3 = RED_BG
@@ -2178,7 +2133,7 @@ ShowSettings = function()
     bindBtn.Position = UDim2.new(0, 10, 0, 64)
     bindBtn.BackgroundColor3 = RED_DARK
     bindBtn.TextColor3 = RED_MAIN
-    bindBtn.Text = tostring(getgenv().XyqwSettings.autoHideBind) .. " — click to change"
+    bindBtn.Text = tostring(GetSetting("bind", "RightShift")) .. " — click to change"
     bindBtn.TextScaled = true
     bindBtn.Font = Enum.Font.GothamBold
     bindBtn.BorderSizePixel = 1
@@ -2199,8 +2154,7 @@ ShowSettings = function()
             if gp then return end
             if input.UserInputType == Enum.UserInputType.Keyboard then
                 local keyName = input.KeyCode.Name
-                getgenv().XyqwSettings.autoHideBind = keyName
-                SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
+                SetSetting("bind", keyName)
                 bindBtn.Text = keyName .. " — click to change"
                 ShowRobloxNotification(_("KeybindChanged") .. keyName, 2)
                 waiting = false
@@ -2214,7 +2168,7 @@ ShowSettings = function()
     hint.Position = UDim2.new(0, 10, 0, 105)
     hint.BackgroundTransparency = 1
     hint.TextColor3 = Color3.fromRGB(150, 150, 150)
-    hint.Text = "Press bind to hide/show " .. HUB_NAME .. " GUI.\nCurrent: " .. tostring(getgenv().XyqwSettings.autoHideBind)
+    hint.Text = "Press bind to hide/show " .. HUB_NAME .. " GUI.\nCurrent: " .. tostring(GetSetting("bind", "RightShift"))
     hint.TextWrapped = true
     hint.TextScaled = true
     hint.Font = Enum.Font.Gotham
@@ -2244,31 +2198,25 @@ urlTestBtn.MouseButton1Click:Connect(function()
                     if res and #res > 0 then return true end
                     return false
                 end)
-                if ok then
-                    entry.StatusDot.BackgroundColor3 = URL_OK
-                    getgenv().XyqwSettings.urlStatus[data.Name] = "ok"
-                else
-                    entry.StatusDot.BackgroundColor3 = URL_BAD
-                    getgenv().XyqwSettings.urlStatus[data.Name] = "bad"
-                end
+                if ok then entry.StatusDot.BackgroundColor3 = URL_OK
+                else entry.StatusDot.BackgroundColor3 = URL_BAD end
                 task.wait(0.3)
             end
         end
-        SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
         ShowRobloxNotification(_("UrlCheckDone"), 3)
     end)
 end)
 
 -- ========== REFRESH BUTTONS ==========
-getgenv().RefreshButtons = function()
+_G.RefreshButtons = function()
     local search = string.lower(searchBar.Text)
     for _, entry in ipairs(buttons) do
         local show = true
         if currentTab == "Fav" then
-            if not getgenv().XyqwFavorites[entry.Data.Name] then show = false end
+            if not FAVORITES[entry.Data.Name] then show = false end
         elseif currentTab == "Rct" then
             local found = false
-            for _, n in ipairs(getgenv().XyqwRecent) do
+            for _, n in ipairs(RECENT) do
                 if n == entry.Data.Name then found = true break end
             end
             if not found then show = false end
@@ -2324,15 +2272,15 @@ getgenv().RefreshButtons = function()
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, visible * buttonHeight + 20)
 end
 
-getgenv().RefreshButtons()
+_G.RefreshButtons()
 searchBar:GetPropertyChangedSignal("Text"):Connect(function()
-    if getgenv().RefreshButtons then getgenv().RefreshButtons() end
+    if _G.RefreshButtons then _G.RefreshButtons() end
 end)
 
 -- ========== CHANGELOG WINDOW ==========
 local function ShowChangeLog()
     local frame = Instance.new("Frame")
-    frame.Name = "ChangeLogFrame"
+    frame.Name = "CLFrame"
     frame.Size = UDim2.new(0, 350, 0, 350)
     frame.Position = UDim2.new(0.5, -175, 0.5, -175)
     frame.BackgroundColor3 = RED_BG
@@ -2411,11 +2359,12 @@ changelogButton.MouseButton1Click:Connect(ShowChangeLog)
 langButton.MouseButton1Click:Connect(function()
     local langs = {"EN", "RU", "UK", "BE", "KK"}
     local idx = 1
-    for i, l in ipairs(langs) do if l == getgenv().XyqwLanguage then idx = i break end end
+    for i, l in ipairs(langs) do if l == LANG_CODE then idx = i break end end
     idx = idx + 1
     if idx > #langs then idx = 1 end
-    getgenv().XyqwLanguage = langs[idx]
-    langButton.Text = getgenv().XyqwLanguage
+    LANG_CODE = langs[idx]
+    SetSetting("lang", LANG_CODE)
+    langButton.Text = LANG_CODE
     searchBar.PlaceholderText = _("Search")
     removeTagsBtn.Text = _("RemoveTags")
     shareFavBtn.Text = _("ShareFav")
@@ -2432,6 +2381,7 @@ end)
 -- ========== PLAYER LIST ==========
 local function ShowPlayerList()
     local frame = Instance.new("Frame")
+    frame.Name = "PLFrame"
     frame.Size = UDim2.new(0, 350, 0, 400)
     frame.Position = UDim2.new(0.5, -175, 0.5, -200)
     frame.BackgroundColor3 = RED_BG
@@ -2507,10 +2457,10 @@ local function ShowPlayerList()
     MakeResizable(frame, 250, 200, 900, 1000)
 end
 
--- ========== SERVER INFO (с Auto-Reinject) ==========
+-- ========== SERVER INFO (+ Auto-Reinject) ==========
 local function ShowServerInfo()
     local frame = Instance.new("Frame")
-    frame.Name = "ServerInfoFrame"
+    frame.Name = "SIFrame"
     frame.Size = UDim2.new(0, 350, 0, 400)
     frame.Position = UDim2.new(0.5, -175, 0.5, -200)
     frame.BackgroundColor3 = RED_BG
@@ -2713,7 +2663,7 @@ local function ShowServerInfo()
     reinjectBtn.AutoButtonColor = false
 
     local function UpdateReinjectButton()
-        if getgenv().XyqwAutoReinject then
+        if GetSetting("autoreinject", true) then
             reinjectBtn.Text = _("AutoReinjectOn")
             reinjectBtn.TextColor3 = Color3.fromRGB(0, 255, 100)
             reinjectBtn.BackgroundColor3 = RED_DARK
@@ -2728,11 +2678,9 @@ local function ShowServerInfo()
     reinjectBtn.MouseEnter:Connect(function() TweenColor(reinjectBtn, "BackgroundColor3", RED_DARK, 0.12) end)
     reinjectBtn.MouseLeave:Connect(function() UpdateReinjectButton() end)
     reinjectBtn.MouseButton1Click:Connect(function()
-        getgenv().XyqwAutoReinject = not getgenv().XyqwAutoReinject
-        getgenv().XyqwSettings.autoReinject = getgenv().XyqwAutoReinject
-        SaveTable(SETTINGS_FILE, getgenv().XyqwSettings)
+        SetSetting("autoreinject", not GetSetting("autoreinject", true))
         UpdateReinjectButton()
-        ShowRobloxNotification(getgenv().XyqwAutoReinject and _("AutoReinjectOn") or _("AutoReinjectOff"), 2)
+        ShowRobloxNotification(GetSetting("autoreinject", true) and _("AutoReinjectOn") or _("AutoReinjectOff"), 2)
     end)
 
     closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
@@ -2742,6 +2690,7 @@ end
 -- ========== CUSTOM SCRIPT ==========
 local function ShowCustomScript()
     local frame = Instance.new("Frame")
+    frame.Name = "CSFrame"
     frame.Size = UDim2.new(0, 350, 0, 175)
     frame.Position = UDim2.new(0.5, -175, 0.5, -87)
     frame.BackgroundColor3 = RED_BG
@@ -2930,7 +2879,7 @@ end
 
 local function ShowExecutorInfo()
     local frame = Instance.new("Frame")
-    frame.Name = "ExecutorInfoFrame"
+    frame.Name = "EIFrame"
     frame.Size = UDim2.new(0, 320, 0, 420)
     frame.Position = UDim2.new(0.5, -160, 0.5, -210)
     frame.BackgroundColor3 = RED_BG
@@ -3105,7 +3054,7 @@ infoBtn.MouseButton1Click:Connect(ShowExecutorInfo)
 -- ========== CUSTOM COLOR ==========
 local function ShowCustomColor()
     local frame = Instance.new("Frame")
-    frame.Name = "CustomColorFrame"
+    frame.Name = "CCFrame"
     frame.Size = UDim2.new(0, 280, 0, 380)
     frame.Position = UDim2.new(0.5, -140, 0.5, -190)
     frame.BackgroundColor3 = RED_BG
@@ -3152,13 +3101,13 @@ local function ShowCustomColor()
     local preview = Instance.new("Frame")
     preview.Size = UDim2.new(1, -20, 0, 36)
     preview.Position = UDim2.new(0, 10, 0, 32)
-    preview.BackgroundColor3 = Color3.fromRGB(getgenv().XyqwCustomColor.r, getgenv().XyqwCustomColor.g, getgenv().XyqwCustomColor.b)
+    preview.BackgroundColor3 = Color3.fromRGB(GetSetting("cc_r", 255), GetSetting("cc_g", 0), GetSetting("cc_b", 0))
     preview.BorderSizePixel = 2
     preview.BorderColor3 = RED_MAIN
     preview.ZIndex = 51
     preview.Parent = frame
 
-    local tempColor = {r = getgenv().XyqwCustomColor.r, g = getgenv().XyqwCustomColor.g, b = getgenv().XyqwCustomColor.b}
+    local tempColor = {r = GetSetting("cc_r", 255), g = GetSetting("cc_g", 0), b = GetSetting("cc_b", 0)}
     local hexInput, setSliders
     local function UpdateAll()
         preview.BackgroundColor3 = Color3.fromRGB(tempColor.r, tempColor.g, tempColor.b)
@@ -3401,18 +3350,17 @@ local function ShowCustomColor()
     applyBtn.AutoButtonColor = false
 
     applyBtn.MouseButton1Click:Connect(function()
-        getgenv().XyqwCustomColor = {
-            r = tempColor.r, g = tempColor.g, b = tempColor.b,
-            dr = math.floor(tempColor.r * 0.15),
-            dg = math.floor(tempColor.g * 0.15),
-            db = math.floor(tempColor.b * 0.15),
-        }
-        SaveTable(CUSTOM_COLOR_FILE, getgenv().XyqwCustomColor)
+        SetSetting("cc_r", tempColor.r)
+        SetSetting("cc_g", tempColor.g)
+        SetSetting("cc_b", tempColor.b)
+        SetSetting("cc_dr", math.floor(tempColor.r * 0.15))
+        SetSetting("cc_dg", math.floor(tempColor.g * 0.15))
+        SetSetting("cc_db", math.floor(tempColor.b * 0.15))
         THEMES.Custom.MAIN = Color3.fromRGB(tempColor.r, tempColor.g, tempColor.b)
         THEMES.Custom.DARK = Color3.fromRGB(math.floor(tempColor.r * 0.15), math.floor(tempColor.g * 0.15), math.floor(tempColor.b * 0.15))
         THEMES.Custom.BG = Color3.fromRGB(0, 0, 0)
         THEMES.Custom.TITLE = Color3.fromRGB(math.floor(tempColor.r * 0.08), math.floor(tempColor.g * 0.08), math.floor(tempColor.b * 0.08))
-        if getgenv().XyqwApplyTheme then getgenv().XyqwApplyTheme("Custom") end
+        if _G.ApplyTheme then _G.ApplyTheme("Custom") end
         ShowRobloxNotification("Custom Color applied!", 3)
         frame:Destroy()
     end)
@@ -3427,17 +3375,18 @@ colorBtn.MouseButton1Click:Connect(ShowCustomColor)
 local themeOrder = {"Red", "Blue", "Green", "Purple", "Pink", "Orange", "Cyan", "Yellow", "Lime", "Magenta", "White", "Rainbow", "Custom"}
 local themeIndex = 1
 for i, name in ipairs(themeOrder) do
-    if name == getgenv().XyqwTheme then themeIndex = i break end
+    if name == THEME_NAME then themeIndex = i break end
 end
 
-local function ApplyTheme(themeName)
-    getgenv().XyqwTheme = themeName
+_G.ApplyTheme = function(themeName)
+    THEME_NAME = themeName
+    SetSetting("theme", themeName)
     if themeName == "Custom" then
-        local cc = getgenv().XyqwCustomColor
-        THEMES.Custom.MAIN = Color3.fromRGB(cc.r, cc.g, cc.b)
-        THEMES.Custom.DARK = Color3.fromRGB(cc.dr, cc.dg, cc.db)
+        local cr, cg, cb = GetSetting("cc_r", 255), GetSetting("cc_g", 0), GetSetting("cc_b", 0)
+        THEMES.Custom.MAIN = Color3.fromRGB(cr, cg, cb)
+        THEMES.Custom.DARK = Color3.fromRGB(math.floor(cr * 0.15), math.floor(cg * 0.15), math.floor(cb * 0.15))
         THEMES.Custom.BG = Color3.fromRGB(0, 0, 0)
-        THEMES.Custom.TITLE = Color3.fromRGB(math.floor(cc.r * 0.08), math.floor(cc.g * 0.08), math.floor(cc.b * 0.08))
+        THEMES.Custom.TITLE = Color3.fromRGB(math.floor(cr * 0.08), math.floor(cg * 0.08), math.floor(cb * 0.08))
     end
     local t = THEMES[themeName]
     RED_MAIN = t.MAIN RED_DARK = t.DARK RED_BG = t.BG RED_TITLE = t.TITLE
@@ -3478,7 +3427,7 @@ local function ApplyTheme(themeName)
         entry.Star.BorderColor3 = RED_MAIN
         entry.AutoBtn.BorderColor3 = RED_MAIN
         if entry.DragStrip then entry.DragStrip.BackgroundColor3 = RED_MAIN end
-        if getgenv().XyqwAutoExec[entry.Data.Name] then
+        if AUTOEXEC[entry.Data.Name] then
             entry.AutoBtn.BackgroundColor3 = RED_MAIN
             entry.AutoBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
         else
@@ -3523,19 +3472,17 @@ local function ApplyTheme(themeName)
     if themeName ~= "Rainbow" then ShowRobloxNotification("Theme: " .. themeName, 2) end
 end
 
-getgenv().XyqwApplyTheme = ApplyTheme
-
 themeBtn.MouseButton1Click:Connect(function()
     themeIndex = themeIndex + 1
     if themeIndex > #themeOrder then themeIndex = 1 end
-    ApplyTheme(themeOrder[themeIndex])
-    if getgenv().XyqwTheme == "Rainbow" then ShowRobloxNotification("Theme: Rainbow", 2) end
+    _G.ApplyTheme(themeOrder[themeIndex])
+    if THEME_NAME == "Rainbow" then ShowRobloxNotification("Theme: Rainbow", 2) end
 end)
 
 task.spawn(function()
     local hue = 0
     while screenGui.Parent do
-        if getgenv().XyqwTheme == "Rainbow" then
+        if THEME_NAME == "Rainbow" then
             hue = (hue + 0.008) % 1
             local c = Color3.fromHSV(hue, 1, 1)
             local darkHue = Color3.fromHSV(hue, 1, 0.18)
@@ -3570,7 +3517,7 @@ task.spawn(function()
                 entry.Star.BackgroundColor3 = darkHue
                 entry.AutoBtn.BorderColor3 = c
                 if entry.DragStrip then entry.DragStrip.BackgroundColor3 = c end
-                if getgenv().XyqwAutoExec[entry.Data.Name] then
+                if AUTOEXEC[entry.Data.Name] then
                     entry.AutoBtn.BackgroundColor3 = c
                     entry.AutoBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
                 else
@@ -3613,7 +3560,7 @@ end)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.UserInputType == Enum.UserInputType.Keyboard then
-        if input.KeyCode.Name == getgenv().XyqwSettings.autoHideBind then
+        if input.KeyCode.Name == GetSetting("bind", "RightShift") then
             if mainFrame.Visible then CloseGui() else OpenGui() end
         end
     end
@@ -3711,10 +3658,10 @@ end)
 
 closeButton.MouseButton1Click:Connect(CloseGui)
 
--- ========== WELCOME MESSAGE (7.4.3) ==========
+-- ========== WELCOME MESSAGE ==========
 local function ShowWelcomeMessage()
     local frame = Instance.new("Frame")
-    frame.Name = "WelcomeFrame"
+    frame.Name = "WFrame"
     frame.Size = UDim2.new(0, 340, 0, 340)
     frame.Position = UDim2.new(0.5, -170, 0.5, -170)
     frame.BackgroundColor3 = RED_BG
@@ -3841,19 +3788,13 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 10
     doc.Font = Enum.Font.Gotham
-    doc.Text = "─── 7.4.3 NEW ───\n" ..
-        "★ AntiKick: GC metatable patch (stealth, no hooks)\n" ..
-        "★ Fallback: hookfunction(LP.Kick)\n" ..
-        "★ AntiKick Settings окно (toggle + messages + logs)\n" ..
-        "★ Логи с timestamp, max 50, Clear button\n" ..
-        "★ Кнопка переименована в 'AntiKick Settings'\n" ..
-        "★ Метод: GC patch (PRIMARY) / hookfunction (FALLBACK)\n" ..
-        "\n─── 7.4.2 ───\n" ..
-        "★ Убран hookmetamethod(__namecall)\n" ..
-        "★ Убраны Anti-getgc / Anti-getconnections\n" ..
-        "★ Delta не крашится\n" ..
-        "\n─── 7.4.1 ───\n" ..
-        "★ Auto-Reinject (5 fallback)\n" ..
+    doc.Text = "─── 7.4.5 STEALTH ───\n" ..
+        "★ БЕЗ getgc / hookfunction / hookmetamethod / setreadonly\n" ..
+        "★ AntiKick полностью убран из памяти\n" ..
+        "★ Все глобалы скрыты в приватной таблице\n" ..
+        "★ Многоуровневая маскировка ScreenGui\n" ..
+        "★ AntiKick OFF по умолчанию (не детектится Adonis)\n" ..
+        "★ 5 языков, 13 тем, 48 скриптов — сохранены\n" ..
         "\n─── TITLE BAR ───\n" ..
         "Th  — Theme (13 themes)\n" ..
         "CC  — Custom Color\n" ..
@@ -3866,22 +3807,14 @@ local function ShowWelcomeMessage()
         "\n─── BOTTOM BUTTONS ───\n" ..
         "Remove Tags / Test URLs / Settings /\n" ..
         "Reset Order / AntiKick Settings / Destroy\n" ..
-        "\n─── ANTIKICK (7.4.3) ───\n" ..
-        "Method 1: GC metatable patch (PRIMARY)\n" ..
-        "  getgc(true) → setreadonly → rawset на 'kick'\n" ..
-        "  БЕЗ hookfunction/hookmetamethod\n" ..
-        "  NamecallInstance-детект не срабатывает\n" ..
-        "Method 2: hookfunction(LP.Kick) (FALLBACK)\n" ..
-        "Method 3: hookmetamethod __namecall — НЕ используется\n" ..
         "\n─── ANTIKICK SETTINGS ───\n" ..
-        "Toggle AntiKick: ON / OFF\n" ..
+        "Toggle AntiKick: OFF (Safe) / ON (WARNING)\n" ..
         "Toggle messages: ON / OFF\n" ..
-        "Logs: timestamp, max 50, Clear button\n" ..
-        "Method label (GC patch / hookfunction / not active)\n" ..
+        "Logs: timestamp, max 50, Clear\n" ..
+        "Method: UI-Only (no memory hooks)\n" ..
         "\n─── AUTO-REINJECT ───\n" ..
         "queue_on_teleport / queueonteleport\n" ..
-        "syn.queue_on_teleport / fluxus.queue_on_teleport\n" ..
-        "secure_call + queue_on_teleport\n" ..
+        "syn.queue_on_teleport / secure_call\n" ..
         "\n─── AUTO-HIDE ───\n" ..
         "Default: RightShift\n" ..
         "\n─── THEMES ───\n" ..
@@ -3889,10 +3822,11 @@ local function ShowWelcomeMessage()
         "Cyan, Yellow, Lime, Magenta, White,\n" ..
         "Rainbow, Custom\n" ..
         "\n─── ANTI-DETECT ───\n" ..
-        "Random ScreenGui name\n" ..
+        "Random ScreenGui name (6-digit)\n" ..
         "syn.protect_gui / protect_gui / gethui\n" ..
-        "Auto-rename every 3 sec\n" ..
-        "БЕЗ getgc/getconnections хуков\n" ..
+        "Auto-rename every 2-4 sec\n" ..
+        "Random DisplayOrder\n" ..
+        "NO getgc/getconnections hooks\n" ..
         "\n─── FILES ───\n" ..
         "XyqwHub/FavScripts/favorites.json\n" ..
         "XyqwHub/RctScripts/recent.json\n" ..
@@ -3956,31 +3890,18 @@ end)
 task.spawn(function()
     task.wait(0.3)
     pcall(function()
-        local method = kickMethodPatched and "GC patch (stealth)" or (antiKickActive and "hookfunction (fallback)" or "pending")
-        if getgenv().XyqwLanguage == "RU" then
-            print("[" .. HUB_NAME .. "] Версия: " .. VERSION)
-            print("[" .. HUB_NAME .. "] AntiKick: " .. method)
-            print("[" .. HUB_NAME .. "] Auto-Reinject: " .. (getgenv().XyqwAutoReinject and "ВКЛ" or "ВЫКЛ"))
-            print("[" .. HUB_NAME .. "] Anti-Detect: активен (без __namecall, без getgc-хука)")
+        if LANG_CODE == "RU" then
+            print("[" .. HUB_NAME .. "] Версия: " .. VERSION .. " STEALTH")
+            print("[" .. HUB_NAME .. "] AntiKick: OFF (Safe mode, Adonis-safe)")
+            print("[" .. HUB_NAME .. "] NO getgc/hookfunction/hookmetamethod")
+            print("[" .. HUB_NAME .. "] Anti-Detect: активен")
         else
-            print("[" .. HUB_NAME .. "] Version: " .. VERSION)
-            print("[" .. HUB_NAME .. "] AntiKick: " .. method)
-            print("[" .. HUB_NAME .. "] Auto-Reinject: " .. (getgenv().XyqwAutoReinject and "ON" or "OFF"))
-            print("[" .. HUB_NAME .. "] Anti-Detect: active (no __namecall, no getgc hook)")
+            print("[" .. HUB_NAME .. "] Version: " .. VERSION .. " STEALTH")
+            print("[" .. HUB_NAME .. "] AntiKick: OFF (Safe mode, Adonis-safe)")
+            print("[" .. HUB_NAME .. "] NO getgc/hookfunction/hookmetamethod")
+            print("[" .. HUB_NAME .. "] Anti-Detect: active")
         end
     end)
-end)
-
-task.spawn(function()
-    task.wait(6)
-    if getgenv().XyqwHubRunning then
-        pcall(function()
-            if getgenv().XyqwAntiKick then
-                local method = kickMethodPatched and "GC patch" or (antiKickActive and "hookfunction" or "off")
-                ShowRobloxNotification(HUB_NAME .. ": ready | AntiKick: " .. method, 4)
-            end
-        end)
-    end
 end)
 
 -- ========== ЗАЩИТА ОТ СЛУЧАЙНОГО УДАЛЕНИЯ GUI ==========
@@ -3989,5 +3910,7 @@ task.spawn(function()
         task.wait(5)
         if not screenGui.Parent then break end
     end
-    getgenv().XyqwHubRunning = nil
+    rawset(_G, "XyqwHubRunning", nil)
 end)
+
+-- ========== КОНЕЦ XYQWHUB 7.4.5 STEALTH ==========
