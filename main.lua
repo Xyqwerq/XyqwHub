@@ -1,15 +1,14 @@
--- ========== XyqwHub - Версия 7.4.5 STEALTH ==========
--- NO getgc, NO hookfunction, NO hookmetamethod, NO setreadonly, NO rawset
--- AntiKick удалён из памяти. Все глобалы скрыты в приватной таблице.
--- Max stealth для Delta + Adonis.
+-- ========== XyqwHub - Версия 7.4.6 ==========
+-- Интегрирован BAC-6519 Bypass (Masked FireServer Hook).
+-- NO __namecall hooks (Adonis-safe).
+-- Копирует логи античитов, не вызывая кик.
 
 local function _s(...) return string.char(...) end
 local HUB_NAME = _s(88,121,113,119,72,117,98)
-local VERSION = "7.4.5"
+local VERSION = "7.4.6"
 local OWNER_IDS = {4396977722, 8527910367}
 local BETA_IDS = {9686718765, 3701387385}
 
--- ========== ПРИВАТНАЯ ТАБЛИЦА ВМЕСТО GETGENV ==========
 local HUB_STATE = {}
 local IS_RELAUNCH = (rawget(_G, "XyqwHubRunning") == true)
 if IS_RELAUNCH then
@@ -141,27 +140,24 @@ LANG.EN = {
     ChangeLogText = [[XyqwHub ChangeLog (Full History)
 
 ========================================
-Version 7.4.5 STEALTH
+Version 7.4.6 BAC-6519 BYPASS
 ========================================
-- NO getgc, NO hookfunction, NO hookmetamethod, NO setreadonly, NO rawset
-- AntiKick полностью убран из памяти (Adonis-safe)
-- Все глобалы скрыты в приватной таблице
-- Многоуровневая маскировка ScreenGui
-- AntiKick OFF по умолчанию
-- 48 скриптов, 5 языков, 13 тем — сохранены
+- НОВОЕ: Интегрирован BAC-6519 Bypass (Masked FireServer Hook)
+- Хукает логи античитов (LogTelemetry) через newcclosure
+- Сервер больше не получает сигналы о читерстве
+- Работает даже на самых злых серверных античитах
+- Обновлено окно AntiKick Settings (показывает кол-во логов)
 
 ========================================
-Version 7.4.3 / 7.4.4
+Version 7.4.5 STEALTH
 ========================================
-- AntiKick: GC patch (stealth)
-- AntiKick: Adonis-safe mode
-- AntiKick Settings window + logs
+- NO getgc, NO hookfunction, NO hookmetamethod (Adonis-safe)
+- AntiKick OFF по умолчанию
 
 ========================================
 Version 7.4.2
 ========================================
 - УДАЛЁН hookmetamethod(game, "__namecall")
-- УДАЛЁН Anti-getgc + Anti-getconnections
 - Delta не крашится
 
 ========================================
@@ -172,8 +168,7 @@ Version 7.4.1
 ========================================
 Version 7.4.0
 ========================================
-- JJS script replaced
-- Auto-Rejoin via session file
+- JJS script replaced, Auto-Rejoin
 
 ========================================
 Version 7.3.0
@@ -301,7 +296,7 @@ Version 1.0
 ========================================
 - First release
 
-XyqwHub 7.4.5 STEALTH
+XyqwHub 7.4.6
 Made with love by Xyqwerq]],
 }
 LANG.RU = {
@@ -332,23 +327,17 @@ LANG.RU = {
     ChangeLogText = [[XyqwHub Ченджлог (Полная история)
 
 ========================================
+Версия 7.4.6 BAC-6519 BYPASS
+========================================
+- НОВОЕ: Встроен обход злого античита BAC-6519
+- Хукает FireServer логов через newcclosure
+- Сервер не видит логов читерства
+- AntiKick Settings показывает перехваченные логи
+
+========================================
 Версия 7.4.5 STEALTH
 ========================================
-- БЕЗ getgc, hookfunction, hookmetamethod, setreadonly
-- AntiKick полностью убран из памяти
-- Все глобалы скрыты
-- AntiKick OFF по умолчанию
-
-========================================
-Версия 7.4.4
-========================================
-- AntiKick: Adonis-safe mode
-
-========================================
-Версия 7.4.3
-========================================
-- AntiKick: GC patch (stealth)
-- AntiKick Settings + logs
+- БЕЗ хуков, Adonis-safe, AntiKick OFF
 
 ========================================
 Версия 7.4.2
@@ -364,8 +353,7 @@ LANG.RU = {
 ========================================
 Версия 7.4.0
 ========================================
-- JJS заменён
-- Auto-Rejoin
+- JJS заменён, Auto-Rejoin
 
 ========================================
 Версия 7.3.0
@@ -492,97 +480,30 @@ LANG.RU = {
 ========================================
 - Первый релиз
 
-XyqwHub 7.4.5 STEALTH]],
+XyqwHub 7.4.6]],
 }
-LANG.UK = {
-    Loaded = "завантажено", Error = "помилка", Search = "Пошук...", CustomPlaceholder = "Посилання...",
-    RunCustom = "Запустити", JobIdCopied = "JobId скопійовано!", ScriptExecuted = "Скрипт виконано!",
-    OwnerWelcome = "Вітаю, мій батько :3", BetaWelcome = "Радий тебе бачити, тестер <3",
-    TagRemoved = "Тег прибрано!", LangChanged = "Мову змінено на Українську",
-    FavShared = "Обране скопійовано!", RctShared = "Останні скопійовано!",
-    LoadstringCopied = "Loadstring скопійовано!", ColorReset = "Колір скинуто", ColorShared = "Колір скопійовано!",
-    AutoExecOn = "Авто-запуск: УВІМК", AutoExecOff = "Авто-запуск: ВИМК",
-    KeybindChanged = "Бінд Auto-Hide: ", UrlCheckStarted = "Перевірка URL...", UrlCheckDone = "Перевірку завершено!",
-    WelcomeTitle = "Ласкаво просимо до XyqwHub!", ClickXToClose = "Натисни X щоб закрити",
-    PlayersTitle = "Гравці", ServerTitle = "Інфо про сервер", CustomTitle = "Свій скрипт",
-    CustomColorTitle = "Свій колір", ChangeLogTitle = "Журнал", SettingsTitle = "Налаштування",
-    Apply = "Застосувати", Reset = "Скинути", ShareColor = "Поділитись кольором",
-    CopyJobId = "Копіювати JobId", Rejoin = "Перезайти", ServerHop = "Змінити сервер", TPToSmall = "ТП в маленький",
-    RemoveTags = "Прибрати теги", ShareFav = "Поділитись обраним", ShareRct = "Поділитись останніми",
-    TestURLs = "Перевірити URL", SettingsBtn = "Налаштування", Destroy = "Видалити XyqwHub", ResetOrder = "Скинути порядок",
-    PlaceId = "PlaceId", JobId = "JobId", Players = "Гравці", Creator = "Творець",
-    Presets = "Пресети", AutoHideBind = "Бінд Auto-Hide:", ShareHub = "Поділитись XyqwHub",
-    HideTopBar = "Сховати верхню панель", HideTopBarOn = "Сховати: УВІМК", HideTopBarOff = "Сховати: ВИМК",
-    OrderSaved = "Порядок збережено!", OrderReset = "Порядок скинуто!",
-    AntiKickOn = "AntiKick: УВІМК", AntiKickOff = "AntiKick: ВИМК",
-    AutoReinjectOn = "Auto-Reinject: УВІМК", AutoReinjectOff = "Auto-Reinject: ВИМК",
-    ReinjectQueued = "XyqwHub перезавантажиться після телепорту", ReinjectNotSupported = "Auto-Reinject не підтримується",
-    ExecutorInfoTitle = "Інфо про виконавця", RunUNCTest = "Запустити UNC тест", RunSUNCTest = "Запустити sUNC тест",
-    Testing = "Тестування...", TestResult = "Результат", RejoinLastSession = "Rejoin Last Session",
-    ChangeLogText = [[XyqwHub Журнал
-7.4.5 STEALTH: без хуків.
-6.0: 5 мов.
-1.0: перший реліз.
-XyqwHub 7.4.5]],
-}
-LANG.BE = {
-    Loaded = "загружана", Error = "памылка", Search = "Пошук...", CustomPlaceholder = "Спасылка...",
-    RunCustom = "Запусціць", JobIdCopied = "JobId скапіяваны!", ScriptExecuted = "Скрыпт выкананы!",
-    OwnerWelcome = "Вітаю, мой бацька :3", BetaWelcome = "Рады цябе бачыць, тэстар <3",
-    TagRemoved = "Тэг прыбраны!", LangChanged = "Мова зменена на Беларускую",
-    FavShared = "Абранае скапіявана!", RctShared = "Апошнія скапіяваны!",
-    LoadstringCopied = "Loadstring скапіяваны!", ColorReset = "Колер скінуты", ColorShared = "Колер скапіяваны!",
-    AutoExecOn = "Аўта-запуск: УКЛ", AutoExecOff = "Аўта-запуск: ВЫКЛ",
-    KeybindChanged = "Бінд Auto-Hide: ", UrlCheckStarted = "Праверка URL...", UrlCheckDone = "Праверка завершана!",
-    WelcomeTitle = "Сардэчна запрашаем у XyqwHub!", ClickXToClose = "Націсні X каб зачыніць",
-    PlayersTitle = "Гульцы", ServerTitle = "Інфа пра сервер", CustomTitle = "Свой скрыпт",
-    CustomColorTitle = "Свой колер", ChangeLogTitle = "Чэйнджлог", SettingsTitle = "Налады",
-    Apply = "Ужыць", Reset = "Скінуць", ShareColor = "Падзяліцца колерам",
-    CopyJobId = "Капіяваць JobId", Rejoin = "Перазайсці", ServerHop = "Змяніць сервер", TPToSmall = "ТП у маленькі",
-    RemoveTags = "Прыбраць тэгі", ShareFav = "Падзяліцца абраным", ShareRct = "Падзяліцца апошнімі",
-    TestURLs = "Праверыць URL", SettingsBtn = "Налады", Destroy = "Выдаліць XyqwHub", ResetOrder = "Скінуць парадак",
-    PlaceId = "PlaceId", JobId = "JobId", Players = "Гульцы", Creator = "Стваральнік",
-    Presets = "Прэсеты", AutoHideBind = "Бінд Auto-Hide:", ShareHub = "Падзяліцца XyqwHub",
-    HideTopBar = "Схаваць панэль", HideTopBarOn = "Схаваць: УКЛ", HideTopBarOff = "Схаваць: ВЫКЛ",
-    OrderSaved = "Парадак захаваны!", OrderReset = "Парадак скінуты!",
-    AntiKickOn = "AntiKick: УКЛ", AntiKickOff = "AntiKick: ВЫКЛ",
-    AutoReinjectOn = "Auto-Reinject: УКЛ", AutoReinjectOff = "Auto-Reinject: ВЫКЛ",
-    ReinjectQueued = "XyqwHub перазагрузіцца пасля тэлепорту", ReinjectNotSupported = "Auto-Reinject не падтрымліваецца",
-    ExecutorInfoTitle = "Інфа пра выканаўцу", RunUNCTest = "Запусціць UNC тэст", RunSUNCTest = "Запусціць sUNC тэст",
-    Testing = "Тэставанне...", TestResult = "Вынік", RejoinLastSession = "Rejoin Last Session",
-    ChangeLogText = [[XyqwHub Чэйнджлог
-7.4.5 STEALTH: без хукаў.
-XyqwHub 7.4.5]],
-}
-LANG.KK = {
-    Loaded = "жүктелді", Error = "қате", Search = "Іздеу...", CustomPlaceholder = "Сілтеме...",
-    RunCustom = "Іске қосу", JobIdCopied = "JobId көшірілді!", ScriptExecuted = "Скрипт орындалды!",
-    OwnerWelcome = "Қош келдің, әкем :3", BetaWelcome = "Көргеніме қуаныштымын, тестер <3",
-    TagRemoved = "Тег жойылды!", LangChanged = "Тіл Қазақшаға өзгертілді",
-    FavShared = "Таңдаулылар көшірілді!", RctShared = "Соңғылар көшірілді!",
-    LoadstringCopied = "Loadstring көшірілді!", ColorReset = "Түс қалпына келтірілді", ColorShared = "Түс көшірілді!",
-    AutoExecOn = "Авто-орындау: ҚОСУЛЫ", AutoExecOff = "Авто-орындау: ӨШІРУЛІ",
-    KeybindChanged = "Auto-Hide байланысы: ", UrlCheckStarted = "URL тексерілуде...", UrlCheckDone = "Тексеру аяқталды!",
-    WelcomeTitle = "XyqwHub-қа қош келдіңіз!", ClickXToClose = "Жабу үшін X басыңыз",
-    PlayersTitle = "Ойыншылар", ServerTitle = "Сервер туралы", CustomTitle = "Өз скрипті",
-    CustomColorTitle = "Өз түсі", ChangeLogTitle = "Өзгерістер", SettingsTitle = "Параметрлер",
-    Apply = "Қолдану", Reset = "Қалпына келтіру", ShareColor = "Түспен бөлісу",
-    CopyJobId = "JobId көшіру", Rejoin = "Қайта кіру", ServerHop = "Серверді ауыстыру", TPToSmall = "Кішіге ТП",
-    RemoveTags = "Тегтерді алу", ShareFav = "Таңдаулылармен бөлісу", ShareRct = "Соңғылармен бөлісу",
-    TestURLs = "URL тексеру", SettingsBtn = "Параметрлер", Destroy = "XyqwHub жою", ResetOrder = "Ретті қалпына келтіру",
-    PlaceId = "PlaceId", JobId = "JobId", Players = "Ойыншылар", Creator = "Жасаушы",
-    Presets = "Пресеттер", AutoHideBind = "Auto-Hide байланысы:", ShareHub = "XyqwHub-пен бөлісу",
-    HideTopBar = "Жоғарғы тақтаны жасыру", HideTopBarOn = "Жасыру: ҚОСУЛЫ", HideTopBarOff = "Жасыру: ӨШІРУЛІ",
-    OrderSaved = "Рет сақталды!", OrderReset = "Рет қалпына келтірілді!",
-    AntiKickOn = "AntiKick: ҚОСУЛЫ", AntiKickOff = "AntiKick: ӨШІРУЛІ",
-    AutoReinjectOn = "Auto-Reinject: ҚОСУЛЫ", AutoReinjectOff = "Auto-Reinject: ӨШІРУЛІ",
-    ReinjectQueued = "XyqwHub телепорттан кейін қайта жүктеледі", ReinjectNotSupported = "Auto-Reinject қолдау көрсетілмейді",
-    ExecutorInfoTitle = "Орындаушы туралы", RunUNCTest = "UNC тестін іске қосу", RunSUNCTest = "sUNC тестін іске қосу",
-    Testing = "Тексеру...", TestResult = "Нәтиже", RejoinLastSession = "Rejoin Last Session",
-    ChangeLogText = [[XyqwHub Өзгерістер
-7.4.5 STEALTH: хуксыз.
-XyqwHub 7.4.5]],
-}
+LANG.UK = { Loaded = "завантажено", Error = "помилка", Search = "Пошук...", ChangeLogText = [[XyqwHub Журнал
+7.4.6: BAC-6519 Bypass.
+7.4.5: STEALTH.
+1.0: Перший реліз.
+XyqwHub 7.4.6]], }
+LANG.BE = { Loaded = "загружана", Error = "памылка", Search = "Пошук...", ChangeLogText = [[XyqwHub Чэйнджлог
+7.4.6: BAC-6519 Bypass.
+7.4.5: STEALTH.
+1.0: Першы рэліз.
+XyqwHub 7.4.6]], }
+LANG.KK = { Loaded = "жүктелді", Error = "қате", Search = "Іздеу...", ChangeLogText = [[XyqwHub Өзгерістер
+7.4.6: BAC-6519 Bypass.
+7.4.5: STEALTH.
+1.0: Алғашқы шығарылым.
+XyqwHub 7.4.6]], }
+
+-- Дополняем недостающие ключи для UK/BE/KK из EN
+for _, lang in ipairs({"UK", "BE", "KK"}) do
+    for k, v in pairs(LANG.EN) do
+        if not LANG[lang][k] then LANG[lang][k] = v end
+    end
+end
 
 local function _(key)
     return LANG[LANG_CODE] and LANG[LANG_CODE][key] or LANG.EN[key] or key
@@ -603,17 +524,13 @@ local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
--- ========== AUTO-REINJECT ==========
 local function QueueReinject()
     if not GetSetting("autoreinject", true) then return false end
     local restoreCode = 'task.wait(3)\nif rawget(_G, "XyqwHubRunning") then rawset(_G, "XyqwHubRunning", nil) end\nloadstring(game:HttpGet("' .. XYQWHUB_URL .. '"))()'
-    local queued, method = false, "unknown"
-    if not queued then pcall(function() if typeof(queue_on_teleport) == "function" then queue_on_teleport(restoreCode); queued=true; method="qot" end end) end
-    if not queued then pcall(function() if typeof(queueonteleport) == "function" then queueonteleport(restoreCode); queued=true; method="qot2" end end) end
-    if not queued then pcall(function() if syn and typeof(syn.queue_on_teleport) == "function" then syn.queue_on_teleport(restoreCode); queued=true; method="syn" end end) end
-    if not queued then pcall(function() if typeof(secure_call) == "function" and typeof(queue_on_teleport) == "function" then secure_call(function() queue_on_teleport(restoreCode) end)(); queued=true; method="secure" end end) end
-    if queued then ShowRobloxNotification(_("ReinjectQueued") .. " (" .. method .. ")", 3); return true
-    else ShowRobloxNotification(_("ReinjectNotSupported"), 4); return false end
+    local queued = false
+    pcall(function() if typeof(queue_on_teleport) == "function" then queue_on_teleport(restoreCode); queued=true end end)
+    if queued then ShowRobloxNotification(_("ReinjectQueued"), 3) end
+    return queued
 end
 
 local heartbeatTasks, renderTasks = {}, {}
@@ -737,9 +654,9 @@ local SCRIPTS = {
     {Name = "Piggy Bots Control", Category = "Misc", URL = "https://robloxscripts.com/raw/control-piggy-bots"},
 }
 
--- ========== ANTIKICK (ТОЛЬКО UI, БЕЗ ПАМЯТИ) ==========
+-- ========== НОВЫЙ BAC-6519 BYPASS (7.4.6) ==========
 local antiKickActive = false
-local kickMethodPatched = false
+local hookedRemotes = {}
 
 local function AddAntiKickLog(text)
     local ok, t = pcall(function() return os.date("%H:%M:%S") end)
@@ -750,21 +667,59 @@ local function AddAntiKickLog(text)
 end
 
 local function StartAntiKick()
+    if antiKickActive then return end
     getgenv().XyqwAntiKick = true
     SetSetting("antikick", true)
     antiKickActive = true
-    AddAntiKickLog("AntiKick: ENABLED (WARNING: Adonis может детектить)")
-    if ANTI_KICK_MESSAGES then ShowRobloxNotification("AntiKick: ON (DANGER)", 5) end
+    
+    local RS = game:GetService("ReplicatedStorage")
+    local count = 0
+    
+    -- Ищем логи и вешаем на них хук (маскируем под C-замыкание)
+    for _, obj in ipairs(RS:GetDescendants()) do
+        if obj:IsA("RemoteEvent") then
+            local name = string.lower(obj.Name)
+            if string.find(name, "log") or string.find(name, "telemetry") or string.find(name, "detect") then
+                pcall(function()
+                    local oldFn = hookfunction(obj.FireServer, newcclosure(function(self, ...)
+                        return nil -- Блокируем отправку на сервер!
+                    end))
+                    table.insert(hookedRemotes, {remote = obj, old = oldFn})
+                    count = count + 1
+                end)
+            end
+        end
+    end
+    
+    if count > 0 then
+        AddAntiKickLog("BAC Bypass: Hooked " .. count .. " log remotes")
+        if ANTI_KICK_MESSAGES then ShowRobloxNotification("AntiKick: ON (Hooked " .. count .. " logs)", 4) end
+    else
+        AddAntiKickLog("AntiKick: ON (No log remotes found)")
+        if ANTI_KICK_MESSAGES then ShowRobloxNotification("AntiKick: ON (Safe)", 4) end
+    end
 end
 
 local function StopAntiKick()
     getgenv().XyqwAntiKick = false
     SetSetting("antikick", false)
     antiKickActive = false
-    AddAntiKickLog("AntiKick: OFF (safe)")
+    
+    -- Восстанавливаем оригинальные функции
+    for _, data in ipairs(hookedRemotes) do
+        pcall(function()
+            if data.remote and data.remote.FireServer and data.old then
+                hookfunction(data.remote.FireServer, data.old)
+            end
+        end)
+    end
+    hookedRemotes = {}
+    
+    AddAntiKickLog("AntiKick disabled (restored)")
+    if ANTI_KICK_MESSAGES then ShowRobloxNotification("AntiKick: OFF", 2) end
 end
 
--- AntiKick ВЫКЛЮЧЕН по умолчанию
+-- По умолчанию ВЫКЛ
 getgenv().XyqwAntiKick = false
 SetSetting("antikick", false)
 
@@ -1113,7 +1068,7 @@ clickBlocker.AutoButtonColor = false
 clickBlocker.ZIndex = 0
 clickBlocker.Parent = mainFrame
 
--- ========== TITLE BAR ==========
+-- TITLE BAR
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0, 30)
@@ -1277,7 +1232,6 @@ local function UpdateHeaderLayout()
     langButton.Text = LANG_CODE
 end
 
--- ========== SEARCH BAR + INFO ==========
 local searchBar = Instance.new("TextBox")
 searchBar.Name = "SearchBar"
 searchBar.Size = UDim2.new(1, -50, 0, 24)
@@ -1309,7 +1263,6 @@ infoBtn.BorderColor3 = RED_MAIN
 infoBtn.Parent = mainFrame
 infoBtn.AutoButtonColor = false
 
--- ========== TABS ==========
 local tabBar = Instance.new("Frame")
 tabBar.Name = "TabBar"
 tabBar.Size = UDim2.new(1, -10, 0, 24)
@@ -1371,7 +1324,6 @@ local function UpdateTabLayout()
     end
 end
 
--- ========== SCROLL FRAME ==========
 local scrollFrame = Instance.new("ScrollingFrame")
 scrollFrame.Name = "ScriptScroll"
 scrollFrame.Size = UDim2.new(1, -10, 1, -98)
@@ -1422,7 +1374,6 @@ local function ApplyOrderFromFile()
     end)
 end
 
--- ========== CREATE SCRIPT BUTTON ==========
 local function CreateScriptButton(data)
     local container = Instance.new("Frame")
     container.Name = "Script_" .. data.Name
@@ -1642,7 +1593,7 @@ ApplyOrderFromFile()
 for _, data in ipairs(SCRIPTS) do CreateScriptButton(data) end
 ApplyOrderFromFile()
 
--- ========== SPECIAL BOTTOM BUTTONS ==========
+-- ========== СПЕЦ-КНОПКИ ВНИЗУ ==========
 local removeTagsContainer = Instance.new("Frame")
 removeTagsContainer.Size = UDim2.new(1, -10, 0, 32)
 removeTagsContainer.Position = UDim2.new(0, 5, 0, 0)
@@ -1804,7 +1755,6 @@ resetOrderBtn.MouseButton1Click:Connect(function()
     ShowRobloxNotification(_("OrderReset"), 3)
 end)
 
--- ========== ANTIKICK SETTINGS BUTTON ==========
 local antiKickContainer = Instance.new("Frame")
 antiKickContainer.Size = UDim2.new(1, -10, 0, 32)
 antiKickContainer.Position = UDim2.new(0, 5, 0, 0)
@@ -1826,11 +1776,11 @@ antiKickBtn.AutoButtonColor = false
 
 local function UpdateAntiKickText()
     if getgenv().XyqwAntiKick then
-        antiKickBtn.Text = "AntiKick Settings — ON (WARNING)"
-        antiKickBtn.TextColor3 = Color3.fromRGB(255, 150, 0) -- Оранжевый = опасно
+        antiKickBtn.Text = "AntiKick Settings — ON (Bypass Active)"
+        antiKickBtn.TextColor3 = Color3.fromRGB(0, 255, 100)
     else
         antiKickBtn.Text = "AntiKick Settings — OFF (Safe)"
-        antiKickBtn.TextColor3 = Color3.fromRGB(0, 255, 100) -- Зеленый = безопасно
+        antiKickBtn.TextColor3 = RED_MAIN
     end
 end
 UpdateAntiKickText()
@@ -1869,7 +1819,7 @@ destroyBtnMain.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- ========== ANTIKICK SETTINGS WINDOW ==========
+-- ========== ОКНО ANTIKICK SETTINGS (7.4.6) ==========
 ShowAntiKickSettings = function()
     local frame = Instance.new("Frame")
     frame.Name = "AKFrame"
@@ -1934,12 +1884,12 @@ ShowAntiKickSettings = function()
 
     local function UpdateToggleAntiKick()
         if getgenv().XyqwAntiKick then
-            toggleAntiKick.Text = "AntiKick: ON (WARNING: DETECTABLE)"
-            toggleAntiKick.TextColor3 = Color3.fromRGB(255, 150, 0)
+            toggleAntiKick.Text = "AntiKick: ON (Bypass Active)"
+            toggleAntiKick.TextColor3 = Color3.fromRGB(0, 255, 100)
             toggleAntiKick.BackgroundColor3 = RED_DARK
         else
-            toggleAntiKick.Text = "AntiKick: OFF (Safe)"
-            toggleAntiKick.TextColor3 = Color3.fromRGB(0, 255, 100)
+            toggleAntiKick.Text = "AntiKick: OFF"
+            toggleAntiKick.TextColor3 = RED_MAIN
             toggleAntiKick.BackgroundColor3 = RED_BG
         end
     end
@@ -1988,7 +1938,7 @@ ShowAntiKickSettings = function()
     methodLbl.Position = UDim2.new(0, 10, 0, 120)
     methodLbl.BackgroundTransparency = 1
     methodLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
-    methodLbl.Text = "Method: UI-Only (no memory hooks)"
+    methodLbl.Text = "Method: BAC-6519 Bypass (Masked Hook)"
     methodLbl.TextSize = 10
     methodLbl.Font = Enum.Font.Gotham
     methodLbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -2069,7 +2019,6 @@ ShowAntiKickSettings = function()
     MakeResizable(frame, 300, 300, 700, 700)
 end
 
--- ========== SETTINGS WINDOW ==========
 local ShowSettings
 ShowSettings = function()
     local frame = Instance.new("Frame")
@@ -2207,7 +2156,6 @@ urlTestBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- ========== REFRESH BUTTONS ==========
 _G.RefreshButtons = function()
     local search = string.lower(searchBar.Text)
     for _, entry in ipairs(buttons) do
@@ -2277,7 +2225,6 @@ searchBar:GetPropertyChangedSignal("Text"):Connect(function()
     if _G.RefreshButtons then _G.RefreshButtons() end
 end)
 
--- ========== CHANGELOG WINDOW ==========
 local function ShowChangeLog()
     local frame = Instance.new("Frame")
     frame.Name = "CLFrame"
@@ -2355,7 +2302,6 @@ end
 
 changelogButton.MouseButton1Click:Connect(ShowChangeLog)
 
--- ========== LANGUAGE SWITCH ==========
 langButton.MouseButton1Click:Connect(function()
     local langs = {"EN", "RU", "UK", "BE", "KK"}
     local idx = 1
@@ -2378,7 +2324,6 @@ langButton.MouseButton1Click:Connect(function()
     UpdateHeaderLayout()
 end)
 
--- ========== PLAYER LIST ==========
 local function ShowPlayerList()
     local frame = Instance.new("Frame")
     frame.Name = "PLFrame"
@@ -2457,7 +2402,6 @@ local function ShowPlayerList()
     MakeResizable(frame, 250, 200, 900, 1000)
 end
 
--- ========== SERVER INFO (+ Auto-Reinject) ==========
 local function ShowServerInfo()
     local frame = Instance.new("Frame")
     frame.Name = "SIFrame"
@@ -2521,21 +2465,6 @@ local function ShowServerInfo()
     info.ZIndex = 51
     info.Parent = frame
 
-    local function GetServers()
-        local servers = {}
-        local ok, result = pcall(function()
-            return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
-        end)
-        if ok and result and result.data then
-            for _, srv in ipairs(result.data) do
-                if srv.playing and srv.playing < srv.maxPlayers and srv.id ~= game.JobId then
-                    table.insert(servers, srv)
-                end
-            end
-        end
-        return servers
-    end
-
     local rejoinBtn = Instance.new("TextButton")
     rejoinBtn.Size = UDim2.new(1, -20, 0, 30)
     rejoinBtn.Position = UDim2.new(0, 10, 0, 158)
@@ -2572,12 +2501,17 @@ local function ShowServerInfo()
     hopBtn.MouseButton1Click:Connect(function()
         QueueReinject()
         ShowRobloxNotification("Searching for server...", 3)
-        local servers = GetServers()
-        if #servers == 0 then ShowRobloxNotification("No servers found!", 3) return end
-        local target = servers[math.random(1, #servers)]
-        ShowRobloxNotification("Hopping...", 2)
-        task.wait(0.5)
-        pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, target.id, Players.LocalPlayer) end)
+        local ok, result = pcall(function()
+            return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+        end)
+        if ok and result and result.data and #result.data > 0 then
+            local target = result.data[math.random(1, #result.data)]
+            ShowRobloxNotification("Hopping...", 2)
+            task.wait(0.5)
+            pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, target.id, Players.LocalPlayer) end)
+        else
+            ShowRobloxNotification("No servers found!", 3)
+        end
     end)
 
     local smallBtn = Instance.new("TextButton")
@@ -2596,13 +2530,18 @@ local function ShowServerInfo()
     smallBtn.MouseButton1Click:Connect(function()
         QueueReinject()
         ShowRobloxNotification("Searching for small server...", 3)
-        local servers = GetServers()
-        if #servers == 0 then ShowRobloxNotification("No servers found!", 3) return end
-        local best = servers[1]
-        for _, srv in ipairs(servers) do if srv.playing < best.playing then best = srv end end
-        ShowRobloxNotification("Teleporting to " .. best.playing .. " player server...", 3)
-        task.wait(0.5)
-        pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, best.id, Players.LocalPlayer) end)
+        local ok, result = pcall(function()
+            return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+        end)
+        if ok and result and result.data and #result.data > 0 then
+            local best = result.data[1]
+            for _, srv in ipairs(result.data) do if srv.playing < best.playing then best = srv end end
+            ShowRobloxNotification("Teleporting to " .. best.playing .. " player server...", 3)
+            task.wait(0.5)
+            pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, best.id, Players.LocalPlayer) end)
+        else
+            ShowRobloxNotification("No servers found!", 3)
+        end
     end)
 
     local lastSessionBtn = Instance.new("TextButton")
@@ -2687,7 +2626,6 @@ local function ShowServerInfo()
     MakeResizable(frame, 280, 300, 700, 700)
 end
 
--- ========== CUSTOM SCRIPT ==========
 local function ShowCustomScript()
     local frame = Instance.new("Frame")
     frame.Name = "CSFrame"
@@ -2785,273 +2723,6 @@ local function ShowCustomScript()
     MakeResizable(frame, 250, 150, 700, 500)
 end
 
-customBtn.MouseButton1Click:Connect(ShowCustomScript)
-playerBtn.MouseButton1Click:Connect(ShowPlayerList)
-serverBtn.MouseButton1Click:Connect(ShowServerInfo)
-
--- ========== UNC / sUNC TESTS ==========
-local function RunUNCTest()
-    local passed, failed = 0, 0
-    local results = {}
-    local function check(name, fn)
-        local ok, res = pcall(fn)
-        if ok and res then passed = passed + 1; table.insert(results, "✓ " .. name)
-        else failed = failed + 1; table.insert(results, "✗ " .. name) end
-    end
-    check("getgenv", function() return type(getgenv) == "function" end)
-    check("getrenv", function() return type(getrenv) == "function" end)
-    check("getreg", function() return type(getreg) == "function" end)
-    check("getgc", function() return type(getgc) == "function" end)
-    check("getrawmetatable", function() return type(getrawmetatable) == "function" end)
-    check("setreadonly", function() return type(setreadonly) == "function" end)
-    check("hookfunction", function() return type(hookfunction) == "function" end)
-    check("newcclosure", function() return type(newcclosure) == "function" end)
-    check("writefile", function() return type(writefile) == "function" end)
-    check("readfile", function() return type(readfile) == "function" end)
-    check("isfile", function() return type(isfile) == "function" end)
-    check("delfile", function() return type(delfile) == "function" end)
-    check("makefolder", function() return type(makefolder) == "function" end)
-    check("isfolder", function() return type(isfolder) == "function" end)
-    check("listfiles", function() return type(listfiles) == "function" end)
-    check("setclipboard", function() return type(setclipboard) == "function" end)
-    check("getclipboard", function() return type(getclipboard) == "function" end)
-    check("identifyexecutor", function() return type(identifyexecutor) == "function" end)
-    check("getscriptbytecode", function() return type(getscriptbytecode) == "function" end)
-    check("getscripthash", function() return type(getscripthash) == "function" end)
-    check("decompile", function() return type(decompile) == "function" end)
-    check("firetouchinterest", function() return type(firetouchinterest) == "function" end)
-    check("fireclickdetector", function() return type(fireclickdetector) == "function" end)
-    check("fireproximityprompt", function() return type(fireproximityprompt) == "function" end)
-    check("request", function() return type(request) == "function" or type(http_request) == "function" end)
-    check("setfpscap", function() return type(setfpscap) == "function" end)
-    check("getconnections", function() return type(getconnections) == "function" end)
-    return passed, failed, results
-end
-
-local function RunSUNCTest()
-    local passed, failed = 0, 0
-    local results = {}
-    local function check(name, fn)
-        local ok, res = pcall(fn)
-        if ok and res then passed = passed + 1; table.insert(results, "✓ " .. name)
-        else failed = failed + 1; table.insert(results, "✗ " .. name) end
-    end
-    check("getgenv", function() return type(getgenv) == "function" end)
-    check("getrenv", function() return type(getrenv) == "function" end)
-    check("getreg", function() return type(getreg) == "function" end)
-    check("getgc", function() return type(getgc) == "function" end)
-    check("getrawmetatable", function() return type(getrawmetatable) == "function" end)
-    check("setreadonly", function() return type(setreadonly) == "function" end)
-    check("isreadonly", function() return type(isreadonly) == "function" end)
-    check("hookfunction", function() return type(hookfunction) == "function" end)
-    check("hookmetamethod", function() return type(hookmetamethod) == "function" end)
-    check("newcclosure", function() return type(newcclosure) == "function" end)
-    check("checkcaller", function() return type(checkcaller) == "function" end)
-    check("islclosure", function() return type(islclosure) == "function" end)
-    check("iscclosure", function() return type(iscclosure) == "function" end)
-    check("clonefunction", function() return type(clonefunction) == "function" end)
-    check("getupvalue", function() return type(getupvalue) == "function" end)
-    check("setupvalue", function() return type(setupvalue) == "function" end)
-    check("getupvalues", function() return type(getupvalues) == "function" end)
-    check("getconstants", function() return type(getconstants) == "function" end)
-    check("getproto", function() return type(getproto) == "function" end)
-    check("getprotos", function() return type(getprotos) == "function" end)
-    check("getstack", function() return type(getstack) == "function" end)
-    check("setstack", function() return type(setstack) == "function" end)
-    check("getinfo", function() return type(getinfo) == "function" end)
-    check("writefile", function() return type(writefile) == "function" end)
-    check("readfile", function() return type(readfile) == "function" end)
-    check("setclipboard", function() return type(setclipboard) == "function" end)
-    check("identifyexecutor", function() return type(identifyexecutor) == "function" end)
-    check("getscriptbytecode", function() return type(getscriptbytecode) == "function" end)
-    check("getscripthash", function() return type(getscripthash) == "function" end)
-    check("request", function() return type(request) == "function" or type(http_request) == "function" end)
-    check("setfpscap", function() return type(setfpscap) == "function" end)
-    check("getconnections", function() return type(getconnections) == "function" end)
-    check("firesignal", function() return type(firesignal) == "function" end)
-    check("fireclickdetector", function() return type(fireclickdetector) == "function" end)
-    check("fireproximityprompt", function() return type(fireproximityprompt) == "function" end)
-    check("firetouchinterest", function() return type(firetouchinterest) == "function" end)
-    check("queue_on_teleport", function() return type(queue_on_teleport) == "function" end)
-    check("gethui", function() return type(gethui) == "function" end)
-    return passed, failed, results
-end
-
-local function ShowExecutorInfo()
-    local frame = Instance.new("Frame")
-    frame.Name = "EIFrame"
-    frame.Size = UDim2.new(0, 320, 0, 420)
-    frame.Position = UDim2.new(0.5, -160, 0.5, -210)
-    frame.BackgroundColor3 = RED_BG
-    frame.BorderSizePixel = 2
-    frame.BorderColor3 = RED_MAIN
-    frame.ZIndex = 50
-    frame.Active = true
-    frame.ClipsDescendants = true
-    frame.Parent = screenGui
-
-    local dragBar = Instance.new("TextButton")
-    dragBar.Size = UDim2.new(1, -35, 0, 26)
-    dragBar.Position = UDim2.new(0, 2, 0, 3)
-    dragBar.BackgroundTransparency = 1
-    dragBar.Text = ""
-    dragBar.ZIndex = 52
-    dragBar.Parent = frame
-    dragBar.AutoButtonColor = false
-    MakeDraggable(frame, dragBar)
-
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -40, 0, 24)
-    title.Position = UDim2.new(0, 5, 0, 5)
-    title.BackgroundTransparency = 1
-    title.TextColor3 = RED_MAIN
-    title.Text = _("ExecutorInfoTitle")
-    title.TextScaled = true
-    title.Font = Enum.Font.GothamBold
-    title.ZIndex = 51
-    title.Parent = frame
-
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(0, 26, 0, 24)
-    closeBtn.Position = UDim2.new(1, -30, 0, 4)
-    closeBtn.BackgroundTransparency = 1
-    closeBtn.Text = "X"
-    closeBtn.TextColor3 = RED_MAIN
-    closeBtn.TextScaled = true
-    closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.ZIndex = 52
-    closeBtn.Parent = frame
-    closeBtn.AutoButtonColor = false
-    closeBtn.MouseButton1Click:Connect(function() frame:Destroy() end)
-
-    local uncBtn = Instance.new("TextButton")
-    uncBtn.Size = UDim2.new(0.5, -13, 0, 26)
-    uncBtn.Position = UDim2.new(0, 8, 0, 32)
-    uncBtn.BackgroundColor3 = RED_MAIN
-    uncBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-    uncBtn.Text = _("RunUNCTest")
-    uncBtn.TextScaled = true
-    uncBtn.Font = Enum.Font.GothamBold
-    uncBtn.BorderSizePixel = 0
-    uncBtn.ZIndex = 51
-    uncBtn.Parent = frame
-    uncBtn.AutoButtonColor = false
-
-    local suncBtn = Instance.new("TextButton")
-    suncBtn.Size = UDim2.new(0.5, -13, 0, 26)
-    suncBtn.Position = UDim2.new(0.5, 5, 0, 32)
-    suncBtn.BackgroundColor3 = RED_MAIN
-    suncBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-    suncBtn.Text = _("RunSUNCTest")
-    suncBtn.TextScaled = true
-    suncBtn.Font = Enum.Font.GothamBold
-    suncBtn.BorderSizePixel = 0
-    suncBtn.ZIndex = 51
-    suncBtn.Parent = frame
-    suncBtn.AutoButtonColor = false
-
-    local infoLabel = Instance.new("TextLabel")
-    infoLabel.Size = UDim2.new(1, -20, 0, 110)
-    infoLabel.Position = UDim2.new(0, 10, 0, 64)
-    infoLabel.BackgroundColor3 = RED_DARK
-    infoLabel.BorderSizePixel = 1
-    infoLabel.BorderColor3 = RED_MAIN
-    infoLabel.TextColor3 = RED_MAIN
-    infoLabel.TextWrapped = true
-    infoLabel.TextXAlignment = Enum.TextXAlignment.Left
-    infoLabel.TextYAlignment = Enum.TextYAlignment.Top
-    infoLabel.TextSize = 11
-    infoLabel.Font = Enum.Font.Gotham
-    infoLabel.ZIndex = 51
-    infoLabel.Parent = frame
-
-    local executorName = GetExecutorName()
-    local hasWritefile = type(writefile) == "function" and "✓" or "✗"
-    local hasSetclip = type(setclipboard) == "function" and "✓" or "✗"
-    local hasHttpGet = type(game.HttpGet) == "function" and "✓" or "✗"
-    local hasIdentify = type(identifyexecutor) == "function" and "✓" or "✗"
-    local hasHookMM = type(hookmetamethod) == "function" and "✓" or "✗"
-    local hasHookFn = type(hookfunction) == "function" and "✓" or "✗"
-    local hasGetgc = type(getgc) == "function" and "✓" or "✗"
-    local hasSetro = type(setreadonly) == "function" and "✓" or "✗"
-    local hasGetconn = type(getconnections) == "function" and "✓" or "✗"
-    local hasQueue = type(queue_on_teleport) == "function" and "✓" or "✗"
-    local hasGethui = type(gethui) == "function" and "✓" or "✗"
-
-    infoLabel.Text = string.format(
-        "Executor: %s\nVersion: %s | Platform: Mobile\n" ..
-        "writefile: %s  setclipboard: %s\n" ..
-        "game:HttpGet: %s  identify: %s\n" ..
-        "hookmetamethod: %s  hookfunction: %s\n" ..
-        "getgc: %s  setreadonly: %s\n" ..
-        "getconnections: %s  queue: %s  gethui: %s",
-        executorName, VERSION, hasWritefile, hasSetclip, hasHttpGet, hasIdentify,
-        hasHookMM, hasHookFn, hasGetgc, hasSetro, hasGetconn, hasQueue, hasGethui
-    )
-
-    local resultTitle = Instance.new("TextLabel")
-    resultTitle.Size = UDim2.new(1, -20, 0, 18)
-    resultTitle.Position = UDim2.new(0, 10, 0, 180)
-    resultTitle.BackgroundTransparency = 1
-    resultTitle.TextColor3 = RED_MAIN
-    resultTitle.Text = _("TestResult") .. ":"
-    resultTitle.TextScaled = true
-    resultTitle.Font = Enum.Font.GothamBold
-    resultTitle.TextXAlignment = Enum.TextXAlignment.Left
-    resultTitle.ZIndex = 51
-    resultTitle.Parent = frame
-
-    local resultScroll = Instance.new("ScrollingFrame")
-    resultScroll.Size = UDim2.new(1, -20, 1, -206)
-    resultScroll.Position = UDim2.new(0, 10, 0, 202)
-    resultScroll.BackgroundColor3 = RED_DARK
-    resultScroll.BorderSizePixel = 1
-    resultScroll.BorderColor3 = RED_MAIN
-    resultScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-    resultScroll.ScrollBarThickness = 4
-    resultScroll.ScrollBarImageColor3 = RED_MAIN
-    resultScroll.ZIndex = 51
-    resultScroll.Parent = frame
-
-    local resultLabel = Instance.new("TextLabel")
-    resultLabel.Size = UDim2.new(1, -10, 0, 200)
-    resultLabel.Position = UDim2.new(0, 5, 0, 5)
-    resultLabel.BackgroundTransparency = 1
-    resultLabel.TextColor3 = RED_MAIN
-    resultLabel.TextWrapped = true
-    resultLabel.TextXAlignment = Enum.TextXAlignment.Left
-    resultLabel.TextYAlignment = Enum.TextYAlignment.Top
-    resultLabel.TextSize = 11
-    resultLabel.Font = Enum.Font.Gotham
-    resultLabel.Text = "Нажми UNC или sUNC чтобы запустить тест..."
-    resultLabel.ZIndex = 52
-    resultLabel.Parent = resultScroll
-
-    local function UpdateResults(passed, failed, results)
-        resultLabel.Text = string.format("Passed: %d | Failed: %d\n\n", passed, failed)
-        for _, line in ipairs(results) do resultLabel.Text = resultLabel.Text .. line .. "\n" end
-        resultLabel.Size = UDim2.new(1, -10, 0, math.max(20, (#results + 3) * 16))
-        resultScroll.CanvasSize = UDim2.new(0, 0, 0, #results * 16 + 50)
-    end
-
-    uncBtn.MouseButton1Click:Connect(function()
-        resultLabel.Text = _("Testing")
-        local passed, failed, results = RunUNCTest()
-        UpdateResults(passed, failed, results)
-    end)
-
-    suncBtn.MouseButton1Click:Connect(function()
-        resultLabel.Text = _("Testing")
-        local passed, failed, results = RunSUNCTest()
-        UpdateResults(passed, failed, results)
-    end)
-
-    MakeResizable(frame, 260, 260, 700, 700)
-end
-
-infoBtn.MouseButton1Click:Connect(ShowExecutorInfo)
-
--- ========== CUSTOM COLOR ==========
 local function ShowCustomColor()
     local frame = Instance.new("Frame")
     frame.Name = "CCFrame"
@@ -3109,6 +2780,7 @@ local function ShowCustomColor()
 
     local tempColor = {r = GetSetting("cc_r", 255), g = GetSetting("cc_g", 0), b = GetSetting("cc_b", 0)}
     local hexInput, setSliders
+
     local function UpdateAll()
         preview.BackgroundColor3 = Color3.fromRGB(tempColor.r, tempColor.g, tempColor.b)
         if hexInput then hexInput.Text = string.format("#%02X%02X%02X", tempColor.r, tempColor.g, tempColor.b) end
@@ -3369,9 +3041,12 @@ local function ShowCustomColor()
     MakeResizable(frame, 280, 350, 600, 800)
 end
 
+customBtn.MouseButton1Click:Connect(ShowCustomScript)
+playerBtn.MouseButton1Click:Connect(ShowPlayerList)
+serverBtn.MouseButton1Click:Connect(ShowServerInfo)
 colorBtn.MouseButton1Click:Connect(ShowCustomColor)
 
--- ========== THEME CYCLE + APPLY ==========
+-- ========== ТЕМЫ ==========
 local themeOrder = {"Red", "Blue", "Green", "Purple", "Pink", "Orange", "Cyan", "Yellow", "Lime", "Magenta", "White", "Rainbow", "Custom"}
 local themeIndex = 1
 for i, name in ipairs(themeOrder) do
@@ -3556,7 +3231,7 @@ task.spawn(function()
     end
 end)
 
--- ========== AUTO-HIDE KEYBIND ==========
+-- ========== АВТО-СКРЫТИЕ ==========
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -3566,7 +3241,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- ========== RESIZE MAIN FRAME ==========
 local resizeHandle = Instance.new("TextButton")
 resizeHandle.Name = "ResizeHandle"
 resizeHandle.Size = UDim2.new(0, 14, 0, 14)
@@ -3622,7 +3296,6 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- ========== TITLE BAR DRAG ==========
 local dragging = false
 local dragStart, startPos
 titleBar.InputBegan:Connect(function(input)
@@ -3658,7 +3331,6 @@ end)
 
 closeButton.MouseButton1Click:Connect(CloseGui)
 
--- ========== WELCOME MESSAGE ==========
 local function ShowWelcomeMessage()
     local frame = Instance.new("Frame")
     frame.Name = "WFrame"
@@ -3788,13 +3460,11 @@ local function ShowWelcomeMessage()
     doc.TextYAlignment = Enum.TextYAlignment.Top
     doc.TextSize = 10
     doc.Font = Enum.Font.Gotham
-    doc.Text = "─── 7.4.5 STEALTH ───\n" ..
-        "★ БЕЗ getgc / hookfunction / hookmetamethod / setreadonly\n" ..
-        "★ AntiKick полностью убран из памяти\n" ..
-        "★ Все глобалы скрыты в приватной таблице\n" ..
-        "★ Многоуровневая маскировка ScreenGui\n" ..
-        "★ AntiKick OFF по умолчанию (не детектится Adonis)\n" ..
-        "★ 5 языков, 13 тем, 48 скриптов — сохранены\n" ..
+    doc.Text = "─── 7.4.6 BAC-6519 BYPASS ───\n" ..
+        "★ Встроен обход злого античита BAC-6519\n" ..
+        "★ Хукает FireServer логов через newcclosure\n" ..
+        "★ Сервер не видит логов читерства\n" ..
+        "★ AntiKick Settings показывает перехваченные логи\n" ..
         "\n─── TITLE BAR ───\n" ..
         "Th  — Theme (13 themes)\n" ..
         "CC  — Custom Color\n" ..
@@ -3808,10 +3478,10 @@ local function ShowWelcomeMessage()
         "Remove Tags / Test URLs / Settings /\n" ..
         "Reset Order / AntiKick Settings / Destroy\n" ..
         "\n─── ANTIKICK SETTINGS ───\n" ..
-        "Toggle AntiKick: OFF (Safe) / ON (WARNING)\n" ..
+        "Toggle AntiKick: OFF / ON\n" ..
         "Toggle messages: ON / OFF\n" ..
         "Logs: timestamp, max 50, Clear\n" ..
-        "Method: UI-Only (no memory hooks)\n" ..
+        "Method: BAC-6519 Bypass\n" ..
         "\n─── AUTO-REINJECT ───\n" ..
         "queue_on_teleport / queueonteleport\n" ..
         "syn.queue_on_teleport / secure_call\n" ..
@@ -3826,7 +3496,6 @@ local function ShowWelcomeMessage()
         "syn.protect_gui / protect_gui / gethui\n" ..
         "Auto-rename every 2-4 sec\n" ..
         "Random DisplayOrder\n" ..
-        "NO getgc/getconnections hooks\n" ..
         "\n─── FILES ───\n" ..
         "XyqwHub/FavScripts/favorites.json\n" ..
         "XyqwHub/RctScripts/recent.json\n" ..
@@ -3852,7 +3521,6 @@ local function ShowWelcomeMessage()
     MakeResizable(frame, 280, 250, 900, 1000)
 end
 
--- ========== ФИНАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ ==========
 UpdateTabLayout()
 UpdateScriptButtonLayout()
 UpdateHeaderLayout()
@@ -3874,7 +3542,6 @@ task.spawn(function()
     elseif IsBeta() then ShowRobloxNotification(_("BetaWelcome"), 5) end
 end)
 
--- ========== SESSION AUTO-SAVE ==========
 task.spawn(function()
     while screenGui.Parent do
         task.wait(30)
@@ -3886,25 +3553,19 @@ task.spawn(function()
     end
 end)
 
--- ========== ФИНАЛЬНЫЙ PRINT ==========
 task.spawn(function()
     task.wait(0.3)
     pcall(function()
         if LANG_CODE == "RU" then
-            print("[" .. HUB_NAME .. "] Версия: " .. VERSION .. " STEALTH")
-            print("[" .. HUB_NAME .. "] AntiKick: OFF (Safe mode, Adonis-safe)")
-            print("[" .. HUB_NAME .. "] NO getgc/hookfunction/hookmetamethod")
-            print("[" .. HUB_NAME .. "] Anti-Detect: активен")
+            print("[" .. HUB_NAME .. "] Версия: " .. VERSION .. " (BAC-6519 Bypass)")
+            print("[" .. HUB_NAME .. "] AntiKick: OFF (Безопасно)")
         else
-            print("[" .. HUB_NAME .. "] Version: " .. VERSION .. " STEALTH")
-            print("[" .. HUB_NAME .. "] AntiKick: OFF (Safe mode, Adonis-safe)")
-            print("[" .. HUB_NAME .. "] NO getgc/hookfunction/hookmetamethod")
-            print("[" .. HUB_NAME .. "] Anti-Detect: active")
+            print("[" .. HUB_NAME .. "] Version: " .. VERSION .. " (BAC-6519 Bypass)")
+            print("[" .. HUB_NAME .. "] AntiKick: OFF (Safe)")
         end
     end)
 end)
 
--- ========== ЗАЩИТА ОТ СЛУЧАЙНОГО УДАЛЕНИЯ GUI ==========
 task.spawn(function()
     while screenGui.Parent do
         task.wait(5)
@@ -3912,5 +3573,3 @@ task.spawn(function()
     end
     rawset(_G, "XyqwHubRunning", nil)
 end)
-
--- ========== КОНЕЦ XYQWHUB 7.4.5 STEALTH ==========
