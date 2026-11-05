@@ -1,5 +1,6 @@
--- ========== XyqwHub - Версия 7.4.6 ==========
+-- ========== XyqwHub - Версия 7.4.6 (FULL) ==========
 -- Интегрирован BAC-6519 Bypass (Masked FireServer Hook) + Auto-Detect Games.
+-- Запуск байпасса происходит МГНОВЕННО при старте.
 
 local function _s(...) return string.char(...) end
 local HUB_NAME = _s(88,121,113,119,72,117,98)
@@ -136,7 +137,8 @@ LANG.EN = {
 Version 7.4.6 BAC-6519 BYPASS
 ========================================
 - НОВОЕ: Интегрирован BAC-6519 Bypass (Masked FireServer Hook)
-- НОВОЕ: Авто-определение игры и запуск байпасса
+- НОВОЕ: Мгновенный авто-запуск при старте скрипта
+- НОВОЕ: Авто-определение игры (Steal an egg) и запуск байпасса
 - Хукает логи античитов (LogTelemetry) через newcclosure
 - Сервер больше не получает сигналы о читерстве
 ========================================
@@ -287,7 +289,8 @@ LANG.RU = {
 Версия 7.4.6 BAC-6519 BYPASS
 ========================================
 - НОВОЕ: Встроен обход злого античита BAC-6519
-- НОВОЕ: Авто-определение игры (Steal an egg) и запуск байпасса
+- НОВОЕ: Мгновенный авто-запуск при старте
+- НОВОЕ: Авто-определение игры (Steal an egg)
 - AntiKick Settings показывает перехваченные логи
 ========================================
 Версия 7.4.5 STEALTH
@@ -564,6 +567,7 @@ local function StartAntiKick(isAuto)
         end
     end
     
+    -- Вывод уведомления СРАЗУ
     if count > 0 then
         AddAntiKickLog("BAC Bypass: Hooked " .. count .. " log remotes")
         if ANTI_KICK_MESSAGES then
@@ -601,6 +605,12 @@ end
 
 getgenv().XyqwAntiKick = false
 SetSetting("antikick", false)
+
+-- === СРАЗУ ЗАПУСКАЕМ БАЙПАСС ПРИ СТАРТЕ ===
+task.spawn(function()
+    task.wait(0.1) -- 0.1 сек чтобы ReplicatedStorage успел прогрузиться
+    StartAntiKick(true)
+end)
 
 -- ========== ТЕГИ ==========
 local function IsOwner() for _, id in ipairs(OWNER_IDS) do if Players.LocalPlayer.UserId == id then return true end end return false end
@@ -1658,7 +1668,6 @@ local function ShowWelcomeMessage()
     MakeResizable(frame, 280, 250, 900, 1000)
 end
 
--- ========== ФИНАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ ==========
 UpdateTabLayout()
 UpdateScriptButtonLayout()
 UpdateHeaderLayout()
@@ -1670,14 +1679,9 @@ task.spawn(function() task.wait(2.5); if IsOwner() then ShowRobloxNotification(_
 
 task.spawn(function() while screenGui.Parent do task.wait(30); pcall(function() if writefile and game.JobId and game.JobId ~= "" then writefile(SESSION_FILE, game.JobId) end end) end end)
 
--- ========== АВТО-ЗАПУСК БАЙПАССА ==========
-task.spawn(function()
-    task.wait(1.5) -- Ждем, пока игра и UI загрузятся
-    StartAntiKick(true) -- true = авто-запуск
-end)
-
 task.spawn(function()
     while screenGui.Parent do task.wait(5); if not screenGui.Parent then break end end
     rawset(_G, "XyqwHubRunning", nil)
 end)
 
+-- ========== КОНЕЦ XYQWHUB 7.4.6 ==========
