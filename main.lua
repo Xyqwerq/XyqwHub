@@ -16,7 +16,9 @@ if IS_RELAUNCH then
     end)
     return
 end
-rawset(_G, "XyqwHubRunning", true)
+local IS_RELAUNCH = (shared.XyqwHubRunning == true)
+if IS_RELAUNCH then return end
+shared.XyqwHubRunning = true
 
 local _settings = {}
 local function GetSetting(key, default)
