@@ -1,4 +1,4 @@
--- ========== XYQWHUB LAUNCHER ==========
+-- ========== XYQWHUB LAUNCHER (v1.0) ==========
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
@@ -6,7 +6,7 @@ local Players = game:GetService("Players")
 local HUB_NAME = "XyqwHub"
 local TELEGRAM_URL = "https://t.me/XyqwerqHelper_Bot"
 
--- Ссылки на репозитории (замени, если назовешь папки иначе)
+-- Ссылки на наши репозитории
 local URL_GHOST = "https://raw.githubusercontent.com/Xyqwerq/XyqwHub-Ghost/main/main.lua"
 local URL_DEFAULT = "https://raw.githubusercontent.com/Xyqwerq/XyqwHub-Default/main/main.lua"
 
@@ -26,23 +26,25 @@ local function Notify(title, text, duration)
 end
 
 -- ========== ОКНО КРАША ==========
-local function ShowCrashUI(logData)
+local function ShowCrashUI(logData, onContinue)
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "CrashUI_" .. math.random(1000, 9999)
     screenGui.ResetOnSpawn = false
     pcall(function() screenGui.Parent = game:GetService("CoreGui") end)
     if not screenGui.Parent then screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
 
+    -- Главное окно
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 400, 0, 300)
-    frame.Position = UDim2.new(0.5, -200, 0.5, -150)
+    frame.Size = UDim2.new(0, 420, 0, 320)
+    frame.Position = UDim2.new(0.5, -210, 0.5, -160)
     frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     frame.BorderSizePixel = 2
     frame.BorderColor3 = Color3.fromRGB(255, 0, 0)
     frame.Parent = screenGui
 
+    -- Заголовок
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 40)
+    title.Size = UDim2.new(1, 0, 0, 30)
     title.Position = UDim2.new(0, 0, 0, 10)
     title.BackgroundTransparency = 1
     title.Text = "Oops! The last session was crashed :("
@@ -51,12 +53,13 @@ local function ShowCrashUI(logData)
     title.TextSize = 16
     title.Parent = frame
 
+    -- Кнопка ТГ (копирует ссылку)
     local tgBtn = Instance.new("TextButton")
     tgBtn.Size = UDim2.new(1, -20, 0, 30)
-    tgBtn.Position = UDim2.new(0, 10, 0, 50)
+    tgBtn.Position = UDim2.new(0, 10, 0, 45)
     tgBtn.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     tgBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tgBtn.Text = "Please send this to @XyqwerqHelper_Bot (click to copy link)"
+    tgBtn.Text = "Please send this to @XyqwerqHelper_Bot (click here to copy link)"
     tgBtn.Font = Enum.Font.Gotham
     tgBtn.TextSize = 12
     tgBtn.BorderSizePixel = 1
@@ -68,9 +71,10 @@ local function ShowCrashUI(logData)
         tgBtn.TextColor3 = Color3.fromRGB(0, 255, 100)
     end)
 
+    -- Окно с логами
     local scroll = Instance.new("ScrollingFrame")
     scroll.Size = UDim2.new(1, -20, 0, 140)
-    scroll.Position = UDim2.new(0, 10, 0, 90)
+    scroll.Position = UDim2.new(0, 10, 0, 85)
     scroll.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
     scroll.BorderSizePixel = 1
     scroll.BorderColor3 = Color3.fromRGB(255, 0, 0)
@@ -92,12 +96,13 @@ local function ShowCrashUI(logData)
     logText.Parent = scroll
     scroll.CanvasSize = UDim2.new(0, 0, 0, logText.Size.Y.Offset + 10)
 
+    -- Кнопка Копировать
     local copyBtn = Instance.new("TextButton")
     copyBtn.Size = UDim2.new(0.5, -15, 0, 30)
     copyBtn.Position = UDim2.new(0, 10, 1, -40)
     copyBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
     copyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    copyBtn.Text = "Copy"
+    copyBtn.Text = "Copy Logs"
     copyBtn.Font = Enum.Font.GothamBold
     copyBtn.BorderSizePixel = 0
     copyBtn.Parent = frame
@@ -106,6 +111,7 @@ local function ShowCrashUI(logData)
         copyBtn.Text = "Copied!"
     end)
 
+    -- Кнопка Закрыть и продолжить
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0.5, -15, 0, 30)
     closeBtn.Position = UDim2.new(0.5, 5, 1, -40)
@@ -118,63 +124,80 @@ local function ShowCrashUI(logData)
     closeBtn.MouseButton1Click:Connect(function()
         pcall(function() delfile(LOG_FILE) end) -- Удаляем лог после прочтения
         screenGui:Destroy()
-        -- После закрытия продолжаем загрузку
-        Notify(HUB_NAME, "Check for the game... (Please, Wait!)", 3)
-        task.wait(1)
-        -- Тут будет вызов функции загрузки (см. ниже)
+        if onContinue then onContinue() end -- Продолжаем загрузку
     end)
-end
-
--- ========== ПРОВЕРКА КРАША ==========
-if isfile and isfile(LOG_FILE) then
-    local ok, crashLogs = pcall(function() return readfile(LOG_FILE) end)
-    if ok and crashLogs and #crashLogs > 0 then
-        ShowCrashUI(crashLogs)
-        return -- Останавливаем скрипт, ждем нажатия кнопки
-    end
 end
 
 -- ========== ОСНОВНАЯ ЛОГИКА ==========
-Notify(HUB_NAME, "Check for the game... (Please, Wait!)", 3)
-task.wait(1.5)
+local function StartLauncher()
+    Notify(HUB_NAME, "Check for the game... (Please, Wait!)", 3)
+    task.wait(1.5)
 
--- Определяем режим (Проверка на античит или Steal an Egg)
-local isGhostMode = false
+    -- Определяем режим
+    local isGhostMode = false
 
--- Проверка по PlaceId (Steal an Egg)
-if game.PlaceId == 107778070777162 then
-    isGhostMode = true
-else
-    -- Проверка на наличие античитов в ReplicatedStorage
-    local rs = game:GetService("ReplicatedStorage")
-    for _, obj in ipairs(rs:GetChildren()) do
-        local name = string.lower(obj.Name)
-        if string.find(name, "adonis") or string.find(name, "anticheat") or string.find(name, "bac") then
-            isGhostMode = true
-            break
+    -- 1. Проверка на Steal an Egg
+    if game.PlaceId == 107778070777162 then
+        isGhostMode = true
+    else
+        -- 2. Проверка на наличие античитов в ReplicatedStorage
+        local rs = game:GetService("ReplicatedStorage")
+        for _, obj in ipairs(rs:GetChildren()) do
+            local name = string.lower(obj.Name)
+            if string.find(name, "adonis") or string.find(name, "anticheat") or string.find(name, "bac") then
+                isGhostMode = true
+                break
+            end
         end
+    end
+
+    local modeName = isGhostMode and "Ghost" or "Default"
+    local url = isGhostMode and URL_GHOST or URL_DEFAULT
+
+    -- Собираем инфу для лога краша (на случай, если скрипт крашнется)
+    local executor = "Unknown"
+    pcall(function() if identifyexecutor then executor = identifyexecutor() end end)
+    
+    local logData = string.format(
+        "Crashed: XyqwHub %s\nExecutor: %s\nUsername: %s\nPlace: %s\nPlaceId: %d\nTime: %s",
+        modeName, 
+        executor, 
+        Players.LocalPlayer.Name, 
+        tostring(game.Name), 
+        game.PlaceId, 
+        os.date("%d.%m.%Y in %H:%M (Moscow, Russia)")
+    )
+    pcall(function() writefile(LOG_FILE, logData) end)
+
+    -- Запуск нужной версии
+    if isGhostMode then
+        Notify(HUB_NAME, "AntiCheat has been detected! Enabling Ghost Mode...", 5)
+        task.wait(1.5)
+        pcall(function() loadstring(game:HttpGet(url))() end)
+    else
+        Notify(HUB_NAME, "successfully checked. Enabling Default Mode...", 5)
+        task.wait(1.5)
+        pcall(function() loadstring(game:HttpGet(url))() end)
     end
 end
 
--- Логируем запуск (чтобы если крашнется, мы знали что)
-local modeName = isGhostMode and "Ghost" or "Default"
-local logData = string.format(
-    "Crashed: XyqwHub %s\nExecutor: %s\nUsername: %s\nPlace: %s\nPlaceId: %d\nTime: %s",
-    modeName, tostring(identifyexecutor and identifyexecutor() or "Unknown"), Players.LocalPlayer.Name, game.Name, game.PlaceId, os.date("%d.%m.%Y in %H:%M (Moscow, Russia)")
-)
-pcall(function() writefile(LOG_FILE, logData) end)
+-- ========== ПРОВЕРКА КРАША ПРИ СТАРТЕ ==========
+local hasCrashed = false
+local crashLogs = ""
 
--- Запуск нужной версии
-if isGhostMode then
-    Notify(HUB_NAME, "AntiCheat has been detected! Enabling Ghost Mode...", 5)
-    task.wait(1.5)
-    pcall(function()
-        loadstring(game:HttpGet(URL_GHOST))()
+if isfile and isfile(LOG_FILE) then
+    local ok, data = pcall(function() return readfile(LOG_FILE) end)
+    if ok and data and #data > 0 then
+        hasCrashed = true
+        crashLogs = data
+    end
+end
+
+-- Если был краш - показываем окно, иначе запускаем сразу
+if hasCrashed then
+    ShowCrashUI(crashLogs, function()
+        StartLauncher()
     end)
 else
-    Notify(HUB_NAME, "successfully checked. Enabling Default Mode...", 5)
-    task.wait(1.5)
-    pcall(function()
-        loadstring(game:HttpGet(URL_DEFAULT))()
-    end)
+    StartLauncher()
 end
