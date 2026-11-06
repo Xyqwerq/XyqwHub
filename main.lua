@@ -1,4 +1,4 @@
--- ========== XYQWHUB LAUNCHER (v1.0) ==========
+-- ========== XYQWHUB STEALTH LAUNCHER (v1.1) ==========
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
@@ -25,6 +25,19 @@ local function Notify(title, text, duration)
     end)
 end
 
+-- БЕЗОПАСНАЯ ЗАГРУЗКА (Обход детекта HttpGet)
+local function SafeHttpGet(url)
+    if typeof(syn) == "table" and syn.request then
+        return syn.request({Url = url, Method = "GET"}).Body
+    elseif typeof(http_request) == "function" then
+        return http_request({Url = url, Method = "GET"}).Body
+    elseif typeof(request) == "function" then
+        return request({Url = url, Method = "GET"}).Body
+    else
+        return game:HttpGet(url)
+    end
+end
+
 -- ========== ОКНО КРАША ==========
 local function ShowCrashUI(logData, onContinue)
     local screenGui = Instance.new("ScreenGui")
@@ -33,7 +46,6 @@ local function ShowCrashUI(logData, onContinue)
     pcall(function() screenGui.Parent = game:GetService("CoreGui") end)
     if not screenGui.Parent then screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    -- Главное окно
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(0, 420, 0, 320)
     frame.Position = UDim2.new(0.5, -210, 0.5, -160)
@@ -42,7 +54,6 @@ local function ShowCrashUI(logData, onContinue)
     frame.BorderColor3 = Color3.fromRGB(255, 0, 0)
     frame.Parent = screenGui
 
-    -- Заголовок
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 30)
     title.Position = UDim2.new(0, 0, 0, 10)
@@ -53,7 +64,6 @@ local function ShowCrashUI(logData, onContinue)
     title.TextSize = 16
     title.Parent = frame
 
-    -- Кнопка ТГ (копирует ссылку)
     local tgBtn = Instance.new("TextButton")
     tgBtn.Size = UDim2.new(1, -20, 0, 30)
     tgBtn.Position = UDim2.new(0, 10, 0, 45)
@@ -71,7 +81,6 @@ local function ShowCrashUI(logData, onContinue)
         tgBtn.TextColor3 = Color3.fromRGB(0, 255, 100)
     end)
 
-    -- Окно с логами
     local scroll = Instance.new("ScrollingFrame")
     scroll.Size = UDim2.new(1, -20, 0, 140)
     scroll.Position = UDim2.new(0, 10, 0, 85)
@@ -96,7 +105,6 @@ local function ShowCrashUI(logData, onContinue)
     logText.Parent = scroll
     scroll.CanvasSize = UDim2.new(0, 0, 0, logText.Size.Y.Offset + 10)
 
-    -- Кнопка Копировать
     local copyBtn = Instance.new("TextButton")
     copyBtn.Size = UDim2.new(0.5, -15, 0, 30)
     copyBtn.Position = UDim2.new(0, 10, 1, -40)
@@ -111,7 +119,6 @@ local function ShowCrashUI(logData, onContinue)
         copyBtn.Text = "Copied!"
     end)
 
-    -- Кнопка Закрыть и продолжить
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0.5, -15, 0, 30)
     closeBtn.Position = UDim2.new(0.5, 5, 1, -40)
@@ -122,9 +129,9 @@ local function ShowCrashUI(logData, onContinue)
     closeBtn.BorderSizePixel = 0
     closeBtn.Parent = frame
     closeBtn.MouseButton1Click:Connect(function()
-        pcall(function() delfile(LOG_FILE) end) -- Удаляем лог после прочтения
+        pcall(function() delfile(LOG_FILE) end)
         screenGui:Destroy()
-        if onContinue then onContinue() end -- Продолжаем загрузку
+        if onContinue then onContinue() end
     end)
 end
 
@@ -133,14 +140,13 @@ local function StartLauncher()
     Notify(HUB_NAME, "Check for the game... (Please, Wait!)", 3)
     task.wait(1.5)
 
-    -- Определяем режим
     local isGhostMode = false
 
-    -- 1. Проверка на Steal an Egg
+    -- 1. Проверка на Steal an Egg (PlaceId)
     if game.PlaceId == 107778070777162 then
         isGhostMode = true
     else
-        -- 2. Проверка на наличие античитов в ReplicatedStorage
+        -- 2. Проверка на античиты в ReplicatedStorage
         local rs = game:GetService("ReplicatedStorage")
         for _, obj in ipairs(rs:GetChildren()) do
             local name = string.lower(obj.Name)
@@ -154,34 +160,41 @@ local function StartLauncher()
     local modeName = isGhostMode and "Ghost" or "Default"
     local url = isGhostMode and URL_GHOST or URL_DEFAULT
 
-    -- Собираем инфу для лога краша (на случай, если скрипт крашнется)
+    -- Собираем инфу для лога
     local executor = "Unknown"
     pcall(function() if identifyexecutor then executor = identifyexecutor() end end)
     
     local logData = string.format(
         "Crashed: XyqwHub %s\nExecutor: %s\nUsername: %s\nPlace: %s\nPlaceId: %d\nTime: %s",
-        modeName, 
-        executor, 
-        Players.LocalPlayer.Name, 
-        tostring(game.Name), 
-        game.PlaceId, 
-        os.date("%d.%m.%Y in %H:%M (Moscow, Russia)")
+        modeName, executor, Players.LocalPlayer.Name, tostring(game.Name), game.PlaceId, os.date("%d.%m.%Y in %H:%M (Moscow, Russia)")
     )
     pcall(function() writefile(LOG_FILE, logData) end)
 
-    -- Запуск нужной версии
+    -- Запуск нужной версии через SafeHttpGet (без палева)
     if isGhostMode then
         Notify(HUB_NAME, "AntiCheat has been detected! Enabling Ghost Mode...", 5)
         task.wait(1.5)
-        pcall(function() loadstring(game:HttpGet(url))() end)
+        local ok, err = pcall(function()
+            local code = SafeHttpGet(url)
+            loadstring(code)()
+        end)
+        if not ok then
+            warn("[Launcher] Ошибка запуска Ghost: " .. tostring(err))
+        end
     else
         Notify(HUB_NAME, "successfully checked. Enabling Default Mode...", 5)
         task.wait(1.5)
-        pcall(function() loadstring(game:HttpGet(url))() end)
+        local ok, err = pcall(function()
+            local code = SafeHttpGet(url)
+            loadstring(code)()
+        end)
+        if not ok then
+            warn("[Launcher] Ошибка запуска Default: " .. tostring(err))
+        end
     end
 end
 
--- ========== ПРОВЕРКА КРАША ПРИ СТАРТЕ ==========
+-- ========== ПРОВЕРКА КРАША ==========
 local hasCrashed = false
 local crashLogs = ""
 
@@ -193,7 +206,6 @@ if isfile and isfile(LOG_FILE) then
     end
 end
 
--- Если был краш - показываем окно, иначе запускаем сразу
 if hasCrashed then
     ShowCrashUI(crashLogs, function()
         StartLauncher()
