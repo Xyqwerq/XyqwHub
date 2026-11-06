@@ -15,7 +15,7 @@ local detectedAC = "None"
 -- 1. Проверка на игры с BAC (Extra Mode) — Steal an Egg и Steal a Brainrot
 local bacGames = {
     [107778070777162] = true, -- Steal an Egg
-    [112410758658181] = true, -- Steal a Brainrot
+    [109983668079237] = true, -- Steal a Brainrot
     [13772394625] = true,     -- Blade Ball
 }
 
@@ -50,7 +50,6 @@ end
 
 -- 4. Проверка на известные безопасные игры (Default Mode)
 local safeGames = {
-    [95206881] = true,      -- Baseplate
     [142823291] = true,     -- MM2
     [6516141723] = true,    -- Doors
     [920587237] = true,     -- Adopt Me
