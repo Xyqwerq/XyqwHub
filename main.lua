@@ -34,53 +34,203 @@ local function StartMode(mode)
     end)
 end
 
-local function CheckGameAndLaunch()
-    local mode = "Default"
+-- ============================================================
+-- УЛУЧШЕННЫЙ ДЕТЕКТОР ADONIS / ANTICHEAT
+-- ============================================================
+local function DetectAdonis()
+    local found = nil
 
-    -- BAC games (Steal an Egg / Steal a Brainrot / Blade Ball)
-    if game.PlaceId == 107778070777162 or game.PlaceId == 112410758658181 or game.PlaceId == 13772394625 then
+    -- 1) Быстрый путь: стандартные локации Adonis
+    pcall(function()
+        local rs = game:GetService("ReplicatedStorage")
+        local rf = game:GetService("ReplicatedFirst")
+        for _, name in ipairs({"Adonis", "Adonis_Loader", "AdonisLoader", "AdonisLoaded", "AdonisCore"}) do
+            if rs:FindFirstChild(name) then found = "ReplicatedStorage." .. name; return end
+        end
+        for _, name in ipairs({"Adonis", "Adonis_Loader"}) do
+            if rf:FindFirstChild(name) then found = "ReplicatedFirst." .. name; return end
+        end
+    end)
+    if found then return found end
+
+    -- 2) PlayerGui: Adonis_Admin / Adonis GUI появляется у админов
+    pcall(function()
+        local pg = Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerGui")
+        if pg then
+            for _, g in ipairs(pg:GetChildren()) do
+                if string.find(string.lower(g.Name), "adonis", 1, true) then
+                    found = "PlayerGui." .. g.Name
+                    return
+                end
+            end
+        end
+    end)
+    if found then return found end
+
+    -- 3) Workspace: только прямые дети (быстро)
+    pcall(function()
+        local ws = game:GetService("Workspace")
+        for _, o in ipairs(ws:GetChildren()) do
+            local n = string.lower(o.Name)
+            if string.find(n, "adonis", 1, true) or string.find(n, "anticheat", 1, true) then
+                found = "Workspace." .. o.Name
+                return
+            end
+        end
+    end)
+    if found then return found end
+
+    -- 4) Глубокий скан ReplicatedStorage (лимит 5000, чтобы не фризить Delta)
+    pcall(function()
+        local rs = game:GetService("ReplicatedStorage")
+        local count = 0
+        for _, o in ipairs(rs:GetDescendants()) do
+            count = count + 1
+            if count > 5000 then break end
+            local n = string.lower(o.Name)
+            if string.find(n, "adonis", 1, true) or string.find(n, "anticheat", 1, true) then
+                found = "ReplicatedStorage(deep)." .. o.Name
+                return
+            end
+        end
+    end)
+    if found then return found end
+
+    -- 5) Remotes.Adonis_* (часто единственный след в клиенте)
+    pcall(function()
+        local rs = game:GetService("ReplicatedStorage")
+        local remotes = rs:FindFirstChild("Remotes")
+        if remotes then
+            for _, o in ipairs(remotes:GetChildren()) do
+                if string.find(string.lower(o.Name), "adonis", 1, true) then
+                    found = "Remotes." .. o.Name
+                    return
+                end
+            end
+        end
+    end)
+
+    return found
+end
+
+local function DetectAntiCheat()
+    local found = nil
+    pcall(function()
+        local rs = game:GetService("ReplicatedStorage")
+        local count = 0
+        for _, o in ipairs(rs:GetDescendants()) do
+            count = count + 1
+            if count > 5000 then break end
+            local n = string.lower(o.Name)
+            if string.find(n, "anticheat", 1, true)
+                or string.find(n, "byfron", 1, true)
+                or string.find(n, "logtelemetry", 1, true)
+                or string.find(n, "adeggboostremotes", 1, true) then
+                found = o.Name
+                return
+            end
+        end
+    end)
+    return found
+end
+
+-- ============================================================
+-- ГЛАВНАЯ ЛОГИКА ВЫБОРА РЕЖИМА
+-- ============================================================
+local function CheckGameAndLaunch()
+    -- Ручной override для дебага: getgenv().XyqwForceMode = "Ghost" / "Extra" / "Default"
+    if getgenv().XyqwForceMode then
+        local forced = getgenv().XyqwForceMode
+        if forced == "Ghost" or forced == "Extra" or forced == "Default" then
+            pcall(function()
+                StarterGui:SetCore("SendNotification", {
+                    Title = "XyqwHub Loader",
+                    Text = "FORCED: " .. forced,
+                    Duration = 4,
+                })
+            end)
+            StartMode(forced)
+            return
+        end
+    end
+
+    local mode = "Default"
+    local reason = "clean game"
+
+    -- ШАГ 1: BAC игры по PlaceId (Extra)
+    if game.PlaceId == 107778070777162
+        or game.PlaceId == 112410758658181
+        or game.PlaceId == 13772394625 then
         mode = "Extra"
+        reason = "BAC PlaceId " .. game.PlaceId
     else
+        -- ШАГ 2: BAC-объекты в ReplicatedStorage
+        local bacFound = nil
         pcall(function()
             local rs = game:GetService("ReplicatedStorage")
+            local count = 0
             for _, obj in ipairs(rs:GetDescendants()) do
+                count = count + 1
+                if count > 5000 then break end
                 local name = string.lower(obj.Name)
-                if string.find(name, "adeggboostremotes") or string.find(name, "logtelemetry") then
-                    mode = "Extra"
+                if string.find(name, "adeggboostremotes", 1, true)
+                    or string.find(name, "logtelemetry", 1, true) then
+                    bacFound = obj.Name
                     return
                 end
             end
         end)
+        if bacFound then
+            mode = "Extra"
+            reason = "BAC object: " .. bacFound
+        end
     end
 
-    -- Adonis / AntiCheat detection
+    -- ШАГ 3: Adonis (если ещё не Extra)
     if mode == "Default" then
-        pcall(function()
-            local ws = game:GetService("Workspace")
-            for _, obj in ipairs(ws:GetDescendants()) do
-                local name = string.lower(obj.Name)
-                if string.find(name, "adonis") or string.find(name, "anticheat") then
-                    mode = "Ghost"
-                    return
-                end
-            end
-        end)
-    end
-    if mode == "Default" then
-        pcall(function()
-            local services = {game:GetService("ReplicatedStorage"), game:GetService("ServerScriptService")}
-            for _, svc in ipairs(services) do
-                for _, obj in ipairs(svc:GetDescendants()) do
-                    local name = string.lower(obj.Name)
-                    if string.find(name, "adonis") then
-                        mode = "Ghost"
-                        return
-                    end
-                end
-            end
-        end)
+        local adonis = DetectAdonis()
+        if adonis then
+            mode = "Ghost"
+            reason = "Adonis: " .. adonis
+        end
     end
 
+    -- ШАГ 4: общий AntiCheat (если ещё Default)
+    if mode == "Default" then
+        local ac = DetectAntiCheat()
+        if ac then
+            mode = "Ghost"
+            reason = "AntiCheat: " .. ac
+        end
+    end
+
+    -- ШАГ 5: показать пользователю что выбрано (и почему)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "XyqwHub Loader",
+            Text = "Mode: " .. mode .. " — " .. reason,
+            Duration = 5,
+        })
+    end)
+
+    -- Дубль в консоль (F9) на случай если Notify заблокирован игрой
+    pcall(function()
+        warn("[XyqwLoader] Mode = " .. mode .. " | Reason = " .. reason
+            .. " | PlaceId = " .. tostring(game.PlaceId))
+    end)
+
+    -- Дубль в файл для дебага
+    pcall(function()
+        if writefile then
+            writefile("XyqwHub/Logs/loader_debug.txt",
+                "Mode: " .. mode ..
+                "\nReason: " .. reason ..
+                "\nPlaceId: " .. tostring(game.PlaceId) ..
+                "\nTime: " .. os.date("%Y-%m-%d %H:%M:%S"))
+        end
+    end)
+
+    -- Чистим session.txt чтобы детектор кика не сработал ложно
     pcall(function()
         if delfile and isfile(SESSION_FILE) then delfile(SESSION_FILE) end
     end)
