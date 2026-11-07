@@ -137,8 +137,120 @@ end
 -- ============================================================
 -- ГЛАВНАЯ ЛОГИКА ВЫБОРА РЕЖИМА
 -- ============================================================
+-- ============================================================
+-- УЛУЧШЕННЫЙ ДЕТЕКТОР ADONIS (глубокий скан + проверка исходников)
+-- ============================================================
+
+-- Вспомогательная функция для глубокого сканирования сервиса с лимитом
+local function DeepScan(service, patterns, limit)
+    local count = 0
+    limit = limit or 5000
+    pcall(function()
+        for _, obj in ipairs(service:GetDescendants()) do
+            count = count + 1
+            if count > limit then break end
+            local name = string.lower(obj.Name)
+            for _, pattern in ipairs(patterns) do
+                if string.find(name, pattern, 1, true) then
+                    return obj
+                end
+            end
+        end
+    end)
+    return nil
+end
+
+local function DetectAdonis()
+    local adonisPatterns = {"adonis", "adonis_loader", "adonis_loaded", "adonis_gui"}
+    local anticheatPatterns = {"anticheat", "anti_cheat", "byfron", "logtelemetry", "adeggboostremotes"}
+
+    -- 1. Быстрая проверка прямых детей в ключевых сервисах (самый частый случай)
+    local servicesToCheck = {
+        game:GetService("ReplicatedStorage"),
+        game:GetService("ReplicatedFirst"),
+        game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui"),
+        game:GetService("Workspace")
+    }
+
+    for _, service in ipairs(servicesToCheck) do
+        if service then
+            for _, child in ipairs(service:GetChildren()) do
+                local lowerName = string.lower(child.Name)
+                for _, pattern in ipairs(adonisPatterns) do
+                    if string.find(lowerName, pattern, 1, true) then
+                        return "Direct Child: " .. child:GetFullName()
+                    end
+                end
+            end
+        end
+    end
+
+    -- 2. Глубокий скан ReplicatedStorage и ReplicatedFirst (на случай, если Adonis спрятан в папках)
+    local rs = game:GetService("ReplicatedStorage")
+    local rf = game:GetService("ReplicatedFirst")
+    
+    local foundInRS = DeepScan(rs, adonisPatterns)
+    if foundInRS then return "Deep Scan (RS): " .. foundInRS:GetFullName() end
+    
+    local foundInRF = DeepScan(rf, adonisPatterns)
+    if foundInRF then return "Deep Scan (RF): " .. foundInRF:GetFullName() end
+
+    -- 3. Проверка на общие паттерны античитов (если Adonis нет, но есть другой античит)
+    if DeepScan(rs, anticheatPatterns, 3000) then
+        return "AntiCheat Pattern in RS"
+    end
+
+    -- 4. Продвинутая проверка: поиск потоков Adonis через getreg() (если доступно)
+    -- Это самый надёжный метод, так как Adonis работает в отдельных потоках.
+    if type(getreg) == "function" then
+        local success, threads = pcall(getreg)
+        if success and type(threads) == "table" then
+            for _, thread in ipairs(threads) do
+                if type(thread) == "thread" then
+                    local ok, source = pcall(function() return debug.info(thread, "s") end)
+                    if ok and source and type(source) == "string" then
+                        local lowerSource = string.lower(source)
+                        -- Ищем характерные пути Adonis в исходном коде
+                        if string.find(lowerSource, "adonis", 1, true) 
+                           or string.find(lowerSource, ".core.anti", 1, true)
+                           or string.find(lowerSource, "plugins.anti_cheat", 1, true) then
+                            return "Thread Source: Adonis Core Found"
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return nil
+end
+
+local function DetectBAC()
+    local bacPatterns = {"adeggboostremotes", "logtelemetry", "bac_", "byfron"}
+    local rs = game:GetService("ReplicatedStorage")
+    
+    -- Быстрая проверка
+    for _, child in ipairs(rs:GetChildren()) do
+        local name = string.lower(child.Name)
+        for _, pattern in ipairs(bacPatterns) do
+            if string.find(name, pattern, 1, true) then
+                return "BAC Direct: " .. child.Name
+            end
+        end
+    end
+    
+    -- Глубокий скан с лимитом
+    local found = DeepScan(rs, bacPatterns, 4000)
+    if found then return "BAC Deep: " .. found:GetFullName() end
+    
+    return nil
+end
+
+-- ============================================================
+-- ГЛАВНАЯ ЛОГИКА ВЫБОРА РЕЖИМА (ОБНОВЛЕНА)
+-- ============================================================
 local function CheckGameAndLaunch()
-    -- Ручной override для дебага: getgenv().XyqwForceMode = "Ghost" / "Extra" / "Default"
+    -- Ручной override для дебага
     if getgenv().XyqwForceMode then
         local forced = getgenv().XyqwForceMode
         if forced == "Ghost" or forced == "Extra" or forced == "Default" then
@@ -157,54 +269,38 @@ local function CheckGameAndLaunch()
     local mode = "Default"
     local reason = "clean game"
 
-    -- ШАГ 1: BAC игры по PlaceId (Extra)
-    if game.PlaceId == 107778070777162
-        or game.PlaceId == 112410758658181
-        or game.PlaceId == 13772394625 then
+    -- ШАГ 1: Проверка на BAC игры (по PlaceId)
+    if game.PlaceId == 107778070777162 -- Steal an Egg
+        or game.PlaceId == 112410758658181 -- Steal a Brainrot
+        or game.PlaceId == 13772394625 then -- Blade Ball
         mode = "Extra"
-        reason = "BAC PlaceId " .. game.PlaceId
+        reason = "BAC PlaceId: " .. game.PlaceId
     else
-        -- ШАГ 2: BAC-объекты в ReplicatedStorage
-        local bacFound = nil
-        pcall(function()
-            local rs = game:GetService("ReplicatedStorage")
-            local count = 0
-            for _, obj in ipairs(rs:GetDescendants()) do
-                count = count + 1
-                if count > 5000 then break end
-                local name = string.lower(obj.Name)
-                if string.find(name, "adeggboostremotes", 1, true)
-                    or string.find(name, "logtelemetry", 1, true) then
-                    bacFound = obj.Name
-                    return
-                end
-            end
-        end)
-        if bacFound then
+        -- ШАГ 2: Проверка на BAC объекты
+        local bac = DetectBAC()
+        if bac then
             mode = "Extra"
-            reason = "BAC object: " .. bacFound
+            reason = bac
         end
     end
 
-    -- ШАГ 3: Adonis (если ещё не Extra)
+    -- ШАГ 3: Если всё ещё Default, ищем Adonis или другие античиты
     if mode == "Default" then
         local adonis = DetectAdonis()
         if adonis then
             mode = "Ghost"
-            reason = "Adonis: " .. adonis
+            reason = adonis
+        else
+            -- Если Adonis не нашли, но есть другие античит-паттерны, всё равно включаем Ghost
+            local genericAC = DeepScan(game:GetService("ReplicatedStorage"), {"anticheat", "anti_cheat"}, 3000)
+            if genericAC then
+                mode = "Ghost"
+                reason = "Generic AntiCheat: " .. genericAC.Name
+            end
         end
     end
 
-    -- ШАГ 4: общий AntiCheat (если ещё Default)
-    if mode == "Default" then
-        local ac = DetectAntiCheat()
-        if ac then
-            mode = "Ghost"
-            reason = "AntiCheat: " .. ac
-        end
-    end
-
-    -- ШАГ 5: показать пользователю что выбрано (и почему)
+    -- ШАГ 4: Уведомление и лог
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = "XyqwHub Loader",
@@ -212,14 +308,9 @@ local function CheckGameAndLaunch()
             Duration = 5,
         })
     end)
-
-    -- Дубль в консоль (F9) на случай если Notify заблокирован игрой
     pcall(function()
-        warn("[XyqwLoader] Mode = " .. mode .. " | Reason = " .. reason
-            .. " | PlaceId = " .. tostring(game.PlaceId))
+        warn("[XyqwLoader] Mode = " .. mode .. " | Reason = " .. reason .. " | PlaceId = " .. tostring(game.PlaceId))
     end)
-
-    -- Дубль в файл для дебага
     pcall(function()
         if writefile then
             writefile("XyqwHub/Logs/loader_debug.txt",
@@ -230,7 +321,6 @@ local function CheckGameAndLaunch()
         end
     end)
 
-    -- Чистим session.txt чтобы детектор кика не сработал ложно
     pcall(function()
         if delfile and isfile(SESSION_FILE) then delfile(SESSION_FILE) end
     end)
