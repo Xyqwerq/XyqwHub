@@ -10,7 +10,7 @@ local CoreGui = game:GetService("CoreGui")
 -- ============================================================
 local MODE_STATUS = {
     Default = true,
-    Ghost   = false,
+    Ghost   = true,
     Extra   = true,
 }
 
