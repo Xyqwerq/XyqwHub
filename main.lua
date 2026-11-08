@@ -27,7 +27,7 @@ local MODE_ORDER = {"Default", "Ghost", "Extra"}
 local KNOWN_BAC_GAMES = {
     [107778070777162] = "Steal an Egg",
     [112410758658181] = "Steal a Brainrot",
-    [13772394625]     = "Blade Ball",
+    [13772394625] = "Blade Ball",
 }
 local KNOWN_ADONIS_GAMES = {
     [76145207802145] = "Get A Grip",
